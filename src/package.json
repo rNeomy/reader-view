@@ -1,0 +1,16 @@
+{
+  "fullName": "Open in Reader View",
+  "name": "ioirview",
+  "description": "Easily access to the reader-view from right click context menu",
+  "id": "jid0-fgmjSq5kJtop0oO9u5hJj",
+  "license": "mozilla public license 1.1",
+  "version": "0.1.0",
+  "author": "Richard Neomy",
+  "lib": "lib",
+  "url": "http://firefox.add0n.com/reader-view.html",
+  "icon": "data/icons/32.png",
+  "icon64": "data/icons/64.png",
+  "permissions": {
+    "private-browsing": true
+  }
+}
