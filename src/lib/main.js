@@ -39,7 +39,7 @@ cm.Item({
 });
 
 var readerModeKey = Hotkey({
-    combo: "accel-.",
+    combo: "accel-f1",
     onPress: function() {
         let url = tabs.activeTab.url;
         let readerPrefix = 'about:reader?url=';
