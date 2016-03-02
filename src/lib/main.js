@@ -26,7 +26,6 @@ cm.Item({
                  '  self.postMessage(node.href);' +
                  '});',
   onMessage: function (url) {
-    Console.log("got reader mode ..." );
     if (url.indexOf('google.com/url?') !== -1) {
       let tmp = /url\=([^\&]+)/.exec(url);
       if (tmp && tmp.length) {
