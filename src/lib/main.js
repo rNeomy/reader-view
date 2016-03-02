@@ -5,6 +5,7 @@ var tabs = require('sdk/tabs');
 var self = require('sdk/self');
 var timers = require('sdk/timers');
 var sp = require('sdk/simple-prefs');
+var { Hotkey } = require("sdk/hotkeys");
 
 cm.Item({
   label: 'Open in Reader View',
@@ -25,6 +26,7 @@ cm.Item({
                  '  self.postMessage(node.href);' +
                  '});',
   onMessage: function (url) {
+    Console.log("got reader mode ..." );
     if (url.indexOf('google.com/url?') !== -1) {
       let tmp = /url\=([^\&]+)/.exec(url);
       if (tmp && tmp.length) {
@@ -35,6 +37,26 @@ cm.Item({
       tabs.open('about:reader?url=' + url);
     }
   }
+});
+
+var readerModeKey = Hotkey({
+    combo: "accel-.",
+    onPress: function() {
+        let url = tabs.activeTab.url;
+        let readerPrefix = 'about:reader?url=';
+        let matchLoc = url.search(readerPrefix.substr(0,12));
+        let outUrl = '';
+
+        // Toggle it
+        if (matchLoc != -1) {
+            outUrl = url.substring(readerPrefix.length);
+        } else {
+            outUrl = readerPrefix + url;
+        }
+        //console.log(outUrl + " " + matchLoc)
+        tabs.activeTab.url = outUrl;
+
+    }
 });
 
 /* welcome */
