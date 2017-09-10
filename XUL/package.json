@@ -1,0 +1,45 @@
+{
+  "title": "Open in Reader View",
+  "name": "ioirview",
+  "description": "Easily access to the reader-view from right click context menu",
+  "id": "jid0-fgmjSq5kJtop0oO9u5hJj@jetpack",
+  "license": "MPL 2.0",
+  "version": "0.1.4.1",
+  "author": "Richard Neomy",
+  "main": "main.js",
+  "url": "http://firefox.add0n.com/reader-view.html",
+  "permissions": {
+    "private-browsing": true,
+    "multiprocess": true
+  },
+  "preferences": [
+    {
+      "description": "Current Tab",
+      "type": "bool",
+      "name": "switch",
+      "value": true,
+      "title": "Display 'Switch to reader view' in the right click context menu"
+    },
+    {
+      "description": "New Tab",
+      "type": "bool",
+      "name": "open",
+      "value": true,
+      "title": "Display 'Open in reader view' in the right click context menu"
+    },
+    {
+      "description": "When opening a new tab, use relatedToCurrent attribute.",
+      "type": "bool",
+      "name": "relatedToCurrent",
+      "value": true,
+      "title": "Open new tab adjacent to the current tab"
+    },
+    {
+      "description": "Always open links in background tab",
+      "type": "bool",
+      "name": "inBackground",
+      "value": false,
+      "title": "Open new tab in background"
+    }
+  ]
+}

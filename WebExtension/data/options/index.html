@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Test Extension Options</title>
+  <style>
+    body {
+      font-family: "Helvetica Neue",Helvetica,sans-serif;
+      font-size: 13px;
+      padding: 10px;
+    }
+    textarea {
+      width: 100%;
+      height: 160px;
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <p>
+    <label><input type="checkbox" id="new-tab"> Open links in new tabs</label>
+    <br>
+    <label><input type="checkbox" id="faqs"> Open FAQs page on updates</label>
+  </p>
+  <p>
+    User custom style:
+    <textarea placeholder="User styles"></textarea>
+  </p>
+
+  <div>
+    <button id="save">Save</button>
+    <span id="status"></span>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>
