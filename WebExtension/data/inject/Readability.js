@@ -477,7 +477,7 @@ Readability.prototype = {
       try {
         replacement.setAttribute(node.attributes[i].name, node.attributes[i].value);
       }
-      catch(e) {}
+      catch (e) {}
     }
     return replacement;
   },
