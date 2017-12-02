@@ -1,0 +1,40 @@
+{
+  "manifest_version": 2,
+  "version": "0.2.0",
+  "name": "Open in Reader View",
+  "description": "Easily access to the reader-view from right click context menu",
+
+  "permissions": [
+    "contextMenus",
+    "storage"
+  ],
+
+  "icons": {
+    "16": "data/icons/16.png",
+    "24": "data/icons/24.png",
+    "32": "data/icons/32.png",
+    "64": "data/icons/64.png",
+    "128": "data/icons/128.png"
+  },
+
+  "homepage_url": "http://firefox.add0n.com/reader-view.html",
+
+  "background": {
+    "persistent": false,
+    "scripts": [
+      "background.js"
+    ]
+  },
+
+  "options_ui": {
+    "page": "data/options/index.html",
+    "chrome_style": true
+  },
+
+  "applications": {
+    "gecko": {
+      "id": "jid0-fgmjSq5kJtop0oO9u5hJj@jetpack",
+      "strict_min_version": "58.0"
+    }
+  }
+}
