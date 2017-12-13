@@ -24,6 +24,13 @@ function restore() {
 body {
   padding-bottom: 64px;
 }
+a:link, a:link:hover, a:link:active {
+  color: #0095dd;
+}
+a:link {
+  text-decoration: underline;
+  font-weight: normal;
+}
 /* CSS for "sepia" theme */
 body[data-mode=sepia] {
 }

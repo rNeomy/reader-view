@@ -40,6 +40,7 @@
     "page": "data/options/index.html",
     "chrome_style": true
   },
+  "incognito": "split",
   "commands": {
     "toggle-reader-view": {
       "description": "Toggle the Reader View"

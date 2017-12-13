@@ -23,6 +23,13 @@ img {
   width: auto;
   height: auto;
 }
+a:link, a:link:hover, a:link:active {
+  color: #0095dd;
+}
+a:link {
+  text-decoration: underline;
+  font-weight: normal;
+}
 body {
   padding-bottom: 64px;
 }`
