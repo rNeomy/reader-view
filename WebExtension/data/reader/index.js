@@ -1,5 +1,14 @@
 'use strict';
 
+{
+  const css = localStorage.getItem('top-css');
+  if (css) {
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.documentElement.appendChild(style);
+  }
+}
+
 var iframe = document.querySelector('iframe');
 var settings = document.querySelector('#toolbar>div');
 var styles = document.createElement('style');

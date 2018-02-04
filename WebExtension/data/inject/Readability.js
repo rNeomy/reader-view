@@ -504,7 +504,7 @@ Readability.prototype = {
       try {
         replacement.setAttribute(node.attributes[i].name, node.attributes[i].value);
       }
-      catch (e) {}
+      catch(e) {}
     }
     return replacement;
   },
@@ -531,6 +531,7 @@ Readability.prototype = {
     this._clean(articleContent, "embed");
     this._clean(articleContent, "h1");
     this._clean(articleContent, "footer");
+    this._clean(articleContent, "link");
 
     // Clean out elements have "share" in their id/class combinations from final top candidates,
     // which means we don't remove the top candidates even they have "share".

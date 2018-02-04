@@ -65,7 +65,7 @@ iframe {
 #toolbar>div td {
   cursor: pointer;
 }
-#toolbar>div td:active {
+#toolbar>div td span:active {
   box-shadow: inset 0 -3px 0 0 #fc6420;
 }
 #toolbar>div tr:first-child td:first-child{

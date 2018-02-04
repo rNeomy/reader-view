@@ -10,7 +10,6 @@
     }
     textarea {
       width: 100%;
-      height: 160px;
       font-family: monospace;
       font-size: 12px;
       line-height: 12px;
@@ -19,20 +18,29 @@
 </head>
 
 <body>
-  <p>
-    <label><input type="checkbox" id="new-tab"> Open links in new tabs</label>
-    <br>
-    <label><input type="checkbox" id="faqs"> Open FAQs page on updates</label>
-  </p>
-  <p>
-    User custom style:
-    <textarea placeholder="User styles"></textarea>
-  </p>
+  <span>Custom style (reader view):</span>
+  <textarea placeholder="User styles for the actual reader-view" id="reader-style" rows="15"></textarea>
+  <p></p>
+  Custom style (top frame and sidebar):
+  <textarea placeholder="User styles for top frame (sidebar mainly)" id="top-style" rows="4"></textarea>
 
-  <div>
+  <p></p>
+  <table>
+    <tr>
+      <td><input type="checkbox" id="new-tab"></td>
+      <td><label for="new-tab">Open links in new tabs</label></td>
+    </tr>
+    <tr>
+      <td><input type="checkbox" id="faqs"></td>
+      <td><label for="faqs"> Open FAQs page on updates</label></td>
+    </tr>
+  </table>
+
+  <p>
+    <button id="support">Support Development</button>
     <button id="save">Save</button>
     <span id="status"></span>
-  </div>
+  </p>
 
   <script src="index.js"></script>
 </body>
