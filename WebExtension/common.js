@@ -56,8 +56,12 @@ chrome.pageAction.onClicked.addListener(onClicked);
     chrome.contextMenus.create({
       id: 'open-in-reader-view',
       title: 'Open in Reader View',
-      contexts: ['link'],
-      documentUrlPatterns: ['*://*/*']
+      contexts: ['link']
+    });
+    chrome.contextMenus.create({
+      id: 'open-in-reader-view-bg',
+      title: 'Open in background Reader View',
+      contexts: ['link']
     });
     chrome.contextMenus.create({
       id: 'switch-to-reader-view',
@@ -74,9 +78,12 @@ chrome.contextMenus.onClicked.addListener(({menuItemId, pageUrl, linkUrl}, tab) 
   if (menuItemId === 'switch-to-reader-view') {
     onClicked(tab);
   }
-  else if (menuItemId === 'open-in-reader-view') {
+  else if (menuItemId.startsWith('open-in-reader-view')) {
     chrome.tabs.create({
-      url
+      url,
+      openerTabId: tab.id,
+      index: tab.index + 1,
+      active: !menuItemId.endsWith('-bg')
     }, t => onClicked({
       id: t.id,
       url
@@ -113,6 +120,13 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   else if (request.cmd === 'read-data') {
     response(cache[id]);
   }
+  else if (request.cmd === 'open') {
+    chrome.tabs.create({
+      url: request.url,
+      openerTabId: sender.tab.id,
+      index: sender.tab.index + 1,
+    });
+  }
 });
 
 chrome.tabs.onRemoved.addListener(tabId => {
@@ -122,7 +136,7 @@ chrome.tabs.onRemoved.addListener(tabId => {
 // FAQs & Feedback
 chrome.storage.local.get({
   'version': null,
-  'faqs': navigator.userAgent.indexOf('Firefox') === -1,
+  'faqs': true,
   'last-update': 0,
 }, prefs => {
   const version = chrome.runtime.getManifest().version;

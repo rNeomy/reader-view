@@ -26,6 +26,9 @@ iframe {
   align-items: center;
   position: relative;
 }
+body[data-mode=dark] #toolbar {
+  background-color: rgb(81, 81, 81);
+}
 #toolbar>span {
   display: block;
   font-size: 25px;
@@ -36,6 +39,9 @@ iframe {
   border-bottom: solid 1px #b5b5b5;
   color: #737373;
   cursor: pointer;
+}
+body[data-mode=dark] #toolbar>span {
+  color: rgb(238, 238, 238);
 }
 #toolbar>div {
   position: absolute;
@@ -65,8 +71,11 @@ iframe {
 #toolbar>div td {
   cursor: pointer;
 }
-#toolbar>div td span:active {
+#toolbar>div td span[data-cmd*=color-]:active {
   box-shadow: inset 0 -3px 0 0 #fc6420;
+}
+#toolbar>div td:not([data-id=color]):active {
+  opacity: 0.5;
 }
 #toolbar>div tr:first-child td:first-child{
   height: 100px;

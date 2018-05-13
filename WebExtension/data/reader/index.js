@@ -62,6 +62,7 @@ body {
       })[prefs.mode]};
     `;
     iframe.contentDocument.body.dataset.mode = prefs.mode;
+    document.body.dataset.mode = prefs.mode;
     styles.textContent = prefs['user-css'];
   });
 }
@@ -94,7 +95,7 @@ document.addEventListener('click', e => {
     chrome.storage.local.get({
       'font-size': 13
     }, prefs => {
-      prefs['font-size'] = Math.min(20, prefs['font-size'] + 1);
+      prefs['font-size'] = Math.min(33, prefs['font-size'] + 1);
       chrome.storage.local.set(prefs, update);
     });
   }
@@ -179,7 +180,8 @@ chrome.runtime.sendMessage({
         'new-tab': true
       }, prefs => {
         if (prefs['new-tab']) {
-          chrome.tabs.create({
+          chrome.runtime.sendMessage({
+            cmd: 'open',
             url: a.href
           });
         }
