@@ -22,24 +22,30 @@
 
 /**
  * Public constructor.
- * @param {Object}       uri     The URI descriptor object.
  * @param {HTMLDocument} doc     The document to parse.
  * @param {Object}       options The options object.
  */
-function Readability(uri, doc, options) {
+function Readability(doc, options) {
+  // In some older versions, people passed a URI as the first argument. Cope:
+  if (options && options.documentElement) {
+    doc = options;
+    options = arguments[2];
+  } else if (!doc || !doc.documentElement) {
+    throw new Error("First argument to Readability constructor should be a document object.");
+  }
   options = options || {};
 
-  this._uri = uri;
   this._doc = doc;
   this._articleTitle = null;
   this._articleByline = null;
   this._articleDir = null;
+  this._attempts = [];
 
   // Configurable options
   this._debug = !!options.debug;
   this._maxElemsToParse = options.maxElemsToParse || this.DEFAULT_MAX_ELEMS_TO_PARSE;
   this._nbTopCandidates = options.nbTopCandidates || this.DEFAULT_N_TOP_CANDIDATES;
-  this._wordThreshold = options.wordThreshold || this.DEFAULT_WORD_THRESHOLD;
+  this._charThreshold = options.charThreshold || this.DEFAULT_CHAR_THRESHOLD;
   this._classesToPreserve = this.CLASSES_TO_PRESERVE.concat(options.classesToPreserve || []);
 
   // Start with all flags set
@@ -85,6 +91,10 @@ Readability.prototype = {
   FLAG_WEIGHT_CLASSES: 0x2,
   FLAG_CLEAN_CONDITIONALLY: 0x4,
 
+  // https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType
+  ELEMENT_NODE: 1,
+  TEXT_NODE: 3,
+
   // Max number of nodes supported by this parser. Default: 0 (no limit)
   DEFAULT_MAX_ELEMS_TO_PARSE: 0,
 
@@ -95,8 +105,8 @@ Readability.prototype = {
   // Element tags to score by default.
   DEFAULT_TAGS_TO_SCORE: "section,h2,h3,h4,h5,h6,p,td,pre".toUpperCase().split(","),
 
-  // The default number of words an article must have in order to return a result
-  DEFAULT_WORD_THRESHOLD: 500,
+  // The default number of chars an article must have in order to return a result
+  DEFAULT_CHAR_THRESHOLD: 500,
 
   // All of the regular expressions in use within readability.
   // Defined up here so we don't instantiate them repeatedly in loops.
@@ -268,34 +278,20 @@ Readability.prototype = {
    * @return void
    */
   _fixRelativeUris: function(articleContent) {
-    var scheme = this._uri.scheme;
-    var prePath = this._uri.prePath;
-    var pathBase = this._uri.pathBase;
-
+    var baseURI = this._doc.baseURI;
+    var documentURI = this._doc.documentURI;
     function toAbsoluteURI(uri) {
-      // If this is already an absolute URI, return it.
-      if (/^[a-zA-Z][a-zA-Z0-9\+\-\.]*:/.test(uri))
+      // Leave hash links alone if the base URI matches the document URI:
+      if (baseURI == documentURI && uri.charAt(0) == "#") {
         return uri;
-
-      // Scheme-rooted relative URI.
-      if (uri.substr(0, 2) == "//")
-        return scheme + "://" + uri.substr(2);
-
-      // Prepath-rooted relative URI.
-      if (uri[0] == "/")
-        return prePath + uri;
-
-      // Dotslash relative URI.
-      if (uri.indexOf("./") === 0)
-        return pathBase + uri.slice(2);
-
-      // Ignore hash URIs:
-      if (uri[0] == "#")
-        return uri;
-
-      // Standard relative URI; add entire path. pathBase already includes a
-      // trailing "/".
-      return pathBase + uri;
+      }
+      // Otherwise, resolve against base URI:
+      try {
+        return new URL(uri, baseURI).href;
+      } catch (ex) {
+        // Something went wrong, just return the original:
+      }
+      return uri;
     }
 
     var links = articleContent.getElementsByTagName("a");
@@ -427,7 +423,7 @@ Readability.prototype = {
   _nextElement: function (node) {
     var next = node;
     while (next
-        && (next.nodeType != Node.ELEMENT_NODE)
+        && (next.nodeType != this.ELEMENT_NODE)
         && this.REGEXPS.whitespace.test(next.textContent)) {
       next = next.nextSibling;
     }
@@ -470,7 +466,7 @@ Readability.prototype = {
         while (next) {
           // If we've hit another <br><br>, we're done adding children to this <p>.
           if (next.tagName == "BR") {
-            var nextElem = this._nextElement(next);
+            var nextElem = this._nextElement(next.nextSibling);
             if (nextElem && nextElem.tagName == "BR")
               break;
           }
@@ -505,6 +501,7 @@ Readability.prototype = {
         replacement.setAttribute(node.attributes[i].name, node.attributes[i].value);
       }
       catch(e) {}
+
     }
     return replacement;
   },
@@ -532,6 +529,7 @@ Readability.prototype = {
     this._clean(articleContent, "h1");
     this._clean(articleContent, "footer");
     this._clean(articleContent, "link");
+    this._clean(articleContent, "aside");
 
     // Clean out elements have "share" in their id/class combinations from final top candidates,
     // which means we don't remove the top candidates even they have "share".
@@ -808,7 +806,7 @@ Readability.prototype = {
           } else {
             // EXPERIMENTAL
             this._forEachNode(node.childNodes, function(childNode) {
-              if (childNode.nodeType === Node.TEXT_NODE && childNode.textContent.trim().length > 0) {
+              if (childNode.nodeType === this.TEXT_NODE && childNode.textContent.trim().length > 0) {
                 var p = doc.createElement('p');
                 p.textContent = childNode.textContent;
                 p.style.display = 'inline';
@@ -855,7 +853,7 @@ Readability.prototype = {
 
         // Initialize and score ancestors.
         this._forEachNode(ancestors, function(ancestor, level) {
-          if (!ancestor.tagName)
+          if (!ancestor.tagName || !ancestor.parentNode || typeof(ancestor.parentNode.tagName) === 'undefined')
             return;
 
           if (typeof(ancestor.readability) === 'undefined') {
@@ -1086,24 +1084,45 @@ Readability.prototype = {
       if (this._debug)
         this.log("Article content after paging: " + articleContent.innerHTML);
 
+      var parseSuccessful = true;
+
       // Now that we've gone through the full algorithm, check to see if
       // we got any meaningful content. If we didn't, we may need to re-run
       // grabArticle with different flags set. This gives us a higher likelihood of
       // finding the content, and the sieve approach gives us a higher likelihood of
       // finding the -right- content.
-      if (this._getInnerText(articleContent, true).length < this._wordThreshold) {
+      var textLength = this._getInnerText(articleContent, true).length;
+      if (textLength < this._charThreshold) {
+        parseSuccessful = false;
         page.innerHTML = pageCacheHtml;
 
         if (this._flagIsActive(this.FLAG_STRIP_UNLIKELYS)) {
           this._removeFlag(this.FLAG_STRIP_UNLIKELYS);
+          this._attempts.push({articleContent: articleContent, textLength: textLength});
         } else if (this._flagIsActive(this.FLAG_WEIGHT_CLASSES)) {
           this._removeFlag(this.FLAG_WEIGHT_CLASSES);
+          this._attempts.push({articleContent: articleContent, textLength: textLength});
         } else if (this._flagIsActive(this.FLAG_CLEAN_CONDITIONALLY)) {
           this._removeFlag(this.FLAG_CLEAN_CONDITIONALLY);
+          this._attempts.push({articleContent: articleContent, textLength: textLength});
         } else {
-          return null;
+          this._attempts.push({articleContent: articleContent, textLength: textLength});
+          // No luck after removing flags, just return the longest text we found during the different loops
+          this._attempts.sort(function (a, b) {
+            return a.textLength < b.textLength;
+          });
+
+          // But first check if we actually have something
+          if (!this._attempts[0].textLength) {
+            return null;
+          }
+
+          articleContent = this._attempts[0].articleContent;
+          parseSuccessful = true;
         }
-      } else {
+      }
+
+      if (parseSuccessful) {
         // Find out text direction from ancestors of final top candidate.
         var ancestors = [parentOfTopCandidate, topCandidate].concat(this._getNodeAncestors(parentOfTopCandidate));
         this._someNode(ancestors, function(ancestor) {
@@ -1235,13 +1254,13 @@ Readability.prototype = {
 
     // And there should be no text nodes with real content
     return !this._someNode(element.childNodes, function(node) {
-      return node.nodeType === Node.TEXT_NODE &&
+      return node.nodeType === this.TEXT_NODE &&
              this.REGEXPS.hasContent.test(node.textContent);
     });
   },
 
   _isElementWithoutContent: function(node) {
-    return node.nodeType === Node.ELEMENT_NODE &&
+    return node.nodeType === this.ELEMENT_NODE &&
       node.textContent.trim().length == 0 &&
       (node.children.length == 0 ||
        node.children.length == node.getElementsByTagName("br").length + node.getElementsByTagName("hr").length);
@@ -1738,7 +1757,6 @@ Readability.prototype = {
 
     var textContent = articleContent.textContent;
     return {
-      uri: this._uri,
       title: this._articleTitle,
       byline: metadata.byline || this._articleByline,
       dir: this._articleDir,

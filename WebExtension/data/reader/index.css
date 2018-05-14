@@ -1,3 +1,8 @@
+[class^="icon-"]:before,
+[class*=" icon-"]:before {
+  line-height: 2em;
+}
+
 html, body {
   height: 100%;
   font-family: Helvetica, Arial, sans-serif;
@@ -28,6 +33,9 @@ iframe {
 }
 body[data-mode=dark] #toolbar {
   background-color: rgb(81, 81, 81);
+}
+body[data-mode=sepia] #toolbar {
+  background-color: rgb(250, 248, 239);
 }
 #toolbar>span {
   display: block;

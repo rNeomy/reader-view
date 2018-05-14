@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'fontello';
-  src: url('./fontello.woff?rand=1') format('woff');
+  src: url('fontello.woff2?33424869') format('woff2');
   font-weight: normal;
   font-style: normal;
 }
@@ -10,11 +10,12 @@
 @media screen and (-webkit-min-device-pixel-ratio:0) {
   @font-face {
     font-family: 'fontello';
-    src: url('../font/fontello.svg?41228575#fontello') format('svg');
+    src: url('../font/fontello.svg?33426889#fontello') format('svg');
   }
 }
 */
-[class^="icon-"]:before, [class*=" icon-"]:before {
+
+ [class^="icon-"]:before, [class*=" icon-"]:before {
   font-family: "fontello";
   font-style: normal;
   font-weight: normal;
@@ -32,7 +33,7 @@
   text-transform: none;
 
   /* fix buttons height, for twitter bootstrap */
-  line-height: inherit;
+  line-height: 1em;
 
   /* Animation center compensation - margins should be symmetric */
   /* remove if not needed */
@@ -49,11 +50,13 @@
   /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
 }
 
-.icon-close:before { content: '\e800'; } /* '' */
-.icon-font:before { content: '\e801'; } /* '' */
-.icon-minus:before { content: '\e802'; } /* '' */
-.icon-plus:before { content: '\e803'; } /* '' */
-.icon-left:before { content: '\e804'; } /* '' */
-.icon-right:before { content: '\e805'; } /* '' */
-.icon-align-left-type-1:before { content: '\e806'; } /* '' */
-.icon-align-left-type-2:before { content: '\e807'; } /* '' */
+.icon-print:before { content: '\e800'; } /* '' */
+.icon-close:before { content: '\e801'; } /* '' */
+.icon-left:before { content: '\e802'; } /* '' */
+.icon-right:before { content: '\e803'; } /* '' */
+.icon-save:before { content: '\e804'; } /* '' */
+.icon-article-collapsed:before { content: '\e805'; } /* '' */
+.icon-minus:before { content: '\e806'; } /* '' */
+.icon-plus:before { content: '\e807'; } /* '' */
+.icon-article-expanded:before { content: '\e808'; } /* '' */
+.icon-font:before { content: '\f088'; } /* '' */

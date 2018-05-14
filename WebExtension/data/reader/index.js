@@ -1,5 +1,7 @@
 'use strict';
 
+var article;
+
 {
   const css = localStorage.getItem('top-css');
   if (css) {
@@ -38,6 +40,9 @@ a:link, a:link:hover, a:link:active {
 a:link {
   text-decoration: underline;
   font-weight: normal;
+}
+p {
+  text-align: justify;
 }
 body {
   padding-bottom: 64px;
@@ -143,6 +148,29 @@ document.addEventListener('click', e => {
   else if (cmd === 'close') {
     history.back();
   }
+  else if (cmd === 'print') {
+    iframe.contentWindow.print();
+  }
+  else if (cmd === 'save') {
+    const content = `<!DOCTYPE html>
+<html>
+<head>
+  <title>${article.title}</title>
+</head>
+${iframe.contentDocument.body.outerHTML}
+</html>`;
+    const blob = new Blob([content], {
+      type: 'text/html'
+    });
+    const objectURL = URL.createObjectURL(blob);
+    const link = Object.assign(document.createElement('a'), {
+      href: objectURL,
+      type: 'text/html',
+      download: article.title.replace( /[<>:"\/\\|?*]+/g, '' ) + '.html',
+    });
+    link.dispatchEvent(new MouseEvent('click'));
+    setTimeout(() => URL.revokeObjectURL(objectURL));
+  }
 });
 
 chrome.runtime.onMessage.addListener(request => {
@@ -158,7 +186,8 @@ document.addEventListener('keyup', e => {
 
 chrome.runtime.sendMessage({
   cmd: 'read-data'
-}, article => {
+}, obj => {
+  article = obj;
   if (!article) { // open this page from history for instance
     if (history.length) {
       history.back();

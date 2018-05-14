@@ -33,6 +33,9 @@ a:link {
   text-decoration: underline;
   font-weight: normal;
 }
+p {
+  text-align: justify;
+}
 /* CSS for "sepia" theme */
 body[data-mode=sepia] {
 }
