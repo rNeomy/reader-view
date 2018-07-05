@@ -69,6 +69,7 @@ body {
     iframe.contentDocument.body.dataset.mode = prefs.mode;
     document.body.dataset.mode = prefs.mode;
     styles.textContent = prefs['user-css'];
+    iframe.contentWindow.focus();
   });
 }
 
