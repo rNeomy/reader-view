@@ -104,6 +104,18 @@ chrome.commands.onCommand.addListener(function(command) {
   }
 });
 
+var onUpdated = (tabId, info, tab) => {
+  console.log(tabId);
+  if (onUpdated.cache[tabId] && info.url) {
+    onClicked(tab);
+    delete onUpdated.cache[tabId];
+    if (Object.keys(onUpdated.cache).length === 0) {
+      chrome.tabs.onUpdated.removeListener(onUpdated);
+    }
+  }
+};
+onUpdated.cache = {};
+
 chrome.runtime.onMessage.addListener((request, sender, response) => {
   const id = sender.tab.id;
   const url = sender.tab.url;
@@ -123,18 +135,13 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   else if (request.cmd === 'open') {
     chrome.tabs.create({
       url: request.url,
-      openerTabId: sender.tab.id,
+      openerTabId: id,
       index: sender.tab.index + 1
     });
   }
   else if (request.cmd === 'reader-on-reload') {
-    const callback = tabId => {
-      if (tabId === sender.tab.id) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        onClicked(sender.tab);
-      }
-    };
-    chrome.tabs.onUpdated.addListener(callback);
+    onUpdated.cache[id] = true;
+    chrome.tabs.onUpdated.addListener(onUpdated);
   }
 });
 

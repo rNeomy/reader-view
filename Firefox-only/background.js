@@ -1,9 +1,10 @@
+/* globals browser */
 'use strict';
 
 {
   const context = () => chrome.storage.local.get({
     'switch-to-reader-view': true,
-    'open-in-reader-view': true,
+    'open-in-reader-view': true
   }, prefs => {
     chrome.contextMenus.removeAll(() => {
       if (prefs['switch-to-reader-view']) {
@@ -33,40 +34,58 @@
   });
 }
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+var redirects = {};
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (redirects[tabId] && changeInfo.isArticle) {
+    browser.tabs.toggleReaderMode(tabId);
+    delete redirects[tabId];
+  }
+});
+
+var onClicked = (info, tab) => {
   if (info.menuItemId === 'switch-to-reader-view') {
     browser.tabs.toggleReaderMode(tab.id);
   }
   else if (info.menuItemId === 'open-in-reader-view') {
     let url = info.linkUrl || info.pageUrl;
-    if (url.indexOf('/url?') !== -1 && url.startsWith('https://www.google.')) {
+    let openInReaderMode = true;
+
+    if (url.indexOf('/url?') !== -1 && url.indexOf('://www.google.') !== -1) {
       const tmp = /url=([^&]+)/.exec(url);
       if (tmp && tmp.length) {
         url = decodeURIComponent(tmp[1]);
       }
     }
+    else if (url.indexOf('://news.google.') !== -1 && url.indexOf('/articles/') !== -1) {
+      openInReaderMode = false;
+    }
     chrome.storage.local.get({
       'open-next-to-active': true,
-      'open-in-background': false,
+      'open-in-background': false
     }, prefs => {
       const options = {
-        openInReaderMode: true,
+        openInReaderMode,
         active: prefs['open-in-background'] === false,
         url
       };
       if (prefs['open-next-to-active']) {
         options.openerTabId = tab.id;
       }
-      browser.tabs.create(options);
+      browser.tabs.create(options).then(tab => {
+        if (openInReaderMode === false) {
+          redirects[tab.id] = true;
+        }
+      });
     });
   }
-});
+};
+chrome.contextMenus.onClicked.addListener(onClicked);
 
 // FAQs & Feedback
 chrome.storage.local.get({
   'version': null,
-  'faqs': navigator.userAgent.indexOf('Firefox') === -1,
-  'last-update': 0,
+  'faqs': true,
+  'last-update': 0
 }, prefs => {
   const version = chrome.runtime.getManifest().version;
 
@@ -89,3 +108,10 @@ chrome.storage.local.get({
     });
   }
 });
+
+{
+  const {name, version} = chrome.runtime.getManifest();
+  chrome.runtime.setUninstallURL(
+    chrome.runtime.getManifest().homepage_url + '?rd=feedback&name=' + name + '&version=' + version
+  );
+}

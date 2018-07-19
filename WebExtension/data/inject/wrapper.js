@@ -13,16 +13,16 @@ var uri = {
 var documentClone = document.cloneNode(true);
 var article = new Readability(uri, documentClone).parse();
 
-if (location.href.indexOf('news.google.com/articles/') === -1) {
+// if a website has an automatic redirect use this method to wait for a new page load
+if (location.href.indexOf('://news.google.') !== -1 &&
+    location.href.indexOf('/articles/') !== -1) {
+  window.addEventListener('unload', () => chrome.runtime.sendMessage({
+    cmd: 'reader-on-reload'
+  }));
+}
+else {
   chrome.runtime.sendMessage({
     cmd: 'open-reader',
     article
   });
 }
-// if a website has an automatic redirect use this method to wait for a new page load
-else {
-  window.addEventListener('unload', () => chrome.runtime.sendMessage({
-    cmd: 'reader-on-reload'
-  }));
-}
-
