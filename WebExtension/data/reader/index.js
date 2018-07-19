@@ -280,7 +280,6 @@ chrome.runtime.sendMessage({
 
   // Ctrl + S
   iframe.contentWindow.addEventListener('keydown', e => {
-    console.log(e);
     if (e.code === 'KeyS' && e.metaKey) {
       e.preventDefault();
       document.querySelector('[data-cmd=save]').click();

@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "name": "Open in Reader View",
   "description": "Easily access to the reader-view from right click context menu",
 
