@@ -34,9 +34,9 @@ function getSelectionHTML() {
 }
 
 var doc = document.cloneNode(true);
-var content = getSelectionHTML().replace(/(^\s+|\s+$)/mg, '');
+var content = getSelectionHTML().replace(/(^\s+|\s+$)/g, '');
 if (content) {
-  doc.body.innerHTML = content;
+  doc.body.innerHTML = '<article>' + content + '</article>';
 }
 
 var article = new Readability(doc).parse();
