@@ -124,8 +124,17 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     chrome.tabs.create({
       url: request.url,
       openerTabId: sender.tab.id,
-      index: sender.tab.index + 1,
+      index: sender.tab.index + 1
     });
+  }
+  else if (request.cmd === 'reader-on-reload') {
+    const callback = tabId => {
+      if (tabId === sender.tab.id) {
+        chrome.tabs.onUpdated.removeListener(callback);
+        onClicked(sender.tab);
+      }
+    };
+    chrome.tabs.onUpdated.addListener(callback);
   }
 });
 
@@ -137,7 +146,7 @@ chrome.tabs.onRemoved.addListener(tabId => {
 chrome.storage.local.get({
   'version': null,
   'faqs': true,
-  'last-update': 0,
+  'last-update': 0
 }, prefs => {
   const version = chrome.runtime.getManifest().version;
 

@@ -166,7 +166,7 @@ ${iframe.contentDocument.body.outerHTML}
     const link = Object.assign(document.createElement('a'), {
       href: objectURL,
       type: 'text/html',
-      download: article.title.replace( /[<>:"\/\\|?*]+/g, '' ) + '.html',
+      download: article.title.replace( /[<>:"/\\|?*]+/g, '' ) + '.html',
     });
     link.dispatchEvent(new MouseEvent('click'));
     setTimeout(() => URL.revokeObjectURL(objectURL));
