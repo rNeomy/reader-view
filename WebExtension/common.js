@@ -105,7 +105,6 @@ chrome.commands.onCommand.addListener(function(command) {
 });
 
 var onUpdated = (tabId, info, tab) => {
-  console.log(tabId);
   if (onUpdated.cache[tabId] && info.url) {
     onClicked(tab);
     delete onUpdated.cache[tabId];

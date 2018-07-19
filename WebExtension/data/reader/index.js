@@ -53,6 +53,8 @@ body {
       font-family: ${prefs['font-family']};
       font-size: ${prefs['font-size']}px;
       width: ${prefs.width}px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       margin: 64px auto 0 auto;
       line-height: ${prefs['line-height']}px;
       color: ${({
@@ -156,7 +158,7 @@ document.addEventListener('click', e => {
     const content = `<!DOCTYPE html>
 <html>
 <head>
-  <title>${article.title}</title>
+  <title dir="auto">${article.title}</title>
 </head>
 ${iframe.contentDocument.body.outerHTML}
 </html>`;
@@ -167,7 +169,7 @@ ${iframe.contentDocument.body.outerHTML}
     const link = Object.assign(document.createElement('a'), {
       href: objectURL,
       type: 'text/html',
-      download: article.title.replace( /[<>:"/\\|?*]+/g, '' ) + '.html',
+      download: article.title.replace( /[<>:"/\\|?*]+/g, '' ) + '.html'
     });
     link.dispatchEvent(new MouseEvent('click'));
     setTimeout(() => URL.revokeObjectURL(objectURL));
@@ -200,6 +202,11 @@ chrome.runtime.sendMessage({
   iframe.contentDocument.open();
   iframe.contentDocument.write(article.content);
   iframe.contentDocument.close();
+
+  // automatically detect ltr and rtl
+  [...iframe.contentDocument.querySelectorAll('article>*')]
+    .forEach(e => e.setAttribute('dir', 'auto'));
+
   document.title = article.title + ' :: Reader View';
   // link handling
   iframe.contentDocument.addEventListener('click', e => {
@@ -270,6 +277,18 @@ chrome.runtime.sendMessage({
   iframe.contentWindow.addEventListener('click', () => {
     settings.dataset.display = false;
   });
+
+  // Ctrl + S
+  iframe.contentWindow.addEventListener('keydown', e => {
+    console.log(e);
+    if (e.code === 'KeyS' && e.metaKey) {
+      e.preventDefault();
+      document.querySelector('[data-cmd=save]').click();
+      return false;
+    }
+  });
+
+
   iframe.contentDocument.documentElement.appendChild(styles);
   update();
 });
