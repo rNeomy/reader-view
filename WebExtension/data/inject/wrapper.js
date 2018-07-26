@@ -3,32 +3,33 @@
 
 // The implementation is from https://stackoverflow.com/a/5084441/260793
 function getSelectionHTML() {
-  var userSelection = window.getSelection();
-  if (userSelection && userSelection.rangeCount) {
-    var range;
+  const userSelection = window.getSelection();
+  if (userSelection && userSelection.rangeCount && userSelection.toString()) {
+    let range;
     if (userSelection.getRangeAt) {
       range = userSelection.getRangeAt(0);
-    } else {
+    }
+    else {
       range = document.createRange();
       range.setStart(userSelection.anchorNode, userSelection.anchorOffset);
       range.setEnd(userSelection.focusNode, userSelection.focusOffset);
     }
 
     const doc = document.implementation.createHTMLDocument('virtual');
-    doc.body.appendChild(range.cloneContents());
-    return doc.body.innerHTML;
-  } else {
-    return '';
+    const article = doc.body.appendChild(
+      doc.createElement('article')
+    );
+    article.appendChild(range.commonAncestorContainer);
+    return doc;
+  }
+  else {
+    return;
   }
 }
 
-var doc = document.cloneNode(true);
-var content = getSelectionHTML().replace(/(^\s+|\s+$)/g, '');
-if (content) {
-  doc.body.innerHTML = '<article>' + content + '</article>';
-}
-
-var article = new Readability(doc).parse();
+var article = new Readability(
+  getSelectionHTML() || document.cloneNode(true)
+).parse();
 
 // if a website has an automatic redirect use this method to wait for a new page load
 if (location.href.indexOf('://news.google.') !== -1 &&
