@@ -14,9 +14,9 @@ function getSelectionHTML() {
       range.setEnd(userSelection.focusNode, userSelection.focusOffset);
     }
 
-    var div = document.createElement('div');
-    div.appendChild(range.cloneContents());
-    return div.innerHTML;
+    const doc = document.implementation.createHTMLDocument('virtual');
+    doc.body.appendChild(range.cloneContents());
+    return doc.body.innerHTML;
   } else {
     return '';
   }
