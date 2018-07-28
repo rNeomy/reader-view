@@ -4,7 +4,7 @@
 // The implementation is from https://stackoverflow.com/a/5084441/260793
 function getSelectionHTML() {
   const userSelection = window.getSelection();
-  if (userSelection && userSelection.rangeCount && userSelection.toString()) {
+  if (userSelection && userSelection.rangeCount && userSelection.toString().length > 5) {
     let range;
     if (userSelection.getRangeAt) {
       range = userSelection.getRangeAt(0);
@@ -15,7 +15,7 @@ function getSelectionHTML() {
       range.setEnd(userSelection.focusNode, userSelection.focusOffset);
     }
 
-    const doc = document.implementation.createHTMLDocument('virtual');
+    const doc = document.implementation.createHTMLDocument(document.title);
     const article = doc.body.appendChild(
       doc.createElement('article')
     );

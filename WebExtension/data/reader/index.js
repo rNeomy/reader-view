@@ -38,8 +38,11 @@ a:link, a:link:hover, a:link:active {
   color: #0095dd;
 }
 a:link {
-  text-decoration: underline;
+  text-decoration: none;
   font-weight: normal;
+}
+a:visited {
+  color: #d33bf0;
 }
 p {
   text-align: justify;
@@ -49,13 +52,9 @@ body {
 }`
   }, prefs => {
     iframe.contentDocument.body.style = `
-      transition: color 0.4s, background-color 0.4s;
       font-family: ${prefs['font-family']};
       font-size: ${prefs['font-size']}px;
       width: ${prefs.width}px;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      margin: 64px auto 0 auto;
       line-height: ${prefs['line-height']}px;
       color: ${({
         light: '#00000',
@@ -200,7 +199,55 @@ chrome.runtime.sendMessage({
     }
   }
   iframe.contentDocument.open();
-  iframe.contentDocument.write(article.content);
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <style>
+  body {
+    transition: color 0.4s, background-color 0.4s;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 30px auto 0 auto;
+  }
+  #reader-domain {
+    font-size: 0.9em;
+    line-height: 1.48em;
+    padding-bottom: 4px;
+    font-family: Helvetica, Arial, sans-serif;
+    text-decoration: none;
+    border-bottom-color: currentcolor;
+    color: #0095dd;
+  }
+  #reader-title {
+    font-size: 1.6em;
+    line-height: 1.25em;
+    width: 100%;
+    margin: 20px 0;
+    padding: 0;
+  }
+  #reader-credits {
+    font-size: 0.9em;
+    line-height: 1.48em;
+    margin: 0 0 10px 0;
+    padding: 0;
+    font-style: italic;
+  }
+  #reader-credits:empty {
+    disply: none;
+  }
+  </style>
+</head>
+<body>
+<a id="reader-domain" href="${article.url}">${(new URL(article.url)).hostname}</a>
+<h1 dir="auto" id="reader-title">${article.title || 'Unknown Title'}</h1>
+<div dir="auto" id="reader-credits">${article.byline || ''}</div>
+<hr/>
+${article.content}
+</body>
+</html>`;
+  iframe.contentDocument.write(html);
   iframe.contentDocument.close();
 
   // automatically detect ltr and rtl
@@ -229,51 +276,18 @@ chrome.runtime.sendMessage({
     }
   });
 
-  document.getElementsByTagName('head')[0].appendChild(Object.assign(
+  document.head.appendChild(Object.assign(
     document.querySelector(`link[rel*='icon']`) || document.createElement('link'), {
       type: 'image/x-icon',
       rel: 'shortcut icon',
       href: 'chrome://favicon/' + article.url
     }
   ));
-  const doc = iframe.contentDocument;
-
-  const h1 = doc.createElement('h1');
-  h1.textContent = article.title;
-  h1.id = 'reader-title';
-  h1.style = `
-    font-size: 1.6em;
-    line-height: 1.25em;
-    width: 100%;
-    margin: 30px 0;
-    padding: 0;
-  `;
-  doc.body.insertBefore(h1, doc.body.firstChild);
-
-  const a = iframe.contentDocument.createElement('a');
-  a.href = article.url;
-  a.onclick = () => {
+  iframe.contentDocument.getElementById('reader-domain').onclick = () => {
     history.back();
     return false;
   };
-  a.textContent = (new URL(article.url)).hostname;
-  a.id = 'reader-domain';
-  a.style = `
-    font-size: 0.9em;
-    line-height: 1.48em;
-    padding-bottom: 4px;
-    font-family: Helvetica, Arial, sans-serif;
-    text-decoration: none;
-    border-bottom: 1px solid;
-    border-bottom-color: currentcolor;
-    color: #0095dd;
-  `;
-  doc.body.insertBefore(a, doc.body.firstChild);
-  /*
-  const script = doc.createElement('script');
-  script.src = '/data/inject/iscroll.js';
-  doc.body.appendChild(script);
-  */
+
   iframe.contentWindow.addEventListener('click', () => {
     settings.dataset.display = false;
   });
@@ -286,7 +300,6 @@ chrome.runtime.sendMessage({
       return false;
     }
   });
-
 
   iframe.contentDocument.documentElement.appendChild(styles);
   update();

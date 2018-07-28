@@ -30,7 +30,7 @@ a:link, a:link:hover, a:link:active {
   color: #0095dd;
 }
 a:link {
-  text-decoration: underline;
+  text-decoration: none;
   font-weight: normal;
 }
 p {
