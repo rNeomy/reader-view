@@ -173,6 +173,12 @@ ${iframe.contentDocument.body.outerHTML}
     link.dispatchEvent(new MouseEvent('click'));
     setTimeout(() => URL.revokeObjectURL(objectURL));
   }
+  else if (cmd === 'open-speech') {
+    document.body.dataset.speech = true;
+  }
+  else if (cmd === 'close-speech') {
+    document.body.dataset.speech = false;
+  }
 });
 
 chrome.runtime.onMessage.addListener(request => {
@@ -236,6 +242,18 @@ chrome.runtime.sendMessage({
   }
   #reader-credits:empty {
     disply: none;
+  }
+  .speech {
+    position: relative;
+  }
+  .speech::after {
+    content: '';
+    position: absolute;
+    left: -100vw;
+    top: -5px;
+    width: 300vw;
+    height: calc(100% + 10px);
+    box-shadow: 0 0 0 1000vw rgba(128,128,128,0.2);
   }
   </style>
 </head>

@@ -189,3 +189,45 @@ body:not([data-tips=true]) #tips {
   outline: none;
   color: #a87109;
 }
+
+#speech {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(128, 128, 128, 0.1);
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  padding: 0 10px;
+}
+body[data-speech=true] [data-cmd=open-speech] {
+  display: none !important;
+}
+body[data-speech=false] #speech {
+  display: none;
+}
+#speech [data-cmd] {
+  font-size: 32px;
+  cursor: pointer;
+  color: #737373;
+  position: relative;
+}
+#speech [data-cmd=close-speech] {
+  position: absolute;
+  top: 0;
+  right: 5px;
+  font-size: 14px;
+}
+#speech [data-cmd]:hover {
+  color: #000;
+}
+#speech [data-cmd]:active {
+  opacity: 0.1;
+}
+#speech [data-cmd=resume]::before { content: '\e80a'; }
+#speech [data-cmd=play]::before { content: '\e80a'; }
+#speech [data-cmd=pause]::before { content: '\e80b'; }
+#speech [data-cmd=next]::before { content: '\e80d'; } /* '' */
+#speech [data-cmd=previous]::before { content: '\e80e'; } /* '' */

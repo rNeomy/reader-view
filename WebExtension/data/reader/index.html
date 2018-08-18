@@ -6,12 +6,13 @@
     <link rel="stylesheet" href="fontello.css">
     <link rel="stylesheet" href="index.css">
   </head>
-  <body>
+  <body data-speech=false>
     <div id="toolbar">
       <span class="icon-close" data-cmd="close" title="Close Reader View"></span>
       <span class="icon-font" data-cmd="open-settings" title="Type controls"></span>
       <span class="icon-print" data-cmd="print" title="Print in Reader View"></span>
       <span class="icon-save" data-cmd="save" title="Save as HTML"></span>
+      <span class="icon-speech" data-cmd="open-speech" title="Read this Article (Beta)"></span>
       <div>
         <table border="0" cellpadding="0" cellspacing="0">
           <colgroup>
@@ -55,7 +56,13 @@
       </div>
       <iframe></iframe>
     </div>
+    <div id="speech">
+      <span class="icon-" data-cmd="play"></span>
+      <span class="icon-" data-cmd="next"></span>
+      <span data-cmd="close-speech">×</span>
+    </div>
     <script src="index.js"></script>
     <script async src="tip.js"></script>
+    <script async src="speech.js"></script>
   </body>
 </html>
