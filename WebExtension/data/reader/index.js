@@ -20,6 +20,16 @@ document.addEventListener('click', e => {
   settings.dataset.display = bol;
 });
 
+function getFont(font) {
+    switch (font) {
+    case 'serif':
+        return 'Georgia, "Times New Roman", serif';
+    case 'sans-serif':
+    default:
+        return 'Helvetica, Arial, sans-serif';
+    }
+}
+
 function update() {
   chrome.storage.local.get({
     'font-size': 13,
@@ -53,6 +63,7 @@ body {
   }, prefs => {
     iframe.contentDocument.body.style = `
       font-size: ${prefs['font-size']}px;
+      font-family: ${getFont(prefs['font'])};
       width: ${prefs.width}px;
       line-height: ${prefs['line-height']}px;
       color: ${({
