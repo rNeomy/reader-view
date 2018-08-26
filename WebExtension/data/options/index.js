@@ -36,6 +36,12 @@ a:link {
 p {
   text-align: justify;
 }
+/* CSS for sans-serif fonts */
+body[data-font=sans-serif] {
+}
+/* CSS for serif fonts */
+body[data-font=serif] {
+}
 /* CSS for "sepia" theme */
 body[data-mode=sepia] {
 }
