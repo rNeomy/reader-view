@@ -5,8 +5,13 @@
 
 html, body {
   height: 100%;
-  font-family: Helvetica, Arial, sans-serif;
   font-size: 13px;
+}
+body[data-font=serif] {
+    font-family: Georgia, "Times New Roman", serif;
+}
+body[data-font=sans-serif] {
+    font-family: Helvetica, Arial, sans-serif;
 }
 body {
   margin: 0;
