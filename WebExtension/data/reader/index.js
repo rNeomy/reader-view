@@ -251,6 +251,12 @@ chrome.runtime.sendMessage({
     padding: 0;
     font-style: italic;
   }
+  #reader-estimated-time {
+    font-size: 0.65em;
+    line-height: 1.48em;
+    margin: 0 0 10px 0;
+    padding: 0;
+  }
   #reader-credits:empty {
     disply: none;
   }
@@ -271,6 +277,7 @@ chrome.runtime.sendMessage({
 <body>
 <a id="reader-domain" href="${article.url}">${(new URL(article.url)).hostname}</a>
 <h1 dir="auto" id="reader-title">${article.title || 'Unknown Title'}</h1>
+<div dir="auto" id="reader-estimated-time">${article.readingTimeMinsFast} &mdash; ${article.readingTimeMinsSlow} minutes</div>
 <div dir="auto" id="reader-credits">${article.byline || ''}</div>
 <hr/>
 ${article.content}

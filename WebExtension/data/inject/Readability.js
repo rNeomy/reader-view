@@ -50,8 +50,8 @@ function Readability(doc, options) {
 
   // Start with all flags set
   this._flags = this.FLAG_STRIP_UNLIKELYS |
-                this.FLAG_WEIGHT_CLASSES |
-                this.FLAG_CLEAN_CONDITIONALLY;
+    this.FLAG_WEIGHT_CLASSES |
+    this.FLAG_CLEAN_CONDITIONALLY;
 
   var logEl;
 
@@ -153,7 +153,7 @@ Readability.prototype = {
    *
    * @param Element
    * @return void
-  **/
+   **/
   _postProcessContent: function(articleContent) {
     // Readability cannot open relative uris so we convert them to absolute uris.
     this._fixRelativeUris(articleContent);
@@ -279,11 +279,11 @@ Readability.prototype = {
   _cleanClasses: function(node) {
     var classesToPreserve = this._classesToPreserve;
     var className = (node.getAttribute("class") || "")
-      .split(/\s+/)
-      .filter(function(cls) {
-        return classesToPreserve.indexOf(cls) != -1;
-      })
-      .join(" ");
+        .split(/\s+/)
+        .filter(function(cls) {
+          return classesToPreserve.indexOf(cls) != -1;
+        })
+        .join(" ");
 
     if (className) {
       node.setAttribute("class", className);
@@ -450,8 +450,8 @@ Readability.prototype = {
   _nextElement: function (node) {
     var next = node;
     while (next
-        && (next.nodeType != this.ELEMENT_NODE)
-        && this.REGEXPS.whitespace.test(next.textContent)) {
+           && (next.nodeType != this.ELEMENT_NODE)
+           && this.REGEXPS.whitespace.test(next.textContent)) {
       next = next.nextSibling;
     }
     return next;
@@ -640,41 +640,41 @@ Readability.prototype = {
    *
    * @param Element
    * @return void
-  **/
+   **/
   _initializeNode: function(node) {
     node.readability = {"contentScore": 0};
 
     switch (node.tagName) {
-      case "DIV":
-        node.readability.contentScore += 5;
-        break;
+    case "DIV":
+      node.readability.contentScore += 5;
+      break;
 
-      case "PRE":
-      case "TD":
-      case "BLOCKQUOTE":
-        node.readability.contentScore += 3;
-        break;
+    case "PRE":
+    case "TD":
+    case "BLOCKQUOTE":
+      node.readability.contentScore += 3;
+      break;
 
-      case "ADDRESS":
-      case "OL":
-      case "UL":
-      case "DL":
-      case "DD":
-      case "DT":
-      case "LI":
-      case "FORM":
-        node.readability.contentScore -= 3;
-        break;
+    case "ADDRESS":
+    case "OL":
+    case "UL":
+    case "DL":
+    case "DD":
+    case "DT":
+    case "LI":
+    case "FORM":
+      node.readability.contentScore -= 3;
+      break;
 
-      case "H1":
-      case "H2":
-      case "H3":
-      case "H4":
-      case "H5":
-      case "H6":
-      case "TH":
-        node.readability.contentScore -= 5;
-        break;
+    case "H1":
+    case "H2":
+    case "H3":
+    case "H4":
+    case "H5":
+    case "H6":
+    case "TH":
+      node.readability.contentScore -= 5;
+      break;
     }
 
     node.readability.contentScore += this._getClassWeight(node);
@@ -746,7 +746,7 @@ Readability.prototype = {
    *
    * @param page a document to run upon. Needs to be a full document, complete with body.
    * @return Element
-  **/
+   **/
   _grabArticle: function (page) {
     this.log("**** grabArticle ****");
     var doc = this._doc;
@@ -856,7 +856,7 @@ Readability.prototype = {
        * Then add their score to their parent node.
        *
        * A score is determined by things like number of commas, class names, etc. Maybe eventually link density.
-      **/
+       **/
       var candidates = [];
       this._forEachNode(elementsToScore, function(elementToScore) {
         if (!elementToScore.parentNode || typeof(elementToScore.parentNode.tagName) === "undefined")
@@ -1261,7 +1261,7 @@ Readability.prototype = {
    * Removes script tags from the document.
    *
    * @param Element
-  **/
+   **/
   _removeScripts: function(doc) {
     this._removeNodes(doc.getElementsByTagName("script"), function(scriptNode) {
       scriptNode.nodeValue = "";
@@ -1278,7 +1278,7 @@ Readability.prototype = {
    *
    * @param Element
    * @param string tag of child element
-  **/
+   **/
   _hasSingleTagInsideElement: function(element, tag) {
     // There should be exactly 1 element child with given tag
     if (element.children.length != 1 || element.children[0].tagName !== tag) {
@@ -1288,7 +1288,7 @@ Readability.prototype = {
     // And there should be no text nodes with real content
     return !this._someNode(element.childNodes, function(node) {
       return node.nodeType === this.TEXT_NODE &&
-             this.REGEXPS.hasContent.test(node.textContent);
+        this.REGEXPS.hasContent.test(node.textContent);
     });
   },
 
@@ -1307,23 +1307,23 @@ Readability.prototype = {
   _hasChildBlockElement: function (element) {
     return this._someNode(element.childNodes, function(node) {
       return this.DIV_TO_P_ELEMS.indexOf(node.tagName) !== -1 ||
-             this._hasChildBlockElement(node);
+        this._hasChildBlockElement(node);
     });
   },
 
   /***
    * Determine if a node qualifies as phrasing content.
    * https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content
-  **/
+   **/
   _isPhrasingContent: function(node) {
     return node.nodeType === this.TEXT_NODE || this.PHRASING_ELEMS.indexOf(node.tagName) !== -1 ||
       ((node.tagName === "A" || node.tagName === "DEL" || node.tagName === "INS") &&
-        this._everyNode(node.childNodes, this._isPhrasingContent));
+       this._everyNode(node.childNodes, this._isPhrasingContent));
   },
 
   _isWhitespace: function(node) {
     return (node.nodeType === this.TEXT_NODE && node.textContent.trim().length === 0) ||
-           (node.nodeType === this.ELEMENT_NODE && node.tagName === "BR");
+      (node.nodeType === this.ELEMENT_NODE && node.tagName === "BR");
   },
 
   /**
@@ -1333,7 +1333,7 @@ Readability.prototype = {
    * @param Element
    * @param Boolean normalizeSpaces (default: true)
    * @return string
-  **/
+   **/
   _getInnerText: function(e, normalizeSpaces) {
     normalizeSpaces = (typeof normalizeSpaces === "undefined") ? true : normalizeSpaces;
     var textContent = e.textContent.trim();
@@ -1350,7 +1350,7 @@ Readability.prototype = {
    * @param Element
    * @param string - what to split on. Default is ","
    * @return number (integer)
-  **/
+   **/
   _getCharCount: function(e, s) {
     s = s || ",";
     return this._getInnerText(e).split(s).length - 1;
@@ -1362,7 +1362,7 @@ Readability.prototype = {
    *
    * @param Element
    * @return void
-  **/
+   **/
   _cleanStyles: function(e) {
     if (!e || e.tagName.toLowerCase() === "svg")
       return;
@@ -1390,7 +1390,7 @@ Readability.prototype = {
    *
    * @param Element
    * @return number (float)
-  **/
+   **/
   _getLinkDensity: function(element) {
     var textLength = this._getInnerText(element).length;
     if (textLength === 0)
@@ -1412,7 +1412,7 @@ Readability.prototype = {
    *
    * @param Element
    * @return number (Integer)
-  **/
+   **/
   _getClassWeight: function(e) {
     if (!this._flagIsActive(this.FLAG_WEIGHT_CLASSES))
       return 0;
@@ -1638,13 +1638,13 @@ Readability.prototype = {
         var contentLength = this._getInnerText(node).length;
 
         var haveToRemove =
-          (img > 1 && p / img < 0.5 && !this._hasAncestorTag(node, "figure")) ||
-          (!isList && li > p) ||
-          (input > Math.floor(p/3)) ||
-          (!isList && contentLength < 25 && (img === 0 || img > 2) && !this._hasAncestorTag(node, "figure")) ||
-          (!isList && weight < 25 && linkDensity > 0.2) ||
-          (weight >= 25 && linkDensity > 0.5) ||
-          ((embedCount === 1 && contentLength < 75) || embedCount > 1);
+            (img > 1 && p / img < 0.5 && !this._hasAncestorTag(node, "figure")) ||
+            (!isList && li > p) ||
+            (input > Math.floor(p/3)) ||
+            (!isList && contentLength < 25 && (img === 0 || img > 2) && !this._hasAncestorTag(node, "figure")) ||
+            (!isList && weight < 25 && linkDensity > 0.2) ||
+            (weight >= 25 && linkDensity > 0.5) ||
+            ((embedCount === 1 && contentLength < 75) || embedCount > 1);
         return haveToRemove;
       }
       return false;
@@ -1675,7 +1675,7 @@ Readability.prototype = {
    *
    * @param Element
    * @return void
-  **/
+   **/
   _cleanHeaders: function(e) {
     for (var headerIndex = 1; headerIndex < 3; headerIndex += 1) {
       this._removeNodes(e.getElementsByTagName("h" + headerIndex), function (header) {
@@ -1694,6 +1694,57 @@ Readability.prototype = {
 
   _isProbablyVisible: function(node) {
     return node.style.display != "none" && !node.hasAttribute("hidden");
+  },
+
+  /**
+   * Assigns the estimated reading time range of the article to the article object.
+   *
+   * @param article the article object to assign the reading time estimate to.
+   */
+  _getReadTime(textContent) {
+    let lang = this._doc.language || "en";
+    const readingSpeed = this._getReadingSpeedForLanguage(lang);
+    const charactersPerMinuteLow = readingSpeed.cpm - readingSpeed.variance;
+    const charactersPerMinuteHigh = readingSpeed.cpm + readingSpeed.variance;
+    const length = textContent.length;
+
+    return {
+      readingTimeMinsSlow: Math.ceil(length / charactersPerMinuteLow),
+      readingTimeMinsFast: Math.ceil(length / charactersPerMinuteHigh),
+    };
+  },
+
+  /**
+   * Returns the reading speed of a selection of languages with likely variance.
+   *
+   * Reading speed estimated from a study done on reading speeds in various languages.
+   * study can be found here: http://iovs.arvojournals.org/article.aspx?articleid=2166061
+   *
+   * @return object with characters per minute and variance. Defaults to English
+   *         if no suitable language is found in the collection.
+   */
+  _getReadingSpeedForLanguage(lang) {
+    const readingSpeed = new Map([
+      [ "en", {cpm: 987,  variance: 118 } ],
+      [ "ar", {cpm: 612,  variance: 88 } ],
+      [ "de", {cpm: 920,  variance: 86 } ],
+      [ "es", {cpm: 1025, variance: 127 } ],
+      [ "fi", {cpm: 1078, variance: 121 } ],
+      [ "fr", {cpm: 998,  variance: 126 } ],
+      [ "he", {cpm: 833,  variance: 130 } ],
+      [ "it", {cpm: 950,  variance: 140 } ],
+      [ "jw", {cpm: 357,  variance: 56 } ],
+      [ "nl", {cpm: 978,  variance: 143 } ],
+      [ "pl", {cpm: 916,  variance: 126 } ],
+      [ "pt", {cpm: 913,  variance: 145 } ],
+      [ "ru", {cpm: 986,  variance: 175 } ],
+      [ "sk", {cpm: 885,  variance: 145 } ],
+      [ "sv", {cpm: 917,  variance: 156 } ],
+      [ "tr", {cpm: 1054, variance: 156 } ],
+      [ "zh", {cpm: 255,  variance: 29 } ],
+    ]);
+
+    return readingSpeed.get(lang) || readingSpeed.get("en");
   },
 
   /**
@@ -1803,7 +1854,9 @@ Readability.prototype = {
     }
 
     var textContent = articleContent.textContent;
-    return {
+    var readingTime = this._getReadTime(textContent);
+
+    return Object.assign({
       title: this._articleTitle,
       byline: metadata.byline || this._articleByline,
       dir: this._articleDir,
@@ -1811,7 +1864,7 @@ Readability.prototype = {
       textContent: textContent,
       length: textContent.length,
       excerpt: metadata.excerpt,
-    };
+    }, readingTime);
   }
 };
 
