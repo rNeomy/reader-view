@@ -20,10 +20,20 @@ document.addEventListener('click', e => {
   settings.dataset.display = bol;
 });
 
+function getFont(font) {
+  switch (font) {
+  case 'serif':
+    return 'Georgia, "Times New Roman", serif';
+  case 'sans-serif':
+  default:
+    return 'Helvetica, Arial, sans-serif';
+  }
+}
+
 function update() {
   chrome.storage.local.get({
     'font-size': 13,
-    'font-family': 'Helvetica, Arial, sans-serif',
+    'font': 'sans-serif',
     'width': 600,
     'line-height': 28.8,
     'mode': 'sepia',
@@ -55,8 +65,8 @@ body[data-mode=light] {}
 body[data-mode=dark] {}`
   }, prefs => {
     iframe.contentDocument.body.style = `
-      font-family: ${prefs['font-family']};
       font-size: ${prefs['font-size']}px;
+      font-family: ${getFont(prefs['font'])};
       width: ${prefs.width}px;
       line-height: ${prefs['line-height']}px;
       color: ${({
@@ -70,8 +80,8 @@ body[data-mode=dark] {}`
         sepia: '#f4ecd8'
       })[prefs.mode]};
     `;
-    iframe.contentDocument.body.dataset.mode = prefs.mode;
-    document.body.dataset.mode = prefs.mode;
+    document.body.dataset.mode = iframe.contentDocument.body.dataset.mode = prefs.mode;
+    iframe.contentDocument.body.dataset.font = prefs.font;
     styles.textContent = prefs['user-css'];
     iframe.contentWindow.focus();
   });
@@ -83,14 +93,9 @@ document.addEventListener('click', e => {
     return;
   }
   const cmd = target.dataset.cmd;
-  if (cmd === 'font-type-1') {
+  if (cmd && cmd.startsWith('font-type-sans-serif')) {
     chrome.storage.local.set({
-      'font-family': 'Helvetica, Arial, sans-serif'
-    }, update);
-  }
-  else if (cmd === 'font-type-2') {
-    chrome.storage.local.set({
-      'font-family': 'Georgia, "Times New Roman", serif'
+      'font': cmd.replace('font-type-', '')
     }, update);
   }
   else if (cmd === 'font-decrease') {
