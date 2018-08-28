@@ -1702,7 +1702,8 @@ Readability.prototype = {
    * @param article the article object to assign the reading time estimate to.
    */
   _getReadTime(textContent) {
-    let lang = this._doc.language || "en";
+    let lang = this._doc.documentElement.lang || "en";
+
     const readingSpeed = this._getReadingSpeedForLanguage(lang);
     const charactersPerMinuteLow = readingSpeed.cpm - readingSpeed.variance;
     const charactersPerMinuteHigh = readingSpeed.cpm + readingSpeed.variance;
