@@ -29,14 +29,30 @@
 
   <p></p>
   <table>
-    <tr>
-      <td><input type="checkbox" id="new-tab"></td>
-      <td><label for="new-tab">Open links in new tabs</label></td>
-    </tr>
-    <tr>
-      <td><input type="checkbox" id="faqs"></td>
-      <td><label for="faqs"> Open FAQs page on updates</label></td>
-    </tr>
+    <colgroup>
+      <col width=32>
+      <col>
+      <col>
+    </colgroup>
+    <tbody>
+      <tr>
+        <td><input type="checkbox" id="new-tab"></td>
+        <td><label for="new-tab">Open links in new tabs</label></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="faqs"></td>
+        <td><label for="faqs"> Open FAQs page on updates</label></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>Speech source:</td>
+        <td>
+          <select id="speech"></select>
+        </td>
+      </tr>
+    </tbody>
   </table>
   <p>
     Rate "<b><a id="rate" href="https://chrome.google.com/webstore/detail/reader-view/ecabifbgmdmgdllomnfinbmaellmclnh/reviews" style="text-decoration: none">Reader View</a></b>" extension
@@ -49,6 +65,6 @@
   </p>
 
   <script src="index.js"></script>
-  <script async src="explore.js"></script>
+  <script async src="matched.js"></script>
 </body>
 </html>

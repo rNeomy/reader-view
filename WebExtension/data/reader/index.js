@@ -27,12 +27,11 @@ function update() {
     'width': 600,
     'line-height': 28.8,
     'mode': 'sepia',
-    'user-css': `
-img {
-  display: block;
-  max-width: 100%;
-  width: auto;
-  height: auto;
+    'user-css': `body {
+  padding-bottom: 64px;
+}
+a:visited {
+  color: #d33bf0;
 }
 a:link, a:link:hover, a:link:active {
   color: #0095dd;
@@ -41,15 +40,19 @@ a:link {
   text-decoration: none;
   font-weight: normal;
 }
-a:visited {
-  color: #d33bf0;
-}
 p {
   text-align: justify;
 }
-body {
-  padding-bottom: 64px;
-}`
+pre {
+  white-space: pre-line;
+}
+/* CSS for "sepia" theme */
+body[data-mode=sepia] {
+}
+/* CSS for "light" theme */
+body[data-mode=light] {}
+/* CSS for "dark" theme */
+body[data-mode=dark] {}`
   }, prefs => {
     iframe.contentDocument.body.style = `
       font-family: ${prefs['font-family']};

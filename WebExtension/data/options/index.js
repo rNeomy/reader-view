@@ -6,25 +6,31 @@ function save() {
     'user-css': document.getElementById('reader-style').value,
     'new-tab': document.getElementById('new-tab').checked,
     'faqs': document.getElementById('faqs').checked,
+    'speech': document.getElementById('speech').value
   }, () => {
     const status = document.getElementById('status');
     status.textContent = 'Options saved.';
     setTimeout(() => status.textContent = '', 750);
   });
 }
-
+window.speechSynthesis.onvoiceschanged = function() {
+  console.log(1212, window.speechSynthesis.getVoices());
+};
 function restore() {
+  window.setTimeout(() => speechSynthesis.getVoices().forEach(o => {
+    const option = document.createElement('option');
+    option.value = o.voiceURI;
+    option.textContent = `${o.name} (${o.lang})`;
+    document.getElementById('speech').appendChild(option);
+  }), 1000);
   document.getElementById('top-style').value = localStorage.getItem('top-css') || '';
 
   chrome.storage.local.get({
-    'user-css': `img {
-  display: block;
-  max-width: 100%;
-  width: auto;
-  height: auto;
-}
-body {
+    'user-css': `body {
   padding-bottom: 64px;
+}
+a:visited {
+  color: #d33bf0;
 }
 a:link, a:link:hover, a:link:active {
   color: #0095dd;
@@ -36,15 +42,16 @@ a:link {
 p {
   text-align: justify;
 }
+pre {
+  white-space: pre-line;
+}
 /* CSS for "sepia" theme */
 body[data-mode=sepia] {
 }
 /* CSS for "light" theme */
-body[data-mode=light] {
-}
+body[data-mode=light] {}
 /* CSS for "dark" theme */
-body[data-mode=dark] {
-}`,
+body[data-mode=dark] {}`,
     'top-css': '',
     'new-tab': true,
     'faqs': true
