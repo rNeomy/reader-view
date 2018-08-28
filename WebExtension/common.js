@@ -1,3 +1,4 @@
+/* globals config */
 'use strict';
 
 function notify(message) {
@@ -116,8 +117,8 @@ var onUpdated = (tabId, info, tab) => {
 onUpdated.cache = {};
 
 chrome.runtime.onMessage.addListener((request, sender, response) => {
-  const id = sender.tab.id;
-  const url = sender.tab.url;
+  const id = sender.tab ? sender.tab.id : '';
+  const url = sender.tab ? sender.tab.url : '';
   if (request.cmd === 'open-reader' && request.article) {
     cache[sender.tab.id] = request.article;
     cache[sender.tab.id].url = url;
@@ -148,24 +149,76 @@ chrome.tabs.onRemoved.addListener(tabId => {
   delete cache[tabId];
 });
 
-// FAQs & Feedback
-chrome.storage.local.get({
-  'version': null,
-  'faqs': true,
-  'last-update': 0
-}, prefs => {
-  const version = chrome.runtime.getManifest().version;
+{ // one-time
+  const callback = () => config.load(() => {
+    console.log(localStorage.getItem('user-css'));
+    if (!localStorage.getItem('user-css')) {
+      if (config['mode']) {
+        localStorage.setItem('mode', config.prefs.mode);
+        chrome.storage.local.remove('mode');
+      }
+      else {
+        localStorage.setItem('mode', 'sepia');
+      }
 
+      if (config.prefs['user-css']) {
+        localStorage.setItem('user-css', config.prefs['user-css']);
+        chrome.storage.local.remove('user-css');
+      }
+      else {
+        localStorage.setItem('user-css', `body {
+  padding-bottom: 64px;
+}
+a:visited {
+  color: #d33bf0;
+}
+a:link, a:link:hover, a:link:active {
+  color: #0095dd;
+}
+a:link {
+  text-decoration: none;
+  font-weight: normal;
+}
+p {
+  text-align: justify;
+}
+pre {
+  white-space: pre-line;
+}
+
+/* CSS for sans-serif fonts */
+body[data-font=sans-serif] {}
+/* CSS for serif fonts */
+body[data-font=serif] {}
+
+/* CSS for "sepia" theme */
+body[data-mode=sepia] {
+}
+/* CSS for "light" theme */
+body[data-mode=light] {}
+/* CSS for "dark" theme */
+body[data-mode=dark] {}`);
+      }
+    }
+  });
+  chrome.runtime.onInstalled.addListener(callback);
+  chrome.runtime.onStartup.addListener(callback);
+}
+
+// FAQs & Feedback
+chrome.runtime.onInstalled.addListener(() => {
+  const version = chrome.runtime.getManifest().version;
+  const prefs = config.prefs;
   if (prefs.version ? (prefs.faqs && prefs.version !== version) : true) {
     const now = Date.now();
     const doUpdate = (now - prefs['last-update']) / 1000 / 60 / 60 / 24 > 30;
+    const p = Boolean(prefs.version);
     chrome.storage.local.set({
       version,
       'last-update': doUpdate ? Date.now() : prefs['last-update']
     }, () => {
       // do not display the FAQs page if last-update occurred less than 30 days ago.
       if (doUpdate) {
-        const p = Boolean(prefs.version);
         chrome.tabs.create({
           url: chrome.runtime.getManifest().homepage_url + '?version=' + version +
             '&type=' + (p ? ('upgrade&p=' + prefs.version) : 'install'),
@@ -175,7 +228,6 @@ chrome.storage.local.get({
     });
   }
 });
-
 {
   const {name, version} = chrome.runtime.getManifest();
   chrome.runtime.setUninstallURL(

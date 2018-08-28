@@ -30,6 +30,9 @@ iframe {
   align-items: center;
   position: relative;
 }
+body[data-loaded=true] #toolbar {
+  transition: color 0.4s, background-color 0.4s;
+}
 body[data-mode=dark] #toolbar {
   background-color: rgb(81, 81, 81);
 }
