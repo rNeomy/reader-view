@@ -13,7 +13,6 @@ var styles = {
 };
 styles.top.textContent = localStorage.getItem('top-css') || '';
 styles.iframe.textContent = localStorage.getItem('user-css') || '';
-console.log(localStorage.getItem('user-css') || '');
 document.documentElement.appendChild(styles.top);
 
 document.addEventListener('click', e => {
@@ -193,7 +192,7 @@ chrome.runtime.sendMessage({
     font-style: italic;
   }
   #reader-estimated-time {
-    font-size: 0.65em;
+    font-size: 0.85em;
     line-height: 1.48em;
     margin: 0 0 10px 0;
     padding: 0;
@@ -218,8 +217,8 @@ chrome.runtime.sendMessage({
 <body>
   <a id="reader-domain" href="${article.url}">${(new URL(article.url)).hostname}</a>
   <h1 dir="auto" id="reader-title">${article.title || 'Unknown Title'}</h1>
-  <div dir="auto" id="reader-estimated-time">${article.readingTimeMinsFast} &mdash; ${article.readingTimeMinsSlow} minutes</div>
   <div dir="auto" id="reader-credits">${article.byline || ''}</div>
+  <div dir="auto" id="reader-estimated-time">${article.readingTimeMinsFast}-${article.readingTimeMinsSlow} minutes</div>
   <hr/>
   ${article.content}
 </body>
