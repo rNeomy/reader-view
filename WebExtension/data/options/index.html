@@ -22,7 +22,7 @@
 
 <body>
   <span><a id="ref" href="#">Custom style</a> (reader view):</span>
-  <textarea placeholder="User styles for the actual reader-view" id="reader-style" rows="15"></textarea>
+  <textarea placeholder="User styles for the actual reader-view" id="user-css" rows="15"></textarea>
   <p></p>
   Custom style (top frame and sidebar):
   <textarea placeholder="User styles for top frame (sidebar mainly)" id="top-style" rows="4"></textarea>
@@ -49,8 +49,26 @@
         <td></td>
         <td>Speech source:</td>
         <td>
-          <select id="speech"></select>
+          <select  id="speech-voice">
+            <option value="default">Default Voice</option>
+          </select>
         </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>Speech rate (0.5 - 3):</td>
+        <td><input type="number" min="0.5" max="3" id="speech-rate"></td>
+      </tr>
+      <tr>
+        <td colspan="3">A float representing the rate value. It can range between 0.5 (lowest) and 3 (highest), with 1 being the default</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>Speech pitch (0 - 2):</td>
+        <td><input type="number" min="0.1" max="10" id="speech-pitch"></td>
+      </tr>
+      <tr>
+        <td colspan="3">A float representing the pitch value. It can range between 0 (lowest) and 2 (highest), with 1 being the default pitch for the current platform or voice</td>
       </tr>
     </tbody>
   </table>
@@ -64,6 +82,7 @@
     <span id="status"></span>
   </p>
 
+  <script src="/config.js"></script>
   <script src="index.js"></script>
   <script async src="matched.js"></script>
 </body>

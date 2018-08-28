@@ -1,19 +1,20 @@
+/* global config */
 'use strict';
 
 var article;
 
-{
-  const css = localStorage.getItem('top-css');
-  if (css) {
-    const style = document.createElement('style');
-    style.textContent = css;
-    document.documentElement.appendChild(style);
-  }
-}
-
 var iframe = document.querySelector('iframe');
+document.body.dataset.mode = localStorage.getItem('mode');
 var settings = document.querySelector('#toolbar>div');
-var styles = document.createElement('style');
+
+var styles = {
+  top: document.createElement('style'),
+  iframe: document.createElement('style')
+};
+styles.top.textContent = localStorage.getItem('top-css') || '';
+styles.iframe.textContent = localStorage.getItem('user-css') || '';
+console.log(localStorage.getItem('user-css') || '');
+document.documentElement.appendChild(styles.top);
 
 document.addEventListener('click', e => {
   const bol = e.target.dataset.cmd === 'open-settings' || Boolean(e.target.closest('#toolbar>div'));
@@ -23,69 +24,30 @@ document.addEventListener('click', e => {
 function getFont(font) {
   switch (font) {
   case 'serif':
-    return 'Georgia, "Times New Roman", serif';
+      return 'Georgia, "Times New Roman", serif';
   case 'sans-serif':
   default:
     return 'Helvetica, Arial, sans-serif';
   }
 }
 
-function update() {
-  chrome.storage.local.get({
-    'font-size': 13,
-    'font': 'sans-serif',
-    'width': 600,
-    'line-height': 28.8,
-    'mode': 'sepia',
-    'user-css': `body {
-  padding-bottom: 64px;
-}
-a:visited {
-  color: #d33bf0;
-}
-a:link, a:link:hover, a:link:active {
-  color: #0095dd;
-}
-a:link {
-  text-decoration: none;
-  font-weight: normal;
-}
-p {
-  text-align: justify;
-}
-pre {
-  white-space: pre-line;
-}
-/* CSS for "sepia" theme */
-body[data-mode=sepia] {
-}
-/* CSS for "light" theme */
-body[data-mode=light] {}
-/* CSS for "dark" theme */
-body[data-mode=dark] {}`
-  }, prefs => {
-    iframe.contentDocument.body.style = `
-      font-size: ${prefs['font-size']}px;
-      font-family: ${getFont(prefs['font'])};
-      width: ${prefs.width}px;
-      line-height: ${prefs['line-height']}px;
-      color: ${({
-        light: '#00000',
-        dark: '#eeeeee',
-        sepia: '#5b4636'
-      })[prefs.mode]};
-      background-color: ${({
-        light: '#ffffff',
-        dark: '#333333',
-        sepia: '#f4ecd8'
-      })[prefs.mode]};
-    `;
-    document.body.dataset.mode = iframe.contentDocument.body.dataset.mode = prefs.mode;
-    iframe.contentDocument.body.dataset.font = prefs.font;
-    styles.textContent = prefs['user-css'];
+var update = {
+  sync: () => {
+    const mode = localStorage.getItem('mode') || 'sepia';
+    iframe.contentDocument.body.dataset.mode = mode;
+  },
+  async: () => {
+    iframe.contentDocument.body.style['font-size'] = config.prefs['font-size'] + 'px';
+    iframe.contentDocument.body.style['font-family'] = getFont(config.prefs['font']);
+    iframe.contentDocument.body.style['line-height'] = config.prefs['line-height'] + 'px';
+    iframe.contentDocument.body.style.width = config.prefs.width + 'px';
+
+    iframe.contentDocument.body.dataset.font = config.prefs.font;
     iframe.contentWindow.focus();
-  });
-}
+  }
+};
+
+chrome.storage.onChanged.addListener(update.async);
 
 document.addEventListener('click', e => {
   const target = e.target.closest('[data-cmd]');
@@ -93,67 +55,31 @@ document.addEventListener('click', e => {
     return;
   }
   const cmd = target.dataset.cmd;
-  if (cmd && cmd.startsWith('font-type-sans-serif')) {
+  if (cmd.startsWith('font-type-')) {
     chrome.storage.local.set({
       'font': cmd.replace('font-type-', '')
-    }, update);
-  }
-  else if (cmd === 'font-decrease') {
-    chrome.storage.local.get({
-      'font-size': 13
-    }, prefs => {
-      prefs['font-size'] = Math.max(9, prefs['font-size'] - 1);
-      chrome.storage.local.set(prefs, update);
     });
   }
-  else if (cmd === 'font-increase') {
-    chrome.storage.local.get({
-      'font-size': 13
-    }, prefs => {
-      prefs['font-size'] = Math.min(33, prefs['font-size'] + 1);
-      chrome.storage.local.set(prefs, update);
+  else if (cmd === 'font-decrease' || cmd === 'font-increase') {
+    const size = config.prefs['font-size'];
+    chrome.storage.local.set({
+      'font-size': cmd === 'font-decrease' ? Math.max(9, size - 1) : Math.min(33, size + 1)
     });
   }
-  else if (cmd === 'width-decrease') {
-    chrome.storage.local.get({
-      'width': 600
-    }, prefs => {
-      prefs.width = Math.max(300, prefs.width - 50);
-      chrome.storage.local.set(prefs, update);
+  else if (cmd === 'width-decrease' || cmd === 'width-increase') {
+    const width = config.prefs.width;
+    chrome.storage.local.set({
+      width: cmd === 'width-decrease' ? Math.max(300, width - 50) : Math.min(1000, width + 50)
     });
   }
-  else if (cmd === 'width-increase') {
-    chrome.storage.local.get({
-      'width': 600
-    }, prefs => {
-      prefs.width = Math.min(1000, prefs.width + 50);
-      chrome.storage.local.set(prefs, update);
+  else if (cmd === 'line-height-type-1' || cmd === 'line-height-type-2') {
+    chrome.storage.local.set({
+      'line-height': cmd === 'line-height-type-1' ? 28.8 : 32
     });
   }
-  else if (cmd === 'line-height-type-1') {
-    chrome.storage.local.set({
-      'line-height': 28.8
-    }, update);
-  }
-  else if (cmd === 'line-height-type-2') {
-    chrome.storage.local.set({
-      'line-height': 32
-    }, update);
-  }
-  else if (cmd === 'color-mode-1') {
-    chrome.storage.local.set({
-      'mode': 'light'
-    }, update);
-  }
-  else if (cmd === 'color-mode-2') {
-    chrome.storage.local.set({
-      'mode': 'dark'
-    }, update);
-  }
-  else if (cmd === 'color-mode-3') {
-    chrome.storage.local.set({
-      'mode': 'sepia'
-    }, update);
+  else if (cmd.startsWith('color-mode-')) {
+    localStorage.setItem('mode', cmd.replace('color-mode-', ''));
+    update.sync();
   }
   else if (cmd === 'close') {
     history.back();
@@ -193,6 +119,10 @@ chrome.runtime.onMessage.addListener(request => {
   if (request.cmd === 'close') {
     history.back();
   }
+  else if (request.cmd === 'update-styling') {
+    styles.top.textContent = localStorage.getItem('top-css') || '';
+    styles.iframe.textContent = localStorage.getItem('user-css') || '';
+  }
 });
 document.addEventListener('keyup', e => {
   if (e.key === 'Escape') {
@@ -220,10 +150,24 @@ chrome.runtime.sendMessage({
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <style>
   body {
-    transition: color 0.4s, background-color 0.4s;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     margin: 30px auto 0 auto;
+  }
+  body[data-mode="light"] {
+    color: #00000;
+    background-color: #ffffff;
+  }
+  body[data-mode="dark"] {
+    color: #eeeeee;
+    background-color: #333333;
+  }
+  body[data-mode="sepia"] {
+    color: #5b4636;
+    background-color: #f4ecd8;
+  }
+  body[data-loaded=true] {
+    transition: color 0.4s, background-color 0.4s;
   }
   #reader-domain {
     font-size: 0.9em;
@@ -266,15 +210,16 @@ chrome.runtime.sendMessage({
   </style>
 </head>
 <body>
-<a id="reader-domain" href="${article.url}">${(new URL(article.url)).hostname}</a>
-<h1 dir="auto" id="reader-title">${article.title || 'Unknown Title'}</h1>
-<div dir="auto" id="reader-credits">${article.byline || ''}</div>
-<hr/>
-${article.content}
+  <a id="reader-domain" href="${article.url}">${(new URL(article.url)).hostname}</a>
+  <h1 dir="auto" id="reader-title">${article.title || 'Unknown Title'}</h1>
+  <div dir="auto" id="reader-credits">${article.byline || ''}</div>
+  <hr/>
+  ${article.content}
 </body>
 </html>`;
   iframe.contentDocument.write(html);
   iframe.contentDocument.close();
+  update.sync();
 
   // automatically detect ltr and rtl
   [...iframe.contentDocument.querySelectorAll('article>*')]
@@ -286,19 +231,15 @@ ${article.content}
     const a = e.target.closest('a');
     if (a && a.href && a.href.startsWith('http')) {
       e.preventDefault();
-      chrome.storage.local.get({
-        'new-tab': true
-      }, prefs => {
-        if (prefs['new-tab']) {
-          chrome.runtime.sendMessage({
-            cmd: 'open',
-            url: a.href
-          });
-        }
-        else {
-          window.top.location.replace(a.href);
-        }
-      });
+      if (config.prefs['new-tab']) {
+        chrome.runtime.sendMessage({
+          cmd: 'open',
+          url: a.href
+        });
+      }
+      else {
+        window.top.location.replace(a.href);
+      }
     }
   });
 
@@ -327,12 +268,10 @@ ${article.content}
     }
   });
 
-  iframe.contentDocument.documentElement.appendChild(styles);
-  update();
-});
-//
-chrome.storage.onChanged.addListener(prefs => {
-  if (prefs['user-css']) {
-    styles.textContent = prefs['user-css'].newValue;
-  }
+  iframe.contentDocument.documentElement.appendChild(styles.iframe);
+  iframe.addEventListener('load', () => {
+    // apply transition after initial changes
+    document.body.dataset.loaded = iframe.contentDocument.body.dataset.loaded = true;
+  });
+  config.load(update.async);
 });

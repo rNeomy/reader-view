@@ -1,4 +1,4 @@
-/* globals iframe */
+/* globals iframe, config */
 'use strict';
 
 var synth = window.speechSynthesis;
@@ -25,6 +25,14 @@ speech.speak = () => {
     }
 
     speech.instance.text = e.textContent;
+    speech.instance.pitch = config.prefs['speech-pitch'];
+    speech.instance.rate = config.prefs['speech-rate'];
+    if (config.prefs['speech-voice'] !== 'default') {
+      const voice = speechSynthesis.getVoices().filter(o => o.voiceURI === config.prefs['speech-voice']).shift();
+      if (voice) {
+        speech.instance.voice = voice;
+      }
+    }
     synth.cancel();
     synth.speak(speech.instance);
   }
