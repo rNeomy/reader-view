@@ -1,4 +1,4 @@
-/* globals iframe, config */
+/* globals iframe, config, isFirefox */
 'use strict';
 
 var synth = window.speechSynthesis;
@@ -9,32 +9,34 @@ speech.speak = () => {
   window.clearTimeout(speech.id);
   const e = speech.queue.shift();
   if (e && e.closest('[data-crvurd]') === null) {
-    if (typeof speech.instance === 'undefined') {
-      speech.instance = new SpeechSynthesisUtterance();
-      speech.instance.onend = () => {
-        speech.id = window.setTimeout(speech.speak, 100);
-      };
-    }
+    const instance = new SpeechSynthesisUtterance();
+    instance.onend = () => {
+      speech.id = window.setTimeout(speech.speak, 100);
+    };
     e.classList.add('speech');
     e.dataset.crvurd = true;
     e.scrollIntoViewIfNeeded();
 
     const lang = e.closest('[lang]');
     if (lang && lang.lang) {
-      speech.instance.lang = lang.lang;
+      instance.lang = lang.lang;
     }
 
-    speech.instance.text = e.textContent;
-    speech.instance.pitch = config.prefs['speech-pitch'];
-    speech.instance.rate = config.prefs['speech-rate'];
+    instance.text = e.textContent;
+    instance.pitch = config.prefs['speech-pitch'];
+    instance.rate = config.prefs['speech-rate'];
     if (config.prefs['speech-voice'] !== 'default') {
       const voice = speechSynthesis.getVoices().filter(o => o.voiceURI === config.prefs['speech-voice']).shift();
       if (voice) {
-        speech.instance.voice = voice;
+        instance.voice = voice;
       }
     }
     synth.cancel();
-    synth.speak(speech.instance);
+    if (isFirefox) {
+      synth.pause();
+      synth.resume();
+    }
+    synth.speak(instance);
   }
   else if (e) { // already read; skipping
     speech.speak();

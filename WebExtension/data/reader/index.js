@@ -2,6 +2,7 @@
 'use strict';
 
 var article;
+var isFirefox = /Firefox/.test(navigator.userAgent);
 
 var iframe = document.querySelector('iframe');
 document.body.dataset.mode = localStorage.getItem('mode');
@@ -81,7 +82,7 @@ document.addEventListener('click', e => {
     update.sync();
   }
   else if (cmd === 'close') {
-    history.back();
+    history.go(isFirefox ? -2 : -1);
   }
   else if (cmd === 'print') {
     iframe.contentWindow.print();
@@ -116,16 +117,11 @@ ${iframe.contentDocument.body.outerHTML}
 
 chrome.runtime.onMessage.addListener(request => {
   if (request.cmd === 'close') {
-    history.back();
+    history.go(isFirefox ? -2 : -1);
   }
   else if (request.cmd === 'update-styling') {
     styles.top.textContent = localStorage.getItem('top-css') || '';
     styles.iframe.textContent = localStorage.getItem('user-css') || '';
-  }
-});
-document.addEventListener('keyup', e => {
-  if (e.key === 'Escape') {
-    history.back();
   }
 });
 
@@ -278,6 +274,20 @@ chrome.runtime.sendMessage({
   iframe.addEventListener('load', () => {
     // apply transition after initial changes
     document.body.dataset.loaded = iframe.contentDocument.body.dataset.loaded = true;
+    if (isFirefox) {
+      const script = iframe.contentDocument.documentElement.appendChild(document.createElement('script'));
+      script.src = chrome.runtime.getURL('/data/reader/scroll.js');
+    }
   });
+  // close on escape
+  {
+    const callback = e => {
+      if (e.key === 'Escape') {
+        history.go(isFirefox ? -2 : -1);
+      }
+    };
+    iframe.contentDocument.addEventListener('keyup', callback);
+    document.addEventListener('keyup', callback);
+  }
   config.load(update.async);
 });

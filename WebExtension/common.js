@@ -151,7 +151,6 @@ chrome.tabs.onRemoved.addListener(tabId => {
 
 { // one-time
   const callback = () => config.load(() => {
-    console.log(localStorage.getItem('user-css'));
     if (!localStorage.getItem('user-css')) {
       if (config['mode']) {
         localStorage.setItem('mode', config.prefs.mode);
