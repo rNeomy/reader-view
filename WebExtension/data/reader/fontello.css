@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'fontello';
-  src: url('fontello.woff2?896534') format('woff2');
+  src: url('fontello.woff2?876y6') format('woff2');
   font-weight: normal;
   font-style: normal;
 }
@@ -65,4 +65,5 @@
 .icon-stop:before { content: '\e80c'; } /* '' */
 .icon-next:before { content: '\e80d'; } /* '' */
 .icon-previous:before { content: '\e80e'; } /* '' */
+.icon-fullscreen:before { content: '\e80f'; } /* '' */
 .icon-font:before { content: '\f088'; } /* '' */

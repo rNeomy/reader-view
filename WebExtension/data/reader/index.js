@@ -113,6 +113,21 @@ ${iframe.contentDocument.body.outerHTML}
   else if (cmd === 'close-speech') {
     document.body.dataset.speech = false;
   }
+
+  else if (cmd === 'fullscreen') {
+    if (iframe.requestFullscreen) {
+      iframe.requestFullscreen();
+    }
+    else if (iframe.mozRequestFullScreen) {
+      iframe.mozRequestFullScreen();
+    }
+    else if (iframe.webkitRequestFullScreen) {
+      iframe.webkitRequestFullScreen();
+    }
+    else if (iframe.msRequestFullscreen) {
+      iframe.msRequestFullscreen();
+    }
+  }
 });
 
 chrome.runtime.onMessage.addListener(request => {
