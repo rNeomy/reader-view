@@ -58,9 +58,14 @@
       <iframe></iframe>
     </div>
     <div id="speech">
-      <span class="icon-" data-cmd="play"></span>
-      <span class="icon-" data-cmd="next"></span>
+      <div>
+        <label data-id="lang" data-value='N/A'><select></select></label>
+        <span class="icon-" data-cmd="play"></span>
+        <span class="icon-" data-cmd="previous"></span>
+        <span class="icon-" data-cmd="next"></span>
+      </div>
       <span data-cmd="close-speech">×</span>
+      <label data-id="speed">Speed&nbsp;<input type="range" min="0.5" max="3" step="0.1"></label>
     </div>
     <script src="/config.js"></script>
     <script src="index.js"></script>

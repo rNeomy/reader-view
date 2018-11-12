@@ -9,6 +9,7 @@ config.prefs = {
   'width': 600,
   'line-height': 28.8,
   'new-tab': true,
+  'reader-mode': false,
   'faqs': true,
   'version': null,
   'user-css': '', // is used for exporting from old method; do not delete

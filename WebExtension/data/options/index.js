@@ -10,9 +10,8 @@ function save() {
   chrome.storage.local.set({
     'user-css': document.getElementById('user-css').value,
     'new-tab': document.getElementById('new-tab').checked,
+    'reader-mode': document.getElementById('reader-mode').checked,
     'faqs': document.getElementById('faqs').checked,
-    'speech-voice': document.getElementById('speech-voice').value,
-    'speech-rate': Math.max(Math.min(Number(document.getElementById('speech-rate').value), 3), 0.5),
     'speech-pitch': Math.max(Math.min(Number(document.getElementById('speech-pitch').value), 2), 0)
   }, () => {
     const status = document.getElementById('status');
@@ -21,23 +20,15 @@ function save() {
   });
 }
 
-speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices().forEach(o => {
-  const option = document.createElement('option');
-  option.value = o.voiceURI;
-  option.textContent = `${o.name} (${o.lang})`;
-  document.getElementById('speech-voice').appendChild(option);
-});
-
 function restore() {
   document.getElementById('top-style').value = localStorage.getItem('top-css') || '';
   document.getElementById('user-css').value = localStorage.getItem('user-css') || '';
 
   chrome.storage.local.get(config.prefs, prefs => {
     document.getElementById('new-tab').checked = prefs['new-tab'];
+    document.getElementById('reader-mode').checked = prefs['reader-mode'];
     document.getElementById('faqs').checked = prefs['faqs'];
     document.getElementById('speech-pitch').value = prefs['speech-pitch'];
-    document.getElementById('speech-rate').value = prefs['speech-rate'];
-    document.getElementById('speech-voice').value = prefs['speech-voice'];
   });
 }
 config.load(restore);

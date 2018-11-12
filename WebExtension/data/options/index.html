@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Test Extension Options</title>
+  <title>Reader View :: Options</title>
   <meta charset="utf-8">
   <style>
     body {
@@ -41,6 +41,11 @@
         <td></td>
       </tr>
       <tr>
+        <td><input type="checkbox" id="reader-mode"></td>
+        <td><label for="reader-mode">Open links in the reader view mode</label></td>
+        <td></td>
+      </tr>
+      <tr>
         <td><input type="checkbox" id="faqs"></td>
         <td><label for="faqs"> Open FAQs page on updates</label></td>
         <td></td>
@@ -53,11 +58,6 @@
             <option value="default">Default Voice</option>
           </select>
         </td>
-      </tr>
-      <tr>
-        <td></td>
-        <td>Speech rate (0.5 - 3):</td>
-        <td><input type="number" min="0.5" max="3" id="speech-rate"></td>
       </tr>
       <tr>
         <td colspan="3">A float representing the rate value. It can range between 0.5 (lowest) and 3 (highest), with 1 being the default</td>

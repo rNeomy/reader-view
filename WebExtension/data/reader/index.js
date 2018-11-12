@@ -88,13 +88,7 @@ document.addEventListener('click', e => {
     iframe.contentWindow.print();
   }
   else if (cmd === 'save') {
-    const content = `<!DOCTYPE html>
-<html>
-<head>
-  <title dir="auto">${article.title}</title>
-</head>
-${iframe.contentDocument.body.outerHTML}
-</html>`;
+    const content = iframe.contentDocument.documentElement.outerHTML;
     const blob = new Blob([content], {
       type: 'text/html'
     });
@@ -248,15 +242,12 @@ chrome.runtime.sendMessage({
     const a = e.target.closest('a');
     if (a && a.href && a.href.startsWith('http')) {
       e.preventDefault();
-      if (config.prefs['new-tab']) {
-        chrome.runtime.sendMessage({
-          cmd: 'open',
-          url: a.href
-        });
-      }
-      else {
-        window.top.location.replace(a.href);
-      }
+      chrome.runtime.sendMessage({
+        cmd: 'open',
+        url: a.href,
+        reader: config.prefs['reader-mode'],
+        current: config.prefs['new-tab'] === false
+      });
     }
   });
 

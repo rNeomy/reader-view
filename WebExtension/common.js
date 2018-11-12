@@ -133,11 +133,18 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     response(cache[id]);
   }
   else if (request.cmd === 'open') {
-    chrome.tabs.create({
-      url: request.url,
-      openerTabId: id,
-      index: sender.tab.index + 1
-    });
+    if (request.current) {
+      chrome.tabs.update({
+        url: request.url
+      }, tab => request.reader && window.setTimeout(onClicked, 1000, tab));
+    }
+    else {
+      chrome.tabs.create({
+        url: request.url,
+        openerTabId: id,
+        index: sender.tab.index + 1
+      }, tab => request.reader && onClicked(tab));
+    }
   }
   else if (request.cmd === 'reader-on-reload') {
     onUpdated.cache[id] = true;
@@ -177,9 +184,6 @@ a:link, a:link:hover, a:link:active {
 a:link {
   text-decoration: none;
   font-weight: normal;
-}
-p {
-  text-align: justify;
 }
 pre {
   white-space: pre-line;
