@@ -17,23 +17,79 @@
       line-height: 12px;
       margin-top: 5px;
     }
+    th {
+      text-align: left;
+      font-weight: 500;
+      padding: 5px;
+      background-color: rgba(0, 0, 0, 0.05);
+    }
   </style>
 </head>
 
 <body>
-  <span><a id="ref" href="#">Custom style</a> (reader view):</span>
-  <textarea placeholder="User styles for the actual reader-view" id="user-css" rows="15"></textarea>
-  <p></p>
-  Custom style (top frame and sidebar):
-  <textarea placeholder="User styles for top frame (sidebar mainly)" id="top-style" rows="4"></textarea>
-
-  <p></p>
   <table>
     <colgroup>
       <col width=32>
       <col>
       <col>
     </colgroup>
+    <thead>
+      <tr>
+        <th colspan="3">UI Customization</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="checkbox" id="printing-button"></td>
+        <td><label for="printing-button">Show "printing button" in the reader view</label></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="save-button"></td>
+        <td><label for="save-button">Show "save button" in the reader view</label></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="fullscreen-button"></td>
+        <td><label for="fullscreen-button">Show "fullscreen button" in the reader view</label></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="speech-button"></td>
+        <td><label for="speech-button">Show "speech button" in the reader view</label></td>
+        <td></td>
+      </tr>
+    </tbody>
+    <thead>
+      <tr>
+        <th colspan="3"><a id="ref" href="#">Custom styling</a> (reader view):</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td colspan="3">
+          <textarea placeholder="User styles for the actual reader-view" id="user-css" rows="15"></textarea>
+        </td>
+      </tr>
+    </tbody>
+    <thead>
+      <tr>
+        <th colspan="3"><a id="ref" href="#">Custom styling</a> (top frame and sidebar):</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td colspan="3">
+          <textarea placeholder="User styles for top frame (sidebar mainly)" id="top-style" rows="4"></textarea>
+        </td>
+      </tr>
+    </tbody>
+    <tbody>
+    <thead>
+      <tr>
+        <th colspan="3">Link Opening</th>
+      </tr>
+    </thead>
     <tbody>
       <tr>
         <td><input type="checkbox" id="new-tab"></td>
@@ -45,30 +101,32 @@
         <td><label for="reader-mode">Open links in the reader view mode</label></td>
         <td></td>
       </tr>
+    </tbody>
+    <thead>
+      <tr>
+        <th colspan="3">Speech</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td></td>
+        <td>Speech pitch (0 - 2):</td>
+        <td><input type="number" min="0.1" max="2" id="speech-pitch" step="0.1"></td>
+      </tr>
+      <tr>
+        <td colspan="3">A float representing the pitch value. It can range between 0 (lowest) and 2 (highest), with 1 being the default pitch for the current platform or voice</td>
+      </tr>
+    </tbody>
+    <thead>
+      <tr>
+        <th colspan="3">Misc</th>
+      </tr>
+    </thead>
+    <tbody>
       <tr>
         <td><input type="checkbox" id="faqs"></td>
         <td><label for="faqs"> Open FAQs page on updates</label></td>
         <td></td>
-      </tr>
-      <tr>
-        <td></td>
-        <td>Speech source:</td>
-        <td>
-          <select  id="speech-voice">
-            <option value="default">Default Voice</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="3">A float representing the rate value. It can range between 0.5 (lowest) and 3 (highest), with 1 being the default</td>
-      </tr>
-      <tr>
-        <td></td>
-        <td>Speech pitch (0 - 2):</td>
-        <td><input type="number" min="0.1" max="10" id="speech-pitch"></td>
-      </tr>
-      <tr>
-        <td colspan="3">A float representing the pitch value. It can range between 0 (lowest) and 2 (highest), with 1 being the default pitch for the current platform or voice</td>
       </tr>
     </tbody>
   </table>

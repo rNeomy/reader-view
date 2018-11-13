@@ -8,6 +8,98 @@ var iframe = document.querySelector('iframe');
 document.body.dataset.mode = localStorage.getItem('mode');
 var settings = document.querySelector('#toolbar>div');
 
+const shortcuts = [];
+
+/* printing */
+{
+  const span = document.createElement('span');
+  span.title = 'Print in the Reader View (Meta + P)';
+  span.classList.add('icon-print');
+  if (localStorage.getItem('printing-button') === 'false') {
+    span.style.display = 'none';
+  }
+  span.onclick = () => iframe.contentWindow.print();
+  shortcuts.push({
+    condition: e => e.code === 'KeyP' && e.metaKey,
+    action: span.onclick
+  });
+  document.getElementById('toolbar').appendChild(span);
+}
+/* save as HTML*/
+{
+  const span = document.createElement('span');
+  span.title = 'Save in HTML format (Meta + S)';
+  span.classList.add('icon-save');
+  if (localStorage.getItem('save-button') === 'false') {
+    span.style.display = 'none';
+  }
+  span.onclick = () => {
+    const content = iframe.contentDocument.documentElement.outerHTML;
+    const blob = new Blob([content], {
+      type: 'text/html'
+    });
+    const objectURL = URL.createObjectURL(blob);
+    const link = Object.assign(document.createElement('a'), {
+      href: objectURL,
+      type: 'text/html',
+      download: article.title.replace( /[<>:"/\\|?*]+/g, '' ) + '.html'
+    });
+    link.dispatchEvent(new MouseEvent('click'));
+    setTimeout(() => URL.revokeObjectURL(objectURL));
+  };
+  shortcuts.push({
+    condition: e => e.code === 'KeyS' && e.metaKey && !e.shiftKey,
+    action: span.onclick
+  });
+  document.getElementById('toolbar').appendChild(span);
+}
+/* fullscreen */
+{
+  const span = document.createElement('span');
+  span.title = 'Switch to the fullscreen reading (F9)';
+  span.classList.add('icon-fullscreen');
+  if (localStorage.getItem('fullscreen-button') === 'false') {
+    span.style.display = 'none';
+  }
+  span.onclick = () => {
+    if (iframe.requestFullscreen) {
+      iframe.requestFullscreen();
+    }
+    else if (iframe.mozRequestFullScreen) {
+      iframe.mozRequestFullScreen();
+    }
+    else if (iframe.webkitRequestFullScreen) {
+      iframe.webkitRequestFullScreen();
+    }
+    else if (iframe.msRequestFullscreen) {
+      iframe.msRequestFullscreen();
+    }
+  };
+  shortcuts.push({
+    condition: e => e.code === 'F9',
+    action: span.onclick
+  });
+  document.getElementById('toolbar').appendChild(span);
+}
+/* speech */
+{
+  const span = document.createElement('span');
+  span.title = 'Read this Article (Beta) (Meta + Shift + S)';
+  span.classList.add('icon-speech');
+  if (localStorage.getItem('speech-button') === 'false') {
+    span.style.display = 'none';
+  }
+  span.onclick = () => {
+    document.body.dataset.speech = true;
+    document.querySelector('#speech [data-cmd]').click();
+  };
+  shortcuts.push({
+    condition: e => e.code === 'KeyS' && e.metaKey && e.shiftKey,
+    action: span.onclick
+  });
+  document.getElementById('toolbar').appendChild(span);
+}
+
 var styles = {
   top: document.createElement('style'),
   iframe: document.createElement('style')
@@ -82,45 +174,16 @@ document.addEventListener('click', e => {
     update.sync();
   }
   else if (cmd === 'close') {
-    history.go(isFirefox ? -2 : -1);
-  }
-  else if (cmd === 'print') {
-    iframe.contentWindow.print();
-  }
-  else if (cmd === 'save') {
-    const content = iframe.contentDocument.documentElement.outerHTML;
-    const blob = new Blob([content], {
-      type: 'text/html'
-    });
-    const objectURL = URL.createObjectURL(blob);
-    const link = Object.assign(document.createElement('a'), {
-      href: objectURL,
-      type: 'text/html',
-      download: article.title.replace( /[<>:"/\\|?*]+/g, '' ) + '.html'
-    });
-    link.dispatchEvent(new MouseEvent('click'));
-    setTimeout(() => URL.revokeObjectURL(objectURL));
-  }
-  else if (cmd === 'open-speech') {
-    document.body.dataset.speech = true;
+    // do this until the script is unloaded
+    window.setTimeout(() => {
+      e.target.dispatchEvent(new Event('click', {
+        bubbles: true
+      }));
+    }, 200);
+    history.go(-1);
   }
   else if (cmd === 'close-speech') {
     document.body.dataset.speech = false;
-  }
-
-  else if (cmd === 'fullscreen') {
-    if (iframe.requestFullscreen) {
-      iframe.requestFullscreen();
-    }
-    else if (iframe.mozRequestFullScreen) {
-      iframe.mozRequestFullScreen();
-    }
-    else if (iframe.webkitRequestFullScreen) {
-      iframe.webkitRequestFullScreen();
-    }
-    else if (iframe.msRequestFullscreen) {
-      iframe.msRequestFullscreen();
-    }
   }
 });
 
@@ -267,15 +330,6 @@ chrome.runtime.sendMessage({
     settings.dataset.display = false;
   });
 
-  // Ctrl + S
-  iframe.contentWindow.addEventListener('keydown', e => {
-    if (e.code === 'KeyS' && e.metaKey) {
-      e.preventDefault();
-      document.querySelector('[data-cmd=save]').click();
-      return false;
-    }
-  });
-
   iframe.contentDocument.documentElement.appendChild(styles.iframe);
   iframe.addEventListener('load', () => {
     // apply transition after initial changes
@@ -288,12 +342,25 @@ chrome.runtime.sendMessage({
   // close on escape
   {
     const callback = e => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !(
+        document.fullscreenElement ||
+        document.mozFullScreenElement ||
+        document.webkitFullscreenElement ||
+        document.msFullscreenElement)
+      ) {
         history.go(isFirefox ? -2 : -1);
       }
+      shortcuts.forEach(o => {
+        if (o.condition(e)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          o.action();
+          return false;
+        }
+      });
     };
-    iframe.contentDocument.addEventListener('keyup', callback);
-    document.addEventListener('keyup', callback);
+    iframe.contentDocument.addEventListener('keydown', callback);
+    document.addEventListener('keydown', callback);
   }
   config.load(update.async);
 });

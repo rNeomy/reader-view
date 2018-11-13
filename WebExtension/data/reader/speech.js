@@ -68,21 +68,28 @@ speech.speak = () => {
   const e = speech.queue.shift();
   speech.element = e;
   if (e && e.closest('[data-crvurd]') === null) {
+    if (typeof speech.instance !== 'undefined') {
+      delete speech.instance.onend;
+    }
     const instance = speech.instance = new SpeechSynthesisUtterance();
 
     instance.onstart = () => speech.elements.play.dataset.cmd = 'pause';
     instance.onresume = () => speech.elements.play.dataset.cmd = 'pause';
     instance.onpause = () => speech.elements.play.dataset.cmd = 'resume';
-
     instance.onend = () => {
       speech.elements.play.dataset.cmd = 'play';
-      if (synth.speaking === false) {
-        speech.id = window.setTimeout(speech.speak, 100);
+      if (synth.speaking === false && synth.busy !== true) {
+        speech.id = window.setTimeout(speech.speak, 200);
       }
     };
+
     e.classList.add('speech');
     e.dataset.crvurd = true;
-    e.scrollIntoViewIfNeeded();
+    e.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'nearest'
+    });
 
     const lang = e.closest('[lang]');
     if (lang && lang.lang) {
@@ -98,12 +105,14 @@ speech.speak = () => {
         instance.voice = voice;
       }
     }
+    synth.busy = true;
     synth.cancel();
     if (isFirefox) {
       synth.pause();
       synth.resume();
     }
     synth.speak(instance);
+    window.setTimeout(() => synth.busy = false, 300);
   }
   else if (e) { // already read; skipping
     speech.speak();
@@ -161,9 +170,6 @@ document.addEventListener('click', async({target}) => {
       nodes = nodes.filter(n => e.contains(n) === false);
     }
     speech.speak();
-  }
-  else if (cmd === 'open-speech') {
-    document.querySelector('#speech [data-cmd]').click();
   }
   else if (cmd === 'previous' && speech.element) {
     const index = speech._queue.indexOf(speech.element);

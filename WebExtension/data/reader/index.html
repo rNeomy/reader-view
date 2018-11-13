@@ -10,10 +10,6 @@
     <div id="toolbar">
       <span class="icon-close" data-cmd="close" title="Close Reader View"></span>
       <span class="icon-font" data-cmd="open-settings" title="Type controls"></span>
-      <span class="icon-print" data-cmd="print" title="Print in Reader View"></span>
-      <span class="icon-save" data-cmd="save" title="Save as HTML"></span>
-      <span class="icon-fullscreen" data-cmd="fullscreen" title="Switch to the fullscreen reading"></span>
-      <span class="icon-speech" data-cmd="open-speech" title="Read this Article (Beta)"></span>
       <div>
         <table border="0" cellpadding="0" cellspacing="0">
           <colgroup>
@@ -65,7 +61,7 @@
         <span class="icon-" data-cmd="next"></span>
       </div>
       <span data-cmd="close-speech">×</span>
-      <label data-id="speed">Speed&nbsp;<input type="range" min="0.5" max="3" step="0.1"></label>
+      <label data-id="speed" title="A float representing the rate value. It can range between 0.5 (lowest) and 3 (highest), with 1 being the default (it takes sometime for this value to effect)">Speed&nbsp;<input type="range" min="0.5" max="3" step="0.1"></label>
     </div>
     <script src="/config.js"></script>
     <script src="index.js"></script>

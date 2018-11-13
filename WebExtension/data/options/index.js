@@ -4,6 +4,12 @@
 function save() {
   localStorage.setItem('top-css', document.getElementById('top-style').value || '');
   localStorage.setItem('user-css', document.getElementById('user-css').value || '');
+
+  localStorage.setItem('printing-button', document.getElementById('printing-button').checked);
+  localStorage.setItem('save-button', document.getElementById('save-button').checked);
+  localStorage.setItem('fullscreen-button', document.getElementById('fullscreen-button').checked);
+  localStorage.setItem('speech-button', document.getElementById('speech-button').checked);
+
   chrome.runtime.sendMessage({
     cmd: 'update-styling'
   });
@@ -23,6 +29,11 @@ function save() {
 function restore() {
   document.getElementById('top-style').value = localStorage.getItem('top-css') || '';
   document.getElementById('user-css').value = localStorage.getItem('user-css') || '';
+
+  document.getElementById('printing-button').checked = localStorage.getItem('printing-button') !== 'false';
+  document.getElementById('save-button').checked = localStorage.getItem('save-button') !== 'false';
+  document.getElementById('fullscreen-button').checked = localStorage.getItem('fullscreen-button') !== 'false';
+  document.getElementById('speech-button').checked = localStorage.getItem('speech-button') !== 'false';
 
   chrome.storage.local.get(config.prefs, prefs => {
     document.getElementById('new-tab').checked = prefs['new-tab'];
