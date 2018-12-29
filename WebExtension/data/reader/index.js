@@ -222,8 +222,8 @@ chrome.runtime.sendMessage({
     margin: 30px auto 0 auto;
   }
   body[data-mode="light"] {
-    color: #00000;
-    background-color: #ffffff;
+    color: #222222;
+    background-color: whitesmoke;
   }
   body[data-mode="dark"] {
     color: #eeeeee;
