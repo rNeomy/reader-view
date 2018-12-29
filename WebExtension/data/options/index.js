@@ -10,6 +10,8 @@ function save() {
   localStorage.setItem('fullscreen-button', document.getElementById('fullscreen-button').checked);
   localStorage.setItem('speech-button', document.getElementById('speech-button').checked);
 
+  localStorage.setItem('auto-fullscreen', document.getElementById('auto-fullscreen').checked);
+
   chrome.runtime.sendMessage({
     cmd: 'update-styling'
   });
@@ -34,6 +36,7 @@ function restore() {
   document.getElementById('save-button').checked = localStorage.getItem('save-button') !== 'false';
   document.getElementById('fullscreen-button').checked = localStorage.getItem('fullscreen-button') !== 'false';
   document.getElementById('speech-button').checked = localStorage.getItem('speech-button') !== 'false';
+  document.getElementById('auto-fullscreen').checked = localStorage.getItem('auto-fullscreen') !== 'false';
 
   chrome.storage.local.get(config.prefs, prefs => {
     document.getElementById('new-tab').checked = prefs['new-tab'];

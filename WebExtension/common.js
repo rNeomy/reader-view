@@ -37,6 +37,11 @@ function onClicked(tab) {
         notify(chrome.runtime.lastError.message);
       }
       else {
+        if (localStorage.getItem('auto-fullscreen') === 'true') {
+          chrome.windows.update(tab.windowId, {
+            state: 'fullscreen'
+          });
+        }
         chrome.tabs.executeScript(tab.id, {
           file: 'data/inject/wrapper.js'
         }, () => {});
@@ -187,6 +192,17 @@ a:link {
 }
 pre {
   white-space: pre-line;
+}
+pre code {
+  background-color: #eff0f1;
+  color: #393318;
+  font-family: monospace;
+  display: block;
+  padding: 5px 10px;
+}
+body[data-mode="dark"] pre code {
+  background-color: #585858;
+  color: #e8e8e8;
 }
 
 /* CSS for sans-serif fonts */

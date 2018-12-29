@@ -39,6 +39,7 @@ function Readability(doc, options) {
   this._articleTitle = null;
   this._articleByline = null;
   this._articleDir = null;
+  this._articleSiteName = null;
   this._attempts = [];
 
   // Configurable options
@@ -1141,7 +1142,7 @@ Readability.prototype = {
           this._attempts.push({articleContent: articleContent, textLength: textLength});
           // No luck after removing flags, just return the longest text we found during the different loops
           this._attempts.sort(function (a, b) {
-            return a.textLength < b.textLength;
+            return b.textLength - a.textLength;
           });
 
           // But first check if we actually have something
@@ -1199,10 +1200,10 @@ Readability.prototype = {
     var metaElements = this._doc.getElementsByTagName("meta");
 
     // property is a space-separated list of values
-    var propertyPattern = /\s*(dc|dcterm|og|twitter)\s*:\s*(author|creator|description|title)\s*/gi;
+    var propertyPattern = /\s*(dc|dcterm|og|twitter)\s*:\s*(author|creator|description|title|site_name)\s*/gi;
 
     // name is a single value
-    var namePattern = /^\s*(?:(dc|dcterm|og|twitter|weibo:(article|webpage))\s*[\.:]\s*)?(author|creator|description|title)\s*$/i;
+    var namePattern = /^\s*(?:(dc|dcterm|og|twitter|weibo:(article|webpage))\s*[\.:]\s*)?(author|creator|description|title|site_name)\s*$/i;
 
     // Find description tags.
     this._forEachNode(metaElements, function(element) {
@@ -1261,6 +1262,9 @@ Readability.prototype = {
                        values["weibo:webpage:description"] ||
                        values["description"] ||
                        values["twitter:description"];
+
+    // get site name
+    metadata.siteName = values["og:site_name"];
 
     return metadata;
   },
@@ -1819,6 +1823,7 @@ Readability.prototype = {
       textContent: textContent,
       length: textContent.length,
       excerpt: metadata.excerpt,
+      siteName: metadata.siteName || this._articleSiteName
     };
   }
 };
