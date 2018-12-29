@@ -77,11 +77,14 @@ speech.speak = () => {
     instance.onresume = () => speech.elements.play.dataset.cmd = 'pause';
     instance.onpause = () => speech.elements.play.dataset.cmd = 'resume';
     instance.onend = () => {
-      speech.elements.play.dataset.cmd = 'play';
+      speech.elements.play.dataset.cmd = speech.queue.length === 0 ? 'play' : 'resume';
       if (synth.speaking === false && synth.busy !== true) {
         speech.id = window.setTimeout(speech.speak, 200);
       }
     };
+    /*  instance.onboundary = e => {
+      console.log(e);
+    };*/
 
     e.classList.add('speech');
     e.dataset.crvurd = true;
@@ -124,7 +127,7 @@ speech.speak = () => {
 speech.queue = [];
 speech._queue = []; // persistent list; used for accessing already read elements
 
-document.addEventListener('click', async({target}) => {
+document.addEventListener('click', async ({target}) => {
   const cmd = target.dataset.cmd;
 
   if (cmd === 'pause') {
@@ -145,37 +148,19 @@ document.addEventListener('click', async({target}) => {
     // clear read data
     iframe.contentDocument.querySelectorAll('[data-crvurd]').forEach(e => delete e.dataset.crvurd);
 
-    let nodes = [];
-    const texts = node => {
-      for (node = node.firstChild; node; node = node.nextSibling) {
-        if (node.nodeType === Node.TEXT_NODE) {
-          if (node.nodeValue.trim()) {
-            nodes.unshift(node);
-          }
-        }
-        else {
-          texts(node);
-        }
-      }
-    };
+    speech._queue = [...iframe.contentDocument.querySelectorAll('.page p, .page h1, .page h2, .page h3, .page h4')]
+      .filter(a => a.textContent.trim().length);
+    speech.queue = Array.from(speech._queue);
 
-    [...iframe.contentDocument.querySelectorAll('.page')]
-      .forEach(page => texts(page));
-
-    while(nodes.length) {
-      const node = nodes.shift();
-      const e = node.parentElement;
-      speech.queue.unshift(e);
-      speech._queue.unshift(e);
-      nodes = nodes.filter(n => e.contains(n) === false);
-    }
     speech.speak();
   }
   else if (cmd === 'previous' && speech.element) {
     const index = speech._queue.indexOf(speech.element);
     delete speech.element.dataset.crvurd;
     speech.queue.unshift(speech.element);
+    console.log(index);
     if (index !== -1 && index !== 0) {
+      console.log(speech._queue[index - 1]);
       delete speech._queue[index - 1].dataset.crvurd;
       speech.queue.unshift(speech._queue[index - 1]);
     }
@@ -183,7 +168,12 @@ document.addEventListener('click', async({target}) => {
     speech.speak();
   }
   else if (cmd === 'next') {
-    synth.cancel();
+    if (synth.speaking === false) {
+      speech.speak();
+    }
+    else {
+      synth.cancel();
+    }
   }
 });
 
