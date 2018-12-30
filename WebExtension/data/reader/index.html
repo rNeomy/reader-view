@@ -13,7 +13,7 @@
       <div>
         <table border="0" cellpadding="0" cellspacing="0">
           <colgroup>
-            <col style="border-right: solid 1px #B5B5B5;">
+            <col style="border-right: solid 1px #B5B5B5;" width=50%>
             <col>
           </colgroup>
           <tr>
@@ -25,12 +25,28 @@
             <td data-cmd="font-increase"><span class="icon-plus"></span></td>
           </tr>
           <tr>
-            <td data-cmd="width-decrease"><span class="icon-right"></span><span class="icon-left"></span></td>
-            <td data-cmd="width-increase"><span class="icon-left"></span><span class="icon-right"></span></td>
+            <td data-id="full-width">
+              <input id="full-width" type="checkbox"/>
+              <label for="full-width" data-cmd="full-width">Full Width</label>
+            </td>
+            <td>
+              <div class="strech">
+                <span data-cmd="width-increase" class="icon-"></span>&nbsp;
+                <span data-cmd="width-decrease" class="icon-"></span>
+              </div>
+            </td>
           </tr>
           <tr>
-            <td data-cmd="line-height-type-1"><span class="icon-article-collapsed"></span></td>
-            <td data-cmd="line-height-type-2"><span class="icon-article-expanded"></span></td>
+            <td data-id="no-height">
+              <input id="no-height" type="checkbox"/>
+              <label for="no-height" data-cmd="no-height">No Height</label>
+            </td>
+            <td>
+              <div class="strech">
+                <span class="icon-article-collapsed" data-cmd="line-height-type-1"></span>
+                <span class="icon-article-expanded" data-cmd="line-height-type-2"></span>
+              </div>
+            </td>
           </tr>
           <tr>
             <td colspan="2" data-id="color">
@@ -61,7 +77,7 @@
         <span class="icon-" data-cmd="next"></span>
       </div>
       <span data-cmd="close-speech">×</span>
-      <label data-id="speed" title="A float representing the rate value. It can range between 0.5 (lowest) and 3 (highest), with 1 being the default (it takes sometime for this value to effect)">Speed&nbsp;<input type="range" min="0.5" max="3" step="0.1"></label>
+      <label data-id="speed" title="A float representing the rate value. It can range between 0.5 (lowest) and 3 (highest), with 1 being the default (it takes sometime for this value to effect)">Speed&nbsp;<input type="range" min="0.5" max="3" step="0.3"></label>
     </div>
     <script src="/config.js"></script>
     <script src="index.js"></script>

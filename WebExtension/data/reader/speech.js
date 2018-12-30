@@ -16,13 +16,13 @@ var synth = window.speechSynthesis;
 }
 
 synth.onvoiceschanged = () => {
+  const select = document.querySelector('#speech select');
   const voices = synth.getVoices();
   const langs = {};
   voices.forEach(o => {
     langs[o.lang] = langs[o.lang] || [];
     langs[o.lang].push(o);
   });
-  const select = document.querySelector('#speech select');
   select.addEventListener('change', () => {
     const [lang, name, uri] = select.value.split('/');
     select.closest('label').dataset.value = lang;
@@ -45,7 +45,10 @@ synth.onvoiceschanged = () => {
       const option = document.createElement('option');
       option.textContent = voice.name;
       option.value = `${key}/${voice.name}/${voice.voiceURI}`;
-      if (config.prefs['speech-voice'] === voice.voiceURI) {
+      if (
+        config.prefs['speech-voice'] === voice.voiceURI ||
+        config.prefs['speech-voice'] === 'default' && voice.default
+      ) {
         option.selected = true;
         select.closest('label').dataset.value = key;
         select.closest('label').title = voice.name;
@@ -79,6 +82,7 @@ speech.speak = () => {
     instance.onend = () => {
       speech.elements.play.dataset.cmd = speech.queue.length === 0 ? 'play' : 'resume';
       if (synth.speaking === false && synth.busy !== true) {
+        // delay between paragraphs
         speech.id = window.setTimeout(speech.speak, 200);
       }
     };
@@ -108,6 +112,7 @@ speech.speak = () => {
         instance.voice = voice;
       }
     }
+    window.clearTimeout(synth.busyId);
     synth.busy = true;
     synth.cancel();
     if (isFirefox) {
@@ -115,7 +120,7 @@ speech.speak = () => {
       synth.resume();
     }
     synth.speak(instance);
-    window.setTimeout(() => synth.busy = false, 300);
+    synth.busyId = window.setTimeout(() => synth.busy = false, 300);
   }
   else if (e) { // already read; skipping
     speech.speak();
@@ -158,9 +163,7 @@ document.addEventListener('click', async ({target}) => {
     const index = speech._queue.indexOf(speech.element);
     delete speech.element.dataset.crvurd;
     speech.queue.unshift(speech.element);
-    console.log(index);
     if (index !== -1 && index !== 0) {
-      console.log(speech._queue[index - 1]);
       delete speech._queue[index - 1].dataset.crvurd;
       speech.queue.unshift(speech._queue[index - 1]);
     }
@@ -174,6 +177,10 @@ document.addEventListener('click', async ({target}) => {
     else {
       synth.cancel();
     }
+  }
+
+  if (cmd) {
+    window.clearTimeout(speech.id);
   }
 });
 

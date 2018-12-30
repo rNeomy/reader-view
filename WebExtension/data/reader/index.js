@@ -116,7 +116,7 @@ document.addEventListener('click', e => {
 function getFont(font) {
   switch (font) {
   case 'serif':
-      return 'Georgia, "Times New Roman", serif';
+    return 'Georgia, "Times New Roman", serif';
   case 'sans-serif':
   default:
     return 'Helvetica, Arial, sans-serif';
@@ -126,13 +126,27 @@ function getFont(font) {
 var update = {
   sync: () => {
     const mode = localStorage.getItem('mode') || 'sepia';
-    iframe.contentDocument.body.dataset.mode = mode;
+    document.body.dataset.mode = iframe.contentDocument.body.dataset.mode = mode;
   },
   async: () => {
     iframe.contentDocument.body.style['font-size'] = config.prefs['font-size'] + 'px';
     iframe.contentDocument.body.style['font-family'] = getFont(config.prefs['font']);
-    iframe.contentDocument.body.style['line-height'] = config.prefs['line-height'] + 'px';
-    iframe.contentDocument.body.style.width = config.prefs.width + 'px';
+    if (config.prefs['line-height']) {
+      iframe.contentDocument.body.style['line-height'] = config.prefs['line-height'] + 'px';
+      document.querySelector('[data-id=no-height] input').checked = false;
+    }
+    else {
+      iframe.contentDocument.body.style['line-height'] = 'unset';
+      document.querySelector('[data-id=no-height] input').checked = true;
+    }
+    if (config.prefs.width) {
+      iframe.contentDocument.body.style.width = config.prefs.width + 'px';
+      document.querySelector('[data-id=full-width] input').checked = false;
+    }
+    else {
+      iframe.contentDocument.body.style.width = 'calc(100vw - 50px)';
+      document.querySelector('[data-id=full-width] input').checked = true;
+    }
 
     iframe.contentDocument.body.dataset.font = config.prefs.font;
     iframe.contentWindow.focus();
@@ -160,13 +174,30 @@ document.addEventListener('click', e => {
   }
   else if (cmd === 'width-decrease' || cmd === 'width-increase') {
     const width = config.prefs.width;
+    if (width) {
+      chrome.storage.local.set({
+        width: cmd === 'width-decrease' ? Math.max(300, width - 50) : Math.min(1000, width + 50)
+      });
+    }
+    else {
+      chrome.storage.local.set({
+        width: 600
+      });
+    }
+  }
+  else if (cmd === 'full-width') {
     chrome.storage.local.set({
-      width: cmd === 'width-decrease' ? Math.max(300, width - 50) : Math.min(1000, width + 50)
+      width: e.target.parentElement.querySelector('input').checked ? 600 : 0
     });
   }
   else if (cmd === 'line-height-type-1' || cmd === 'line-height-type-2') {
     chrome.storage.local.set({
       'line-height': cmd === 'line-height-type-1' ? 28.8 : 32
+    });
+  }
+  else if (cmd === 'no-height') {
+    chrome.storage.local.set({
+      'line-height': e.target.parentElement.querySelector('input').checked ? 28.8 : 0
     });
   }
   else if (cmd.startsWith('color-mode-')) {
