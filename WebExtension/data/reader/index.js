@@ -318,6 +318,10 @@ chrome.runtime.sendMessage({
   body[data-images=false] img {
     display: none;
   }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
   #reader-domain {
     font-size: 0.9em;
     line-height: 1.48em;
