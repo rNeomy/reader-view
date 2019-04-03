@@ -5,6 +5,7 @@
     <title>Loading... :: Reader View</title>
     <link rel="stylesheet" href="fontello.css">
     <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="libs/text-to-speech/tts.css">
   </head>
   <body data-speech=false>
     <div id="toolbar">
@@ -70,18 +71,10 @@
       <iframe></iframe>
     </div>
     <div id="speech">
-      <div>
-        <label data-id="lang" data-value='DF'><select></select></label>
-        <span class="icon-" data-cmd="play"></span>
-        <span class="icon-" data-cmd="previous"></span>
-        <span class="icon-" data-cmd="next"></span>
-      </div>
       <span data-cmd="close-speech">×</span>
-      <label data-id="speed" title="A float representing the rate value. It can range between 0.5 (lowest) and 3 (highest), with 1 being the default (it takes sometime for this value to effect)">Speed&nbsp;<input type="range" min="0.5" max="3" step="0.3"></label>
     </div>
     <script src="/config.js"></script>
     <script src="index.js"></script>
     <script async src="tip.js"></script>
-    <script async src="speech.js"></script>
   </body>
 </html>

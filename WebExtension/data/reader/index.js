@@ -1,8 +1,10 @@
-/* global config */
+/* global config, TTS */
 'use strict';
 
 var article;
 var isFirefox = /Firefox/.test(navigator.userAgent);
+
+var tts;
 
 var iframe = document.querySelector('iframe');
 document.body.dataset.mode = localStorage.getItem('mode');
@@ -90,8 +92,25 @@ const shortcuts = [];
     span.style.display = 'none';
   }
   span.onclick = () => {
-    document.body.dataset.speech = true;
-    document.querySelector('#speech [data-cmd]').click();
+    if (document.body.dataset.speech === 'true') {
+      document.querySelector('[data-cmd="close-speech"]').click();
+    }
+    else if (typeof TTS === 'undefined') {
+      const script = document.createElement('script');
+      script.onload = () => {
+        tts = new TTS(iframe.contentDocument);
+        tts.feed(...iframe.contentDocument.querySelectorAll('.page p, .page h1, .page h2, .page h3, .page h4'));
+        tts.attach(document.getElementById('speech'));
+        tts.ready().then(() => tts.buttons.play.click());
+      };
+      script.src = 'libs/text-to-speech/tts.js';
+      document.body.appendChild(script);
+      document.body.dataset.speech = true;
+    }
+    else {
+      tts.buttons.play.click();
+      document.body.dataset.speech = true;
+    }
   };
   shortcuts.push({
     condition: e => e.code === 'KeyS' && e.metaKey && e.shiftKey,
@@ -215,6 +234,7 @@ document.addEventListener('click', e => {
   }
   else if (cmd === 'close-speech') {
     document.body.dataset.speech = false;
+    tts.stop();
   }
 });
 
@@ -299,10 +319,10 @@ chrome.runtime.sendMessage({
   #reader-credits:empty {
     disply: none;
   }
-  .speech {
+  .tts-speaking {
     position: relative;
   }
-  .speech::after {
+  .tts-speaking::after {
     content: '';
     position: absolute;
     left: -100vw;

@@ -1,0 +1,91 @@
+.tts {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+}
+.tts [data-id=controls] {
+  display: flex;
+  align-items: center;
+}
+.tts input[type=button] {
+  width: 32px;
+  height: 32px;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  background-size: 24px;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  opacity: 0.7;
+}
+.tts input[type=button]:hover {
+  opacity: 1;
+}
+.tts input[type=button]:active {
+  opacity: 0.3;
+}
+.tts input[type=button]:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.tts .play {
+  background-image: url('icons/play.svg');
+}
+.tts .pause {
+  background-image: url('icons/pause.svg');
+}
+.tts .previous {
+  background-image: url('icons/previous.svg');
+}
+.tts .next {
+  background-image: url('icons/next.svg');
+}
+.tts .stop {
+  background-image: url('icons/stop.svg');
+}
+.tts select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  opacity: 0;
+  background-size: 35px;
+  text-indent: 100px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  background-color: transparent;
+  height: 24px;
+}
+.tts label {
+  position: relative;
+  flex: 1;
+}
+.tts label::before {
+  content: attr(data-value);
+  position: absolute;
+  pointer-events: none;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.tts-speaking {
+  color: red;
+}
+.tts table div {
+  display: flex;
+  align-items: center;
+}
+.tts table input {
+  flex: 1;
+  margin-right: 5px;
+}
+.tts input + span {
+  background-color: rgba(0, 0, 0, 0.1);
+  min-width: 20px;
+  text-align: center;
+  padding: 0 5px;
+}
