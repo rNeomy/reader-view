@@ -20,7 +20,9 @@ function save() {
     'new-tab': document.getElementById('new-tab').checked,
     'reader-mode': document.getElementById('reader-mode').checked,
     'faqs': document.getElementById('faqs').checked,
-    'speech-pitch': Math.max(Math.min(Number(document.getElementById('speech-pitch').value), 2), 0)
+    'context-open-in-reader-view': document.getElementById('context-open-in-reader-view').checked,
+    'context-open-in-reader-view-bg': document.getElementById('context-open-in-reader-view-bg').checked,
+    'context-switch-to-reader-view': document.getElementById('context-switch-to-reader-view').checked
   }, () => {
     const status = document.getElementById('status');
     status.textContent = 'Options saved.';
@@ -42,7 +44,9 @@ function restore() {
     document.getElementById('new-tab').checked = prefs['new-tab'];
     document.getElementById('reader-mode').checked = prefs['reader-mode'];
     document.getElementById('faqs').checked = prefs['faqs'];
-    document.getElementById('speech-pitch').value = prefs['speech-pitch'];
+    document.getElementById('context-open-in-reader-view').checked = prefs['context-open-in-reader-view'];
+    document.getElementById('context-open-in-reader-view-bg').checked = prefs['context-open-in-reader-view-bg'];
+    document.getElementById('context-switch-to-reader-view').checked = prefs['context-switch-to-reader-view'];
   });
 }
 config.load(restore);
@@ -51,6 +55,8 @@ document.getElementById('save').addEventListener('click', save);
 document.getElementById('support').addEventListener('click', () => chrome.tabs.create({
   url: chrome.runtime.getManifest().homepage_url + '?rd=donate'
 }));
+
+document.getElementById('reload').addEventListener('click', () => chrome.runtime.reload());
 
 document.getElementById('reset').addEventListener('click', e => {
   if (e.detail === 1) {

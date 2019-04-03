@@ -58,24 +58,30 @@ function onClicked(tab) {
 chrome.pageAction.onClicked.addListener(onClicked);
 
 {
-  const callback = () => {
-    chrome.contextMenus.create({
-      id: 'open-in-reader-view',
-      title: 'Open in Reader View',
-      contexts: ['link']
-    });
-    chrome.contextMenus.create({
-      id: 'open-in-reader-view-bg',
-      title: 'Open in background Reader View',
-      contexts: ['link']
-    });
-    chrome.contextMenus.create({
-      id: 'switch-to-reader-view',
-      title: 'Switch to Reader View',
-      contexts: ['page'],
-      documentUrlPatterns: ['*://*/*']
-    });
-  };
+  const callback = () => config.load(() => {
+    if (config.prefs['context-open-in-reader-view']) {
+      chrome.contextMenus.create({
+        id: 'open-in-reader-view',
+        title: 'Open in Reader View',
+        contexts: ['link']
+      });
+    }
+    if (config.prefs['context-open-in-reader-view-bg']) {
+      chrome.contextMenus.create({
+        id: 'open-in-reader-view-bg',
+        title: 'Open in background Reader View',
+        contexts: ['link']
+      });
+    }
+    if (config.prefs['context-switch-to-reader-view']) {
+      chrome.contextMenus.create({
+        id: 'switch-to-reader-view',
+        title: 'Switch to Reader View',
+        contexts: ['page'],
+        documentUrlPatterns: ['*://*/*']
+      });
+    }
+  });
   chrome.runtime.onInstalled.addListener(callback);
   chrome.runtime.onStartup.addListener(callback);
 }

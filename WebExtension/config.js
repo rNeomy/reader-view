@@ -13,10 +13,9 @@ config.prefs = {
   'faqs': true,
   'version': null,
   'user-css': '', // is used for exporting from old method; do not delete
-  'last-update': 0,
-  'speech-voice': 'default', // 0 - 2
-  'speech-pitch': 1, // 0 - 2
-  'speech-rate': 1 // 0.1 - 10
+  'context-open-in-reader-view': true,
+  'context-open-in-reader-view-bg': true,
+  'context-switch-to-reader-view': true
 };
 
 chrome.storage.onChanged.addListener(prefs => {

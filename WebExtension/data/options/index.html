@@ -27,7 +27,7 @@
 </head>
 
 <body>
-  <table>
+  <table width=100%>
     <colgroup>
       <col width=32>
       <col>
@@ -64,6 +64,22 @@
         <td><label for="speech-button">Show "speech button" in the reader view</label></td>
         <td></td>
       </tr>
+      <tr>
+        <td><input type="checkbox" id="context-open-in-reader-view"></td>
+        <td><label for="context-open-in-reader-view">Show "Open in Reader View" context-menu item (restart required)</label></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="context-open-in-reader-view-bg"></td>
+        <td><label for="context-open-in-reader-view-bg">Show "Open in background Reader View" context-menu item (restart required)</label></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="context-switch-to-reader-view"></td>
+        <td><label for="context-switch-to-reader-view">Show "Switch to Reader View" context-menu item (restart required)</label></td>
+        <td></td>
+      </tr>
+
     </tbody>
     <thead>
       <tr>
@@ -109,21 +125,6 @@
     </tbody>
     <thead>
       <tr>
-        <th colspan="3">Speech</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td></td>
-        <td>Speech pitch (0 - 2):</td>
-        <td><input type="number" min="0.1" max="2" id="speech-pitch" step="0.1"></td>
-      </tr>
-      <tr>
-        <td colspan="3">A float representing the pitch value. It can range between 0 (lowest) and 2 (highest), with 1 being the default pitch for the current platform or voice</td>
-      </tr>
-    </tbody>
-    <thead>
-      <tr>
         <th colspan="3">Misc</th>
       </tr>
     </thead>
@@ -141,6 +142,7 @@
   <div id="explore" data-inc=50></div>
   <p>
     <button id="support">Support Development</button>
+    <button id="reload">Restart</button>
     <button id="reset">Reset</button> - <button id="save">Save</button>
     <span id="status"></span>
   </p>
