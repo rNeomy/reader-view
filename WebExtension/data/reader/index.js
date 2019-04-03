@@ -149,13 +149,14 @@ const shortcuts = [];
 
 var styles = {
   top: document.createElement('style'),
-  iframe: document.createElement('style')
+  iframe: document.createElement('style'),
+  internals: document.createElement('style')
 };
 styles.top.textContent = localStorage.getItem('top-css') || '';
 styles.iframe.textContent = localStorage.getItem('user-css') || '';
 document.documentElement.appendChild(styles.top);
 
-document.removeEventListener('click', e => {
+document.addEventListener('click', e => {
   const bol = e.target.dataset.cmd === 'open-settings' || Boolean(e.target.closest('#toolbar>div'));
   settings.dataset.display = bol;
 });
@@ -176,26 +177,18 @@ var update = {
     document.body.dataset.mode = iframe.contentDocument.body.dataset.mode = mode;
   },
   async: () => {
-    iframe.contentDocument.body.style['font-size'] = config.prefs['font-size'] + 'px';
-    iframe.contentDocument.body.style['font-family'] = getFont(config.prefs['font']);
-    if (config.prefs['line-height']) {
-      iframe.contentDocument.body.style['line-height'] = config.prefs['line-height'] + 'px';
-      document.querySelector('[data-id=no-height] input').checked = false;
-    }
-    else {
-      iframe.contentDocument.body.style['line-height'] = 'unset';
-      document.querySelector('[data-id=no-height] input').checked = true;
-    }
-    if (config.prefs.width) {
-      iframe.contentDocument.body.style.width = config.prefs.width + 'px';
-      document.querySelector('[data-id=full-width] input').checked = false;
-    }
-    else {
-      iframe.contentDocument.body.style.width = 'calc(100vw - 50px)';
-      document.querySelector('[data-id=full-width] input').checked = true;
-    }
+    styles.internals.textContent = `
+      body {
+        font-size:  ${config.prefs['font-size']}px;
+        font-family: ${getFont(config.prefs['font'])};
+        line-height: ${config.prefs['line-height'] ? config.prefs['line-height'] + 'px' : 'unset'};
+        width: ${config.prefs.width ? config.prefs.width + 'px' : 'calc(100vw - 50px)'};
+        font: ${config.prefs.font};
+      }
+    `;
+    document.querySelector('[data-id=no-height] input').checked = Boolean(config.prefs['line-height']) === false;
+    document.querySelector('[data-id=full-width] input').checked = Boolean(config.prefs.width) === false;
 
-    iframe.contentDocument.body.dataset.font = config.prefs.font;
     iframe.contentWindow.focus();
   }
 };
@@ -417,6 +410,7 @@ chrome.runtime.sendMessage({
     settings.dataset.display = false;
   });
 
+  iframe.contentDocument.documentElement.appendChild(styles.internals);
   iframe.contentDocument.documentElement.appendChild(styles.iframe);
   iframe.addEventListener('load', () => {
     // apply transition after initial changes
