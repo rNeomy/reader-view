@@ -119,6 +119,34 @@ const shortcuts = [];
   document.getElementById('toolbar').appendChild(span);
 }
 
+/* images */
+{
+  const span = document.createElement('span');
+  span.title = 'Toggle images (Meta + Shift + I)';
+  span.classList.add('icon-picture-' + (localStorage.getItem('show-images') === 'false' ? 'false' : 'true'));
+  if (localStorage.getItem('images-button') === 'false') {
+    span.style.display = 'none';
+  }
+  span.onclick = () => {
+    const bol = localStorage.getItem('show-images') === 'false';
+    localStorage.setItem('show-images', bol ? true : false);
+    if (bol) {
+      span.classList.add('icon-picture-true');
+      span.classList.remove('icon-picture-false');
+    }
+    else {
+      span.classList.add('icon-picture-false');
+      span.classList.remove('icon-picture-true');
+    }
+    iframe.contentDocument.body.dataset.images = bol;
+  };
+  shortcuts.push({
+    condition: e => e.code === 'KeyI' && e.metaKey && e.shiftKey,
+    action: span.onclick
+  });
+  document.getElementById('toolbar').appendChild(span);
+}
+
 var styles = {
   top: document.createElement('style'),
   iframe: document.createElement('style')
@@ -127,7 +155,7 @@ styles.top.textContent = localStorage.getItem('top-css') || '';
 styles.iframe.textContent = localStorage.getItem('user-css') || '';
 document.documentElement.appendChild(styles.top);
 
-document.addEventListener('click', e => {
+document.removeEventListener('click', e => {
   const bol = e.target.dataset.cmd === 'open-settings' || Boolean(e.target.closest('#toolbar>div'));
   settings.dataset.display = bol;
 });
@@ -287,6 +315,9 @@ chrome.runtime.sendMessage({
   body[data-loaded=true] {
     transition: color 0.4s, background-color 0.4s;
   }
+  body[data-images=false] img {
+    display: none;
+  }
   #reader-domain {
     font-size: 0.9em;
     line-height: 1.48em;
@@ -344,6 +375,7 @@ chrome.runtime.sendMessage({
 </html>`;
   iframe.contentDocument.write(html);
   iframe.contentDocument.close();
+  iframe.contentDocument.body.dataset.images = localStorage.getItem('show-images');
   update.sync();
 
   // automatically detect ltr and rtl
@@ -354,7 +386,7 @@ chrome.runtime.sendMessage({
   // link handling
   iframe.contentDocument.addEventListener('click', e => {
     const a = e.target.closest('a');
-    if (a && a.href && a.href.startsWith('http')) {
+    if (a && a.href && a.href.startsWith('http') && e.button === 0) {
       e.preventDefault();
       chrome.runtime.sendMessage({
         cmd: 'open',
@@ -385,10 +417,6 @@ chrome.runtime.sendMessage({
   iframe.addEventListener('load', () => {
     // apply transition after initial changes
     document.body.dataset.loaded = iframe.contentDocument.body.dataset.loaded = true;
-    if (isFirefox) {
-      const script = iframe.contentDocument.documentElement.appendChild(document.createElement('script'));
-      script.src = chrome.runtime.getURL('/data/reader/scroll.js');
-    }
   });
   // close on escape
   {

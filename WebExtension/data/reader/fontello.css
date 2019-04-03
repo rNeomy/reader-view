@@ -60,10 +60,7 @@
 .icon-right:before { content: '\e807'; } /* '' */
 .icon-plus:before { content: '\e808'; } /* '' */
 .icon-minus:before { content: '\e809'; } /* '' */
-.icon-play:before { content: '\e80a'; } /* '' */
-.icon-pause:before { content: '\e80b'; } /* '' */
-.icon-stop:before { content: '\e80c'; } /* '' */
-.icon-next:before { content: '\e80d'; } /* '' */
-.icon-previous:before { content: '\e80e'; } /* '' */
+.icon-picture-false:before { content: '\e80b'; } /* '' */
+.icon-picture-true:before { content: '\e80c'; } /* '' */
 .icon-fullscreen:before { content: '\e80f'; } /* '' */
 .icon-font:before { content: '\f088'; } /* '' */
