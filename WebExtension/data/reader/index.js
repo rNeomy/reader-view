@@ -177,18 +177,16 @@ var update = {
     document.body.dataset.mode = iframe.contentDocument.body.dataset.mode = mode;
   },
   async: () => {
-    styles.internals.textContent = `
-      body {
-        font-size:  ${config.prefs['font-size']}px;
-        font-family: ${getFont(config.prefs['font'])};
-        line-height: ${config.prefs['line-height'] ? config.prefs['line-height'] + 'px' : 'unset'};
-        width: ${config.prefs.width ? config.prefs.width + 'px' : 'calc(100vw - 50px)'};
-        font: ${config.prefs.font};
-      }
-    `;
+    styles.internals.textContent = `body {
+      font-size:  ${config.prefs['font-size']}px;
+      font-family: ${getFont(config.prefs.font)};
+      line-height: ${config.prefs['line-height'] ? config.prefs['line-height'] + 'px' : 'unset'};
+      width: ${config.prefs.width ? config.prefs.width + 'px' : 'calc(100vw - 50px)'};
+    }`;
     document.querySelector('[data-id=no-height] input').checked = Boolean(config.prefs['line-height']) === false;
     document.querySelector('[data-id=full-width] input').checked = Boolean(config.prefs.width) === false;
-
+    // as a CSS selector
+    document.body.dataset.font = iframe.contentDocument.body.dataset.font = config.prefs.font;
     iframe.contentWindow.focus();
   }
 };
@@ -292,6 +290,7 @@ chrome.runtime.sendMessage({
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     margin: 30px auto 0 auto;
+    padding: 10px;
   }
   body[data-mode="light"] {
     color: #222222;
@@ -362,12 +361,14 @@ chrome.runtime.sendMessage({
   </style>
 </head>
 <body>
+  <span></span> <!-- for IntersectionObserver -->
   <a id="reader-domain" href="${article.url}">${(new URL(article.url)).hostname}</a>
   <h1 dir="auto" id="reader-title">${article.title || 'Unknown Title'}</h1>
   <div dir="auto" id="reader-credits">${article.byline || ''}</div>
   <div dir="auto" id="reader-estimated-time">${article.readingTimeMinsFast}-${article.readingTimeMinsSlow} minutes</div>
   <hr/>
   ${article.content}
+  <span></span> <!-- for IntersectionObserver -->
 </body>
 </html>`;
   iframe.contentDocument.write(html);
@@ -409,6 +410,33 @@ chrome.runtime.sendMessage({
   iframe.contentWindow.addEventListener('click', () => {
     settings.dataset.display = false;
   });
+  // navigation
+  {
+    if (localStorage.getItem('navigate-buttons') === 'false') {
+      document.getElementById('navigate').style.display = 'none';
+    }
+    const next = document.getElementById('navigate-next');
+    const previous = document.getElementById('navigate-previous');
+    previous.onclick = next.onclick = e => {
+      const {clientHeight} = iframe.contentDocument.documentElement;
+      iframe.contentDocument.documentElement.scrollTop += (e.target === next ? 1 : -1) * clientHeight;
+    };
+    const scroll = () => {
+      const {scrollHeight, clientHeight, scrollTop} = iframe.contentDocument.documentElement;
+      previous.disabled = scrollTop === 0;
+      next.disabled = scrollHeight <= scrollTop + clientHeight;
+    };
+    iframe.contentWindow.addEventListener('scroll', scroll);
+    scroll();
+    shortcuts.push({
+      condition: e => e.key === 'ArrowRight' && e.metaKey,
+      action: () => next.click()
+    }, {
+      condition: e => e.key === 'ArrowLeft' && e.metaKey,
+      action: () => previous.click()
+    });
+  }
+
 
   iframe.contentDocument.documentElement.appendChild(styles.internals);
   iframe.contentDocument.documentElement.appendChild(styles.iframe);

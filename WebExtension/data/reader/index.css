@@ -264,3 +264,26 @@ body[data-speech=false] #speech {
 #speech [data-cmd]:active {
   opacity: 0.1;
 }
+
+#navigate {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  overflow: hidden;
+}
+#navigate input {
+  font-family: 'fontello';
+  border: none;
+  background: transparent;
+  font-size: 32px;
+  outline: 0;
+  color: #737373;
+  transition: opacity .5s ease;
+  cursor: pointer;
+}
+#navigate input:active {
+  opacity: 0.5;
+}
+#navigate input:disabled {
+  opacity: 0.3;
+}
