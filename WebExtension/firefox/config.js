@@ -13,8 +13,8 @@ config.prefs = {
   'faqs': true,
   'version': null,
   'user-css': '', // is used for exporting from old method; do not delete
-  'context-open-in-reader-view': true,
-  'context-open-in-reader-view-bg': true,
+  'context-open-in-reader-view': false,
+  'context-open-in-reader-view-bg': false,
   'context-switch-to-reader-view': true
 };
 

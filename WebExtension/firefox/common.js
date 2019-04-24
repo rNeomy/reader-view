@@ -10,26 +10,36 @@ function notify(message) {
   });
 }
 
-function update(tab) {
-  const page = tab.url.startsWith('http');
-  const reader = tab.url.startsWith(chrome.runtime.getURL('data/reader/index.html'));
-  chrome.pageAction[page || reader ? 'show' : 'hide'](tab.id);
-  chrome.pageAction.setIcon({
-    tabId: tab.id,
-    path: {
-      16: 'data/icons' + (reader ? '/orange' : '') + '/16.png',
-      32: 'data/icons' + (reader ? '/orange' : '') + '/32.png',
-      64: 'data/icons' + (reader ? '/orange' : '') + '/64.png'
-    }
+// page action
+if ('declarativeContent' in chrome) {
+  chrome.runtime.onInstalled.addListener(() => {
+    chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
+      chrome.declarativeContent.onPageChanged.addRules([{
+        conditions: [
+          new chrome.declarativeContent.PageStateMatcher({
+            pageUrl: {
+              schemes: ['http', 'https']
+            }
+          })
+        ],
+        actions: [new chrome.declarativeContent.ShowPageAction()]
+      }]);
+    });
   });
 }
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => update(tab));
-chrome.tabs.query({}, tabs => tabs.forEach(update));
-
-var cache = {};
+else {
+  chrome.tabs.onUpdated.addListener(tabId => chrome.pageAction.show(tabId));
+  chrome.tabs.query({}, tabs => tabs.forEach(tab => chrome.pageAction.show(tab.id)));
+}
 
 function onClicked(tab) {
-  if (tab.url.startsWith('http')) {
+  const root = chrome.runtime.getURL('');
+  if (tab.url && tab.url.startsWith(root)) {
+    chrome.tabs.sendMessage(tab.id, {
+      cmd: 'close'
+    });
+  }
+  else {
     chrome.tabs.executeScript(tab.id, {
       file: 'data/inject/Readability.js'
     }, () => {
@@ -44,13 +54,8 @@ function onClicked(tab) {
         }
         chrome.tabs.executeScript(tab.id, {
           file: 'data/inject/wrapper.js'
-        }, () => {});
+        });
       }
-    });
-  }
-  else {
-    chrome.tabs.sendMessage(tab.id, {
-      cmd: 'close'
     });
   }
 }
@@ -91,15 +96,20 @@ chrome.contextMenus.onClicked.addListener(({menuItemId, pageUrl, linkUrl}, tab) 
     onClicked(tab);
   }
   else if (menuItemId.startsWith('open-in-reader-view')) {
-    chrome.tabs.create({
-      url,
-      openerTabId: tab.id,
-      index: tab.index + 1,
-      active: !menuItemId.endsWith('-bg')
-    }, t => onClicked({
-      id: t.id,
-      url
-    }));
+    chrome.permissions.request({
+      permissions: ['tabs'],
+      origins: ['*://*/*']
+    }, () => {
+      chrome.tabs.create({
+        url,
+        openerTabId: tab.id,
+        index: tab.index + 1,
+        active: !menuItemId.endsWith('-bg')
+      }, t => window.setTimeout(onClicked, 1000, {
+        id: t.id,
+        url
+      }));
+    });
   }
 });
 
@@ -126,6 +136,8 @@ var onUpdated = (tabId, info, tab) => {
   }
 };
 onUpdated.cache = {};
+var cache = {};
+chrome.tabs.onRemoved.addListener(tabId => delete cache[tabId]);
 
 chrome.runtime.onMessage.addListener((request, sender, response) => {
   const id = sender.tab ? sender.tab.id : '';
@@ -142,6 +154,15 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   }
   else if (request.cmd === 'read-data') {
     response(cache[id]);
+    chrome.pageAction.show(id, () => chrome.pageAction.setIcon({
+      tabId: id,
+      path: {
+        16: 'data/icons/orange/16.png',
+        32: 'data/icons/orange/32.png',
+        48: 'data/icons/orange/48.png',
+        64: 'data/icons/orange/64.png'
+      }
+    }));
   }
   else if (request.cmd === 'open') {
     if (request.current) {
@@ -161,10 +182,6 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     onUpdated.cache[id] = true;
     chrome.tabs.onUpdated.addListener(onUpdated);
   }
-});
-
-chrome.tabs.onRemoved.addListener(tabId => {
-  delete cache[tabId];
 });
 
 { // one-time
@@ -229,7 +246,7 @@ body[data-mode=dark] {}`);
   chrome.runtime.onInstalled.addListener(callback);
   chrome.runtime.onStartup.addListener(callback);
 }
-
+// FAQs
 {
   const {onInstalled, setUninstallURL, getManifest} = chrome.runtime;
   const {name, version} = getManifest();

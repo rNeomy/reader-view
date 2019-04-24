@@ -3,15 +3,17 @@
   "short_name": "reader-view",
   "description": "strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability",
   "author": "Richard Neomy",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "manifest_version": 2,
   "permissions": [
     "storage",
-    "tabs",
+    "activeTab",
     "contextMenus",
-    "*://*/*",
-    "chrome://favicon/",
     "notifications"
+  ],
+  "optional_permissions": [
+    "tabs",
+    "*://*/*"
   ],
   "background": {
     "persist": false,
@@ -24,6 +26,7 @@
     "default_icon": {
       "16": "data/icons/16.png",
       "32": "data/icons/32.png",
+      "48": "data/icons/48.png",
       "64": "data/icons/64.png"
     }
   },
@@ -32,16 +35,14 @@
     "16": "data/icons/16.png",
     "32": "data/icons/32.png",
     "48": "data/icons/48.png",
-    "128": "data/icons/128.png"
+    "64": "data/icons/64.png",
+    "128": "data/icons/128.png",
+    "256": "data/icons/256.png"
   },
-  "web_accessible_resources": [
-    "data/reader/*"
-  ],
   "options_ui": {
     "page": "data/options/index.html",
     "chrome_style": true
   },
-  "incognito": "split",
   "commands": {
     "toggle-reader-view": {
       "description": "Toggle the Reader View"
