@@ -12,20 +12,24 @@ function notify(message) {
 
 // page action
 if ('declarativeContent' in chrome) {
-  chrome.runtime.onInstalled.addListener(() => {
-    chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
-      chrome.declarativeContent.onPageChanged.addRules([{
-        conditions: [
-          new chrome.declarativeContent.PageStateMatcher({
-            pageUrl: {
-              schemes: ['http', 'https']
-            }
-          })
-        ],
-        actions: [new chrome.declarativeContent.ShowPageAction()]
-      }]);
-    });
+  const observe = () => chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
+    chrome.declarativeContent.onPageChanged.addRules([{
+      conditions: [
+        new chrome.declarativeContent.PageStateMatcher({
+          pageUrl: {
+            schemes: ['http', 'https']
+          }
+        })
+      ],
+      actions: [new chrome.declarativeContent.ShowPageAction()]
+    }]);
   });
+  if (chrome.extension.inIncognitoContext) {
+    observe();
+  }
+  else {
+    chrome.runtime.onInstalled.addListener(observe);
+  }
 }
 else {
   chrome.tabs.onUpdated.addListener(tabId => chrome.pageAction.show(tabId));
