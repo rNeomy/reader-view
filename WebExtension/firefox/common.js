@@ -218,7 +218,7 @@ a:link {
   font-weight: normal;
 }
 pre {
-  white-space: pre-line;
+  white-space: pre-wrap;
 }
 pre code {
   background-color: #eff0f1;
