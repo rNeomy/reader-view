@@ -4,12 +4,12 @@
 {
   if (Readability.prototype._getReadTime === undefined) {
     Readability.prototype._getReadTime = function(textContent) {
-      let lang = this._doc.documentElement.lang || 'en';
+      const lang = this._doc.documentElement.lang || 'en';
       const readingSpeed = this._getReadingSpeedForLanguage(lang);
       const charactersPerMinuteLow = readingSpeed.cpm - readingSpeed.variance;
       const charactersPerMinuteHigh = readingSpeed.cpm + readingSpeed.variance;
       const length = textContent.length;
-       return {
+      return {
         readingTimeMinsSlow: Math.ceil(length / charactersPerMinuteLow),
         readingTimeMinsFast: Math.ceil(length / charactersPerMinuteHigh)
       };
@@ -34,7 +34,7 @@
         ['tr', {cpm: 1054, variance: 156}],
         ['zh', {cpm: 255, variance: 29}]
       ]);
-       return readingSpeed.get(lang) || readingSpeed.get('en');
+      return readingSpeed.get(lang) || readingSpeed.get('en');
     };
     const pars = Readability.prototype.parse;
     Readability.prototype.parse = function(...args) {

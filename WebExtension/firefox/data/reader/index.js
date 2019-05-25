@@ -8,7 +8,16 @@ var tts;
 
 var iframe = document.querySelector('iframe');
 document.body.dataset.mode = localStorage.getItem('mode');
-var settings = document.querySelector('#toolbar>div');
+var fontUtils = document.querySelector('#font-utils');
+fontUtils.addEventListener('blur', () => {
+  fontUtils.dataset.display = false;
+  iframe.contentWindow.focus();
+});
+var imageUtils = document.querySelector('#image-utils');
+imageUtils.addEventListener('blur', () => {
+  imageUtils.dataset.display = false;
+  iframe.contentWindow.focus();
+});
 
 const shortcuts = [];
 
@@ -124,25 +133,25 @@ const shortcuts = [];
   const span = document.createElement('span');
   span.title = 'Toggle images (Meta + Shift + I)';
   span.classList.add('icon-picture-' + (localStorage.getItem('show-images') === 'false' ? 'false' : 'true'));
+  span.dataset.cmd = 'open-image-utils';
   if (localStorage.getItem('images-button') === 'false') {
     span.style.display = 'none';
   }
-  span.onclick = () => {
-    const bol = localStorage.getItem('show-images') === 'false';
-    localStorage.setItem('show-images', bol ? true : false);
-    if (bol) {
-      span.classList.add('icon-picture-true');
-      span.classList.remove('icon-picture-false');
-    }
-    else {
-      span.classList.add('icon-picture-false');
-      span.classList.remove('icon-picture-true');
-    }
-    iframe.contentDocument.body.dataset.images = bol;
-  };
   shortcuts.push({
     condition: e => e.code === 'KeyI' && e.metaKey && e.shiftKey,
-    action: span.onclick
+    action: () => {
+      const bol = localStorage.getItem('show-images') === 'false';
+      localStorage.setItem('show-images', bol ? true : false);
+      if (bol) {
+        span.classList.add('icon-picture-true');
+        span.classList.remove('icon-picture-false');
+      }
+      else {
+        span.classList.add('icon-picture-false');
+        span.classList.remove('icon-picture-true');
+      }
+      iframe.contentDocument.body.dataset.images = bol;
+    }
   });
   document.getElementById('toolbar').appendChild(span);
 }
@@ -155,11 +164,6 @@ var styles = {
 styles.top.textContent = localStorage.getItem('top-css') || '';
 styles.iframe.textContent = localStorage.getItem('user-css') || '';
 document.documentElement.appendChild(styles.top);
-
-document.addEventListener('click', e => {
-  const bol = e.target.dataset.cmd === 'open-settings' || Boolean(e.target.closest('#toolbar>div'));
-  settings.dataset.display = bol;
-});
 
 function getFont(font) {
   switch (font) {
@@ -187,7 +191,6 @@ var update = {
     document.querySelector('[data-id=full-width] input').checked = Boolean(config.prefs.width) === false;
     // as a CSS selector
     document.body.dataset.font = iframe.contentDocument.body.dataset.font = config.prefs.font;
-    iframe.contentWindow.focus();
   }
 };
 
@@ -199,6 +202,10 @@ document.addEventListener('click', e => {
     return;
   }
   const cmd = target.dataset.cmd;
+  if (cmd) {
+    e.target.classList.add('active');
+  }
+
   if (cmd.startsWith('font-type-')) {
     chrome.storage.local.set({
       'font': cmd.replace('font-type-', '')
@@ -255,6 +262,42 @@ document.addEventListener('click', e => {
     document.body.dataset.speech = false;
     tts.stop();
   }
+  else if (cmd === 'open-font-utils') {
+    fontUtils.dataset.display = true;
+    fontUtils.focus();
+  }
+  else if (cmd === 'open-image-utils') {
+    imageUtils.dataset.display = true;
+    imageUtils.focus();
+  }
+  else if (cmd === 'image-increase' || cmd === 'image-decrease') {
+    [...iframe.contentDocument.images].forEach(img => {
+      const {width} = img.getBoundingClientRect();
+      if (width >= 32) {
+        const scale = cmd === 'image-increase' ? 1.1 : 0.9;
+        img.width = Math.max(width * scale, 32);
+        img.height = 'auto';
+      }
+    });
+  }
+  else if (cmd === 'image-show' || cmd === 'image-hide') {
+    const bol = cmd === 'image-show';
+    localStorage.setItem('show-images', bol ? true : false);
+    const span = document.querySelector('[data-cmd="open-image-utils"]');
+    if (bol) {
+      span.classList.add('icon-picture-true');
+      span.classList.remove('icon-picture-false');
+    }
+    else {
+      span.classList.add('icon-picture-false');
+      span.classList.remove('icon-picture-true');
+    }
+    iframe.contentDocument.body.dataset.images = bol;
+  }
+});
+/* transition */
+document.getElementById('toolbar').addEventListener('transitionend', e => {
+  e.target.classList.remove('active');
 });
 
 chrome.runtime.onMessage.addListener(request => {
@@ -409,10 +452,6 @@ chrome.runtime.sendMessage({
     history.back();
     return false;
   };
-
-  iframe.contentWindow.addEventListener('click', () => {
-    settings.dataset.display = false;
-  });
   // navigation
   {
     if (localStorage.getItem('navigate-buttons') === 'false') {
@@ -469,6 +508,7 @@ chrome.runtime.sendMessage({
     };
     iframe.contentDocument.addEventListener('keydown', callback);
     document.addEventListener('keydown', callback);
+    iframe.contentWindow.focus();
   }
   config.load(update.async);
 });

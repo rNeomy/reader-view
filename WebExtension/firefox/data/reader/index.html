@@ -10,8 +10,8 @@
   <body data-speech=false>
     <div id="toolbar">
       <span class="icon-close" data-cmd="close" title="Close Reader View"></span>
-      <span class="icon-font" data-cmd="open-settings" title="Type controls"></span>
-      <div>
+      <span class="icon-font" data-cmd="open-font-utils" title="Type controls"></span>
+      <div id="font-utils" tabindex="-1">
         <table border="0" cellpadding="0" cellspacing="0">
           <colgroup>
             <col style="border-right: solid 1px #B5B5B5;" width=50%>
@@ -26,9 +26,9 @@
             <td data-cmd="font-increase"><span class="icon-plus"></span></td>
           </tr>
           <tr>
-            <td data-id="full-width">
+            <td data-id="full-width" data-cmd="full-width">
               <input id="full-width" type="checkbox"/>
-              <label for="full-width" data-cmd="full-width">Full Width</label>
+              <label>Full Width</label>
             </td>
             <td>
               <div class="strech">
@@ -38,9 +38,9 @@
             </td>
           </tr>
           <tr>
-            <td data-id="no-height">
+            <td data-id="no-height" data-cmd="no-height">
               <input id="no-height" type="checkbox"/>
-              <label for="no-height" data-cmd="no-height">No Height</label>
+              <label>No Height</label>
             </td>
             <td>
               <div class="strech">
@@ -57,6 +57,22 @@
                 <span data-cmd="color-mode-sepia">Sepia</span>
               </div>
             </td>
+          </tr>
+        </table>
+      </div>
+      <div id="image-utils" tabindex="-1">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <colgroup>
+            <col style="border-right: solid 1px #B5B5B5;" width=50%>
+            <col>
+          </colgroup>
+          <tr title="The +/- buttons only scale images with width greater than 32px. Scaling is not persistent operation. To reset, refresh the page.">
+            <td data-cmd="image-decrease"><span class="icon-minus"></span></td>
+            <td data-cmd="image-increase"><span class="icon-plus"></span></td>
+          </tr>
+          <tr>
+            <td data-cmd="image-hide">Hide</td>
+            <td data-cmd="image-show">Show</td>
           </tr>
         </table>
       </div>

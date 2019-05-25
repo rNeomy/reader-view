@@ -44,6 +44,10 @@ body[data-mode=sepia] #toolbar {
 #toolbar {
   user-select: none;
 }
+#toolbar .active:not([data-cmd="full-width"]):not([data-cmd="no-height"]) {
+  opacity: 0.5;
+  transition: opacity .25s ease-in-out;
+}
 #toolbar>span {
   display: block;
   font-size: 25px;
@@ -58,85 +62,98 @@ body[data-mode=sepia] #toolbar {
 body[data-mode=dark] #toolbar>span {
   color: rgb(238, 238, 238);
 }
-#toolbar>div {
+#image-utils,
+#font-utils {
   position: absolute;
   left: 60px;
-  top: 50px;
   width: 100px;
   border-radius: 4px;
   box-shadow: 0 1px 12px #666;
   min-width: 300px;
   background-color: #fbfbfb;
   display: none;
+  outline: none;
 }
-#toolbar>div[data-display=true] {
+#font-utils {
+  top: 50px;
+}
+#image-utils {
+  top: 300px;
+}
+#image-utils[data-display=true],
+#font-utils[data-display=true] {
   display: block;
 }
-#toolbar>div table {
+#image-utils table,
+#font-utils table {
   width: 100%;
   text-align: center;
   border-collapse: collapse;
 }
-#toolbar>div tr {
+#image-utils tr,
+#font-utils tr {
   height: 60px;
   color: #333333;
   font-size: 20px;
   border: 1px solid #B5B5B5;
 }
-#toolbar>div td {
+#image-utils td,
+#font-utils td {
   cursor: pointer;
 }
-#toolbar>div td span[data-cmd*=color-]:active {
-  box-shadow: inset 0 -3px 0 0 #fc6420;
-}
-#toolbar [data-cmd]:active {
-  opacity: 0.5;
-}
-#toolbar>div tr:first-child td:first-child{
+#font-utils tr:first-child td:first-child{
   height: 100px;
   font-family: Helvetica, Arial, sans-serif;
 }
-#toolbar>div tr:first-child td:last-child {
+#font-utils tr:first-child td:last-child {
   font-family: Georgia, "Times New Roman", serif;
 }
-#toolbar>div tr:first-child span {
+#image-utils tr:first-child span,
+#font-utils tr:first-child span {
   display: block;
 }
-#toolbar>div tr:first-child span:first-child {
+#font-utils tr:first-child span:first-child {
   font-size: 62px;
 }
-#toolbar>div tr:first-child span:last-child {
+#font-utils tr:first-child span:last-child {
   margin-top: -4px;
   color: #666;
   font-size: 12px;
 }
-#toolbar>div tr:last-child td div {
+#font-utils tr:last-child td div {
   display: flex;
   font-size: 14px;
 }
-#toolbar>div tr:last-child td span {
+#font-utils tr:last-child td span {
   flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 60px;
 }
-#toolbar>div tr:last-child td span:nth-child(2) {
+#font-utils tr:last-child td span:nth-child(2) {
   color: #eeeeee;
   background-color: #333333;
 }
-#toolbar>div tr:last-child td span:nth-child(3) {
+#font-utils tr:last-child td span:nth-child(3) {
   color: #5b4636;
   background-color: #f4ecd8;
 }
+#image-utils tr:last-child td {
+  font-size: 14px;
+}
 
+#toolbar [data-id="no-height"] input,
+#toolbar [data-id="full-width"] input {
+  cursor: pointer;
+}
 #toolbar [data-id="no-height"] input,
 #toolbar [data-id="full-width"] input {
   display: none;
 }
 #toolbar [data-id="no-height"] label,
 #toolbar [data-id="full-width"] label {
-  cursor: pointer;
+  pointer-events: none;
   font-size: 14px;
 }
 #toolbar [data-id="no-height"] input:checked ~ label,
