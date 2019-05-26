@@ -6,16 +6,48 @@ var isFirefox = /Firefox/.test(navigator.userAgent);
 
 var tts;
 
+var update = {
+  async: () => {
+    const prefs = config.prefs;
+    styles.internals.textContent = `body {
+      font-size:  ${prefs['font-size']}px;
+      font-family: ${getFont(prefs.font)};
+      line-height: ${prefs['line-height'] ? prefs['line-height'] + 'px' : 'unset'};
+      width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
+    }`;
+    document.querySelector('[data-id=no-height] input').checked = Boolean(prefs['line-height']) === false;
+    document.querySelector('[data-id=full-width] input').checked = Boolean(prefs.width) === false;
+    // as a CSS selector
+    document.body.dataset.font = prefs.font;
+    if (iframe.contentDocument) {
+      iframe.contentDocument.body.dataset.font = prefs.font;
+    }
+  },
+  images: () => {
+    const bol = config.prefs['show-images'];
+    const span = document.querySelector('[data-cmd="open-image-utils"]');
+    if (bol) {
+      span.classList.add('icon-picture-true');
+      span.classList.remove('icon-picture-false');
+    }
+    else {
+      span.classList.add('icon-picture-false');
+      span.classList.remove('icon-picture-true');
+    }
+    iframe.contentDocument.body.dataset.images = bol;
+  }
+};
+
 var iframe = document.querySelector('iframe');
-document.body.dataset.mode = localStorage.getItem('mode');
+
 var fontUtils = document.querySelector('#font-utils');
 fontUtils.addEventListener('blur', () => {
-  fontUtils.dataset.display = false;
+  fontUtils.classList.add('hidden');
   iframe.contentWindow.focus();
 });
 var imageUtils = document.querySelector('#image-utils');
 imageUtils.addEventListener('blur', () => {
-  imageUtils.dataset.display = false;
+  imageUtils.classList.add('hidden');
   iframe.contentWindow.focus();
 });
 
@@ -25,13 +57,12 @@ const shortcuts = [];
 {
   const span = document.createElement('span');
   span.title = 'Print in the Reader View (Meta + P)';
-  span.classList.add('icon-print');
-  if (localStorage.getItem('printing-button') === 'false') {
-    span.style.display = 'none';
-  }
+  span.classList.add('icon-print', 'hidden');
+  span.id = 'printing-button';
+
   span.onclick = () => iframe.contentWindow.print();
   shortcuts.push({
-    condition: e => e.code === 'KeyP' && e.metaKey,
+    condition: e => e.code === 'KeyP' && (e.metaKey || e.ctrlKey),
     action: span.onclick
   });
   document.getElementById('toolbar').appendChild(span);
@@ -40,10 +71,8 @@ const shortcuts = [];
 {
   const span = document.createElement('span');
   span.title = 'Save in HTML format (Meta + S)';
-  span.classList.add('icon-save');
-  if (localStorage.getItem('save-button') === 'false') {
-    span.style.display = 'none';
-  }
+  span.classList.add('icon-save', 'hidden');
+  span.id = 'save-button';
   span.onclick = () => {
     const content = iframe.contentDocument.documentElement.outerHTML;
     const blob = new Blob([content], {
@@ -59,7 +88,7 @@ const shortcuts = [];
     setTimeout(() => URL.revokeObjectURL(objectURL));
   };
   shortcuts.push({
-    condition: e => e.code === 'KeyS' && e.metaKey && !e.shiftKey,
+    condition: e => e.code === 'KeyS' && (e.metaKey || e.ctrlKey) && !e.shiftKey,
     action: span.onclick
   });
   document.getElementById('toolbar').appendChild(span);
@@ -68,10 +97,8 @@ const shortcuts = [];
 {
   const span = document.createElement('span');
   span.title = 'Switch to the fullscreen reading (F9)';
-  span.classList.add('icon-fullscreen');
-  if (localStorage.getItem('fullscreen-button') === 'false') {
-    span.style.display = 'none';
-  }
+  span.classList.add('icon-fullscreen', 'hidden');
+  span.id = 'fullscreen-button';
   span.onclick = () => {
     if (iframe.requestFullscreen) {
       iframe.requestFullscreen();
@@ -96,10 +123,8 @@ const shortcuts = [];
 {
   const span = document.createElement('span');
   span.title = 'Read this Article (Beta) (Meta + Shift + S)';
-  span.classList.add('icon-speech');
-  if (localStorage.getItem('speech-button') === 'false') {
-    span.style.display = 'none';
-  }
+  span.classList.add('icon-speech', 'hidden');
+  span.id = 'speech-button';
   span.onclick = () => {
     if (document.body.dataset.speech === 'true') {
       document.querySelector('[data-cmd="close-speech"]').click();
@@ -122,7 +147,7 @@ const shortcuts = [];
     }
   };
   shortcuts.push({
-    condition: e => e.code === 'KeyS' && e.metaKey && e.shiftKey,
+    condition: e => e.code === 'KeyS' && (e.metaKey || e.ctrlKey) && e.shiftKey,
     action: span.onclick
   });
   document.getElementById('toolbar').appendChild(span);
@@ -131,26 +156,16 @@ const shortcuts = [];
 /* images */
 {
   const span = document.createElement('span');
+  span.classList.add('hidden');
+  span.id = 'images-button';
   span.title = 'Toggle images (Meta + Shift + I)';
-  span.classList.add('icon-picture-' + (localStorage.getItem('show-images') === 'false' ? 'false' : 'true'));
   span.dataset.cmd = 'open-image-utils';
-  if (localStorage.getItem('images-button') === 'false') {
-    span.style.display = 'none';
-  }
   shortcuts.push({
-    condition: e => e.code === 'KeyI' && e.metaKey && e.shiftKey,
-    action: () => {
-      const bol = localStorage.getItem('show-images') === 'false';
-      localStorage.setItem('show-images', bol ? true : false);
-      if (bol) {
-        span.classList.add('icon-picture-true');
-        span.classList.remove('icon-picture-false');
-      }
-      else {
-        span.classList.add('icon-picture-false');
-        span.classList.remove('icon-picture-true');
-      }
-      iframe.contentDocument.body.dataset.images = bol;
+    condition: e => e.code === 'KeyI' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    action() {
+      chrome.storage.local.set({
+        'show-images': config.prefs['show-images'] === false
+      });
     }
   });
   document.getElementById('toolbar').appendChild(span);
@@ -161,9 +176,6 @@ var styles = {
   iframe: document.createElement('style'),
   internals: document.createElement('style')
 };
-styles.top.textContent = localStorage.getItem('top-css') || '';
-styles.iframe.textContent = localStorage.getItem('user-css') || '';
-document.documentElement.appendChild(styles.top);
 
 function getFont(font) {
   switch (font) {
@@ -174,27 +186,6 @@ function getFont(font) {
     return 'Helvetica, Arial, sans-serif';
   }
 }
-
-var update = {
-  sync: () => {
-    const mode = localStorage.getItem('mode') || 'sepia';
-    document.body.dataset.mode = iframe.contentDocument.body.dataset.mode = mode;
-  },
-  async: () => {
-    styles.internals.textContent = `body {
-      font-size:  ${config.prefs['font-size']}px;
-      font-family: ${getFont(config.prefs.font)};
-      line-height: ${config.prefs['line-height'] ? config.prefs['line-height'] + 'px' : 'unset'};
-      width: ${config.prefs.width ? config.prefs.width + 'px' : 'calc(100vw - 50px)'};
-    }`;
-    document.querySelector('[data-id=no-height] input').checked = Boolean(config.prefs['line-height']) === false;
-    document.querySelector('[data-id=full-width] input').checked = Boolean(config.prefs.width) === false;
-    // as a CSS selector
-    document.body.dataset.font = iframe.contentDocument.body.dataset.font = config.prefs.font;
-  }
-};
-
-chrome.storage.onChanged.addListener(update.async);
 
 document.addEventListener('click', e => {
   const target = e.target.closest('[data-cmd]');
@@ -246,8 +237,9 @@ document.addEventListener('click', e => {
     });
   }
   else if (cmd.startsWith('color-mode-')) {
-    localStorage.setItem('mode', cmd.replace('color-mode-', ''));
-    update.sync();
+    chrome.storage.local.set({
+      mode: cmd.replace('color-mode-', '')
+    });
   }
   else if (cmd === 'close') {
     // do this until the script is unloaded
@@ -263,11 +255,11 @@ document.addEventListener('click', e => {
     tts.stop();
   }
   else if (cmd === 'open-font-utils') {
-    fontUtils.dataset.display = true;
+    fontUtils.classList.remove('hidden');
     fontUtils.focus();
   }
   else if (cmd === 'open-image-utils') {
-    imageUtils.dataset.display = true;
+    imageUtils.classList.remove('hidden');
     imageUtils.focus();
   }
   else if (cmd === 'image-increase' || cmd === 'image-decrease') {
@@ -281,18 +273,9 @@ document.addEventListener('click', e => {
     });
   }
   else if (cmd === 'image-show' || cmd === 'image-hide') {
-    const bol = cmd === 'image-show';
-    localStorage.setItem('show-images', bol ? true : false);
-    const span = document.querySelector('[data-cmd="open-image-utils"]');
-    if (bol) {
-      span.classList.add('icon-picture-true');
-      span.classList.remove('icon-picture-false');
-    }
-    else {
-      span.classList.add('icon-picture-false');
-      span.classList.remove('icon-picture-true');
-    }
-    iframe.contentDocument.body.dataset.images = bol;
+    chrome.storage.local.set({
+      'show-images': cmd === 'image-show'
+    });
   }
 });
 /* transition */
@@ -304,13 +287,9 @@ chrome.runtime.onMessage.addListener(request => {
   if (request.cmd === 'close') {
     history.go(isFirefox ? -2 : -1);
   }
-  else if (request.cmd === 'update-styling') {
-    styles.top.textContent = localStorage.getItem('top-css') || '';
-    styles.iframe.textContent = localStorage.getItem('user-css') || '';
-  }
 });
 
-chrome.runtime.sendMessage({
+const render = () => chrome.runtime.sendMessage({
   cmd: 'read-data'
 }, obj => {
   article = obj;
@@ -419,8 +398,8 @@ chrome.runtime.sendMessage({
 </html>`;
   iframe.contentDocument.write(html);
   iframe.contentDocument.close();
-  iframe.contentDocument.body.dataset.images = localStorage.getItem('show-images');
-  update.sync();
+  iframe.contentDocument.body.dataset.images = config.prefs['show-images'];
+  iframe.contentDocument.body.dataset.mode = config.prefs.mode;
 
   // automatically detect ltr and rtl
   [...iframe.contentDocument.querySelectorAll('article>*')]
@@ -454,9 +433,6 @@ chrome.runtime.sendMessage({
   };
   // navigation
   {
-    if (localStorage.getItem('navigate-buttons') === 'false') {
-      document.getElementById('navigate').style.display = 'none';
-    }
     const next = document.getElementById('navigate-next');
     const previous = document.getElementById('navigate-previous');
     previous.onclick = next.onclick = e => {
@@ -471,10 +447,10 @@ chrome.runtime.sendMessage({
     iframe.contentWindow.addEventListener('scroll', scroll);
     scroll();
     shortcuts.push({
-      condition: e => e.key === 'ArrowRight' && e.metaKey,
+      condition: e => e.key === 'ArrowRight' && (e.metaKey || e.ctrlKey),
       action: () => next.click()
     }, {
-      condition: e => e.key === 'ArrowLeft' && e.metaKey,
+      condition: e => e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey),
       action: () => previous.click()
     });
   }
@@ -510,5 +486,56 @@ chrome.runtime.sendMessage({
     document.addEventListener('keydown', callback);
     iframe.contentWindow.focus();
   }
-  config.load(update.async);
+  iframe.contentDocument.body.dataset.font = config.prefs.font;
+});
+
+// pref changes
+config.onChanged.push(ps => {
+  if (ps['top-css']) {
+    styles.top.textContent = config.prefs['top-css'];
+  }
+  if (ps['user-css']) {
+    styles.iframe.textContent = config.prefs['user-css'];
+  }
+  if (ps['font-size'] || ps['font'] || ps['line-height'] || ps['width']) {
+    update.async();
+  }
+  if (ps['show-images']) {
+    update.images();
+  }
+  if (ps['mode']) {
+    document.body.dataset.mode = iframe.contentDocument.body.dataset.mode = config.prefs.mode;
+  }
+});
+
+// load
+config.load(() => {
+  document.body.dataset.mode = config.prefs.mode;
+  if (config.prefs['printing-button']) {
+    document.getElementById('printing-button').classList.remove('hidden');
+  }
+  if (config.prefs['save-button']) {
+    document.getElementById('save-button').classList.remove('hidden');
+  }
+  if (config.prefs['fullscreen-button']) {
+    document.getElementById('fullscreen-button').classList.remove('hidden');
+  }
+  if (config.prefs['speech-button']) {
+    document.getElementById('speech-button').classList.remove('hidden');
+  }
+  if (config.prefs['images-button']) {
+    document.getElementById('images-button').classList.remove('hidden');
+  }
+  update.images();
+  update.async();
+
+  styles.top.textContent = config.prefs['top-css'];
+  document.documentElement.appendChild(styles.top);
+  styles.iframe.textContent = config.prefs['user-css'];
+
+  if (config.prefs['navigate-buttons']) {
+    document.getElementById('navigate').classList.remove('hidden');
+  }
+
+  render();
 });

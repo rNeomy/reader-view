@@ -14,9 +14,6 @@ function save() {
 
   localStorage.setItem('auto-fullscreen', document.getElementById('auto-fullscreen').checked);
 
-  chrome.runtime.sendMessage({
-    cmd: 'update-styling'
-  });
   chrome.storage.local.set({
     'user-css': document.getElementById('user-css').value,
     'new-tab': document.getElementById('new-tab').checked,

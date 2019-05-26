@@ -11,7 +11,7 @@
     <div id="toolbar">
       <span class="icon-close" data-cmd="close" title="Close Reader View"></span>
       <span class="icon-font" data-cmd="open-font-utils" title="Type controls"></span>
-      <div id="font-utils" tabindex="-1">
+      <div id="font-utils" tabindex="-1" class="hidden">
         <table border="0" cellpadding="0" cellspacing="0">
           <colgroup>
             <col style="border-right: solid 1px #B5B5B5;" width=50%>
@@ -60,7 +60,7 @@
           </tr>
         </table>
       </div>
-      <div id="image-utils" tabindex="-1">
+      <div id="image-utils" tabindex="-1" class="hidden">
         <table border="0" cellpadding="0" cellspacing="0">
           <colgroup>
             <col style="border-right: solid 1px #B5B5B5;" width=50%>
@@ -89,7 +89,7 @@
     <div id="speech">
       <span data-cmd="close-speech">×</span>
     </div>
-    <div id="navigate">
+    <div id="navigate" class="hidden">
       <input type="button" id="navigate-previous" value="&#xE80D;" disabled=true title="move to the previous page (Meta + Left Arrow Key)">
       <input type="button" id="navigate-next" value="&#xE80A;" disabled=true title="move to the next page (Meta + Right Arrow Key)">
     </div>

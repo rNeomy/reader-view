@@ -188,68 +188,6 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   }
 });
 
-{ // one-time
-  const callback = () => config.load(() => {
-    if (!localStorage.getItem('user-css')) {
-      if (config['mode']) {
-        localStorage.setItem('mode', config.prefs.mode);
-        chrome.storage.local.remove('mode');
-      }
-      else {
-        localStorage.setItem('mode', 'sepia');
-      }
-
-      if (config.prefs['user-css']) {
-        localStorage.setItem('user-css', config.prefs['user-css']);
-        chrome.storage.local.remove('user-css');
-      }
-      else {
-        localStorage.setItem('user-css', `body {
-  padding-bottom: 64px;
-}
-a:visited {
-  color: #d33bf0;
-}
-a:link, a:link:hover, a:link:active {
-  color: #0095dd;
-}
-a:link {
-  text-decoration: none;
-  font-weight: normal;
-}
-pre {
-  white-space: pre-wrap;
-}
-pre code {
-  background-color: #eff0f1;
-  color: #393318;
-  font-family: monospace;
-  display: block;
-  padding: 5px 10px;
-}
-body[data-mode="dark"] pre code {
-  background-color: #585858;
-  color: #e8e8e8;
-}
-
-/* CSS for sans-serif fonts */
-body[data-font=sans-serif] {}
-/* CSS for serif fonts */
-body[data-font=serif] {}
-
-/* CSS for "sepia" theme */
-body[data-mode=sepia] {
-}
-/* CSS for "light" theme */
-body[data-mode=light] {}
-/* CSS for "dark" theme */
-body[data-mode=dark] {}`);
-      }
-    }
-  });
-  chrome.runtime.onInstalled.addListener(callback);
-  chrome.runtime.onStartup.addListener(callback);
-}
 // FAQs
 {
   const {onInstalled, setUninstallURL, getManifest} = chrome.runtime;

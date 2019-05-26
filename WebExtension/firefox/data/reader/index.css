@@ -71,7 +71,6 @@ body[data-mode=dark] #toolbar>span {
   box-shadow: 0 1px 12px #666;
   min-width: 300px;
   background-color: #fbfbfb;
-  display: none;
   outline: none;
 }
 #font-utils {
@@ -79,10 +78,6 @@ body[data-mode=dark] #toolbar>span {
 }
 #image-utils {
   top: 300px;
-}
-#image-utils[data-display=true],
-#font-utils[data-display=true] {
-  display: block;
 }
 #image-utils table,
 #font-utils table {
@@ -303,4 +298,8 @@ body[data-speech=false] #speech {
 }
 #navigate input:disabled {
   opacity: 0.3;
+}
+
+.hidden {
+  display: none !important;
 }
