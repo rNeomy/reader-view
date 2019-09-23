@@ -39,9 +39,7 @@ else {
 function onClicked(tab) {
   const root = chrome.runtime.getURL('');
   if (tab.url && tab.url.startsWith(root)) {
-    chrome.tabs.sendMessage(tab.id, {
-      cmd: 'close'
-    });
+    chrome.tabs.goBack(tab.id);
   }
   else {
     chrome.tabs.executeScript(tab.id, {
@@ -94,7 +92,8 @@ chrome.pageAction.onClicked.addListener(onClicked);
   chrome.runtime.onInstalled.addListener(callback);
   chrome.runtime.onStartup.addListener(callback);
 }
-chrome.contextMenus.onClicked.addListener(({menuItemId, pageUrl, linkUrl}, tab) => {
+
+var onContext = ({menuItemId, pageUrl, linkUrl}, tab) => {
   const url = linkUrl || pageUrl;
   if (menuItemId === 'switch-to-reader-view') {
     onClicked(tab);
@@ -115,7 +114,8 @@ chrome.contextMenus.onClicked.addListener(({menuItemId, pageUrl, linkUrl}, tab) 
       }));
     });
   }
-});
+};
+chrome.contextMenus.onClicked.addListener(onContext);
 
 chrome.commands.onCommand.addListener(function(command) {
   if (command === 'toggle-reader-view') {
@@ -150,7 +150,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     cache[sender.tab.id] = request.article;
     cache[sender.tab.id].url = url;
     chrome.tabs.update(id, {
-      url: chrome.runtime.getURL('data/reader/index.html?id=' + id)
+      url: chrome.runtime.getURL('data/reader/index.html?id=' + id + '&url=' + encodeURIComponent(url))
     });
   }
   else if (request.cmd === 'open-reader') {
@@ -185,6 +185,9 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   else if (request.cmd === 'reader-on-reload') {
     onUpdated.cache[id] = true;
     chrome.tabs.onUpdated.addListener(onUpdated);
+  }
+  else if (request.cmd === 'go-back') {
+    chrome.tabs.goBack(sender.tab.id);
   }
 });
 

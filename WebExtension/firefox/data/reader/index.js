@@ -1,12 +1,21 @@
 /* global config, TTS */
 'use strict';
 
-var article;
-var isFirefox = /Firefox/.test(navigator.userAgent);
+let article;
 
-var tts;
+let tts;
 
-var update = {
+const args = new URLSearchParams(location.search);
+
+const nav = {
+  back() {
+    chrome.runtime.sendMessage({
+      'cmd': 'go-back'
+    });
+  }
+};
+
+const update = {
   async: () => {
     const prefs = config.prefs;
     styles.internals.textContent = `body {
@@ -38,14 +47,14 @@ var update = {
   }
 };
 
-var iframe = document.querySelector('iframe');
+const iframe = document.querySelector('iframe');
 
-var fontUtils = document.querySelector('#font-utils');
+const fontUtils = document.querySelector('#font-utils');
 fontUtils.addEventListener('blur', () => {
   fontUtils.classList.add('hidden');
   iframe.contentWindow.focus();
 });
-var imageUtils = document.querySelector('#image-utils');
+const imageUtils = document.querySelector('#image-utils');
 imageUtils.addEventListener('blur', () => {
   imageUtils.classList.add('hidden');
   iframe.contentWindow.focus();
@@ -125,25 +134,31 @@ const shortcuts = [];
   span.title = 'Read this Article (Beta) (Meta + Shift + S)';
   span.classList.add('icon-speech', 'hidden');
   span.id = 'speech-button';
-  span.onclick = () => {
+  span.onclick = async () => {
     if (document.body.dataset.speech === 'true') {
       document.querySelector('[data-cmd="close-speech"]').click();
     }
     else if (typeof TTS === 'undefined') {
-      const script = document.createElement('script');
-      script.onload = () => {
-        tts = new TTS(iframe.contentDocument);
-        tts.feed(...iframe.contentDocument.querySelectorAll('.page p, .page h1, .page h2, .page h3, .page h4'));
-        tts.attach(document.getElementById('speech'));
-        tts.ready().then(() => tts.buttons.play.click());
-      };
-      script.src = 'libs/text-to-speech/tts.js';
-      document.body.appendChild(script);
+      const add = src => new Promise(resolve => {
+        const script = document.createElement('script');
+        script.onload = resolve;
+        script.src = src;
+        document.body.appendChild(script);
+      });
       document.body.dataset.speech = true;
+      iframe.contentDocument.body.dataset.speech = true;
+      await add('libs/text-to-speech/engines/watson.js');
+      await add('libs/text-to-speech/tts.js');
+      tts = new TTS(iframe.contentDocument);
+      tts.feed(...iframe.contentDocument.querySelectorAll('.page p, .page h1, .page h2, .page h3, .page h4'));
+      tts.attach(document.getElementById('speech'));
+      await tts.ready();
+      tts.buttons.play.click();
     }
     else {
       tts.buttons.play.click();
       document.body.dataset.speech = true;
+      iframe.contentDocument.body.dataset.speech = true;
     }
   };
   shortcuts.push({
@@ -171,7 +186,7 @@ const shortcuts = [];
   document.getElementById('toolbar').appendChild(span);
 }
 
-var styles = {
+const styles = {
   top: document.createElement('style'),
   iframe: document.createElement('style'),
   internals: document.createElement('style')
@@ -242,17 +257,12 @@ document.addEventListener('click', e => {
     });
   }
   else if (cmd === 'close') {
-    // do this until the script is unloaded
-    window.setTimeout(() => {
-      e.target.dispatchEvent(new Event('click', {
-        bubbles: true
-      }));
-    }, 200);
-    history.go(-1);
+    nav.back();
   }
   else if (cmd === 'close-speech') {
     document.body.dataset.speech = false;
-    tts.stop();
+    iframe.contentDocument.body.dataset.speech = false;
+    tts.buttons.stop.click();
   }
   else if (cmd === 'open-font-utils') {
     fontUtils.classList.remove('hidden');
@@ -283,23 +293,12 @@ document.getElementById('toolbar').addEventListener('transitionend', e => {
   e.target.classList.remove('active');
 });
 
-chrome.runtime.onMessage.addListener(request => {
-  if (request.cmd === 'close') {
-    history.go(isFirefox ? -2 : -1);
-  }
-});
-
 const render = () => chrome.runtime.sendMessage({
   cmd: 'read-data'
 }, obj => {
   article = obj;
   if (!article) { // open this page from history for instance
-    if (history.length) {
-      history.back();
-    }
-    else {
-      window.alert('Sorry the original content is not accessible anymore. Please load the origin content and retry');
-    }
+    return location.replace(args.get('url'));
   }
   iframe.contentDocument.open();
   const html = `
@@ -383,6 +382,9 @@ const render = () => chrome.runtime.sendMessage({
     height: calc(100% + 10px);
     box-shadow: 0 0 0 1000vw rgba(128,128,128,0.2);
   }
+  body[data-speech="false"] .tts-speaking::after {
+    display: none;
+  }
   </style>
 </head>
 <body>
@@ -428,7 +430,7 @@ const render = () => chrome.runtime.sendMessage({
     }
   ));
   iframe.contentDocument.getElementById('reader-domain').onclick = () => {
-    history.back();
+    nav.back();
     return false;
   };
   // navigation
@@ -471,7 +473,7 @@ const render = () => chrome.runtime.sendMessage({
         document.webkitFullscreenElement ||
         document.msFullscreenElement)
       ) {
-        history.go(isFirefox ? -2 : -1);
+        nav.back();
       }
       shortcuts.forEach(o => {
         if (o.condition(e)) {

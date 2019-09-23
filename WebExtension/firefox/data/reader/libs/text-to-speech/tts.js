@@ -51,11 +51,16 @@
       // for remote voices use end event to detect when a new section is played
       this.on('instance-end', () => {
         if (this.local === false) {
+          if (this.sections.length <= this.offset + 1) {
+            delete this.audio;
+          }
           if (this.sections.length > this.offset + 1 && this.dead === false) {
             this.offset += 1;
+            this.emit('section', this.offset);
             this.instance.text = this.sections[this.offset].textContent;
             // delay only if there is a section
-            const timeout = this.sections[this.offset].target === this.sections[this.offset - 1].target ? 0 : this.DELAY;
+            const timeout = this.sections[this.offset].target === this.sections[this.offset - 1].target ?
+              0 : this.DELAY;
             this[LAZY](() => this.speak(), timeout);
           }
           else {
@@ -70,8 +75,11 @@
 
       this.voices = speechSynthesis.getVoices();
       if (this.voices.length === 0) {
-        speechSynthesis.addEventListener('voiceschanged', () => {
-          this.voices = speechSynthesis.getVoices();
+        Promise.race([
+          new Promise(resolve => speechSynthesis.addEventListener('voiceschanged', resolve)),
+          new Promise(resolve => window.setTimeout(resolve, 1000))
+        ]).then(() => {
+          this.voices = speechSynthesis.getVoices(true);
           this.postponed.forEach(c => c());
         });
       }
@@ -91,16 +99,59 @@
       instance.onboundary = e => this.emit('instance-boundary', e);
       instance.onend = () => this.emit('instance-end');
       this.instance = instance;
+
+      if (this.audio) {
+        this.audio.pause();
+      }
+      this.audio = new Audio();
+      let s = false;
+      this.audio.addEventListener('pause', () => {
+        if (this.audio) {
+          instance.onpause();
+        }
+        else {
+          instance.onend();
+        }
+      });
+      this.audio.addEventListener('ended', () => {
+        instance.onend();
+      });
+      this.audio.addEventListener('canplay', () => {
+        if (s === false) {
+          instance.onstart();
+          s = true;
+        }
+      });
+      this.audio.addEventListener('playing', () => {
+        if (s === true) {
+          instance.onresume();
+          s = true;
+        }
+      });
+      this.audio.addEventListener('error', e => {
+        window.alert(e.message || 'This audio cannot be decoded');
+        console.error(e);
+      });
     }
     voice(voice) {
       this.local = voice.localService;
-      this.instance.voice = voice;
+      delete this._voice;
+      if (speechSynthesis.speaking && voice.voiceURI === 'custom') {
+        speechSynthesis.cancel();
+      }
+      if (voice.voiceURI === 'custom') {
+        this._voice = voice;
+      }
+      else {
+        this.instance.voice = voice;
+      }
     }
     stop() {
       this.state = 'stop';
       window.clearTimeout(this.timer);
       // already playing
-      const speaking = speechSynthesis.speaking;
+      const speaking = speechSynthesis.speaking || (this.audio ? !this.audio.paused : false);
+      console.log(speaking);
       if (speaking) {
         this.dead = true;
         speechSynthesis.cancel();
@@ -109,13 +160,15 @@
           speechSynthesis.resume();
         }
       }
+      if (this.audio) {
+        this.audio.pause();
+      }
     }
     start(offset = 0) {
       this.state = 'play';
       this.offset = offset;
-      this.stop();
-      if (this.dead) {
-        console.warn('speechSynthesis was already playing. Force reset');
+      if (speechSynthesis.speaking) {
+        this.stop();
       }
       // initiate
       if (this.local) {
@@ -129,11 +182,23 @@
     }
     speak() {
       this.state = 'play';
-      speechSynthesis.speak(this.instance);
+      if (this._voice) {
+        const src = this._voice.build(this.instance.text);
+        this.audio.src = src;
+        this.audio.play();
+      }
+      else {
+        speechSynthesis.speak(this.instance);
+      }
     }
     resume() {
       this.state = 'play';
-      speechSynthesis.resume();
+      if (this._voice) {
+        this.audio.play();
+      }
+      else {
+        speechSynthesis.resume();
+      }
       // bug; remote voice does not trigger resume event
       if (this.local === false) {
         this.emit('instance-resume');
@@ -145,7 +210,13 @@
       if (this.local === false) {
         this.emit('instance-pause');
       }
-      speechSynthesis.pause();
+
+      if (this._voice) {
+        this.audio.pause();
+      }
+      else {
+        speechSynthesis.pause();
+      }
     }
   }
   class Parser extends SimpleTTS {
@@ -305,12 +376,9 @@
     navigate(direction = 'forward', offset) {
       try {
         offset = typeof offset === 'undefined' ? this.validate(direction) : offset;
-        const voice = this.instance.voice;
+        const voice = this._voice || this.instance.voice;
         this.stop();
         this.create();
-        if (voice) {
-          this.voice(voice);
-        }
         this.offset = offset;
         this[LAZY](() => this.start(this.offset));
       }
@@ -349,6 +417,12 @@
       this.instance.rate = this.options.rate;
       this.instance.lang = this.options.lang;
       this.instance.volume = this.options.volume;
+      if (this.audio) {
+        this.audio.addEventListener('playing', () => {
+          this.audio.volume = this.options.volume;
+          this.audio.playbackRate = this.options.rate;
+        });
+      }
     }
   }
   class Intractive extends Options {
@@ -413,7 +487,7 @@
         localStorage.setItem('tts-selected', select.value);
         if (this.instance) {
           this.voice(select.selectedOptions[0].voice);
-          if (speechSynthesis.speaking && speechSynthesis.paused === false) {
+          if ((speechSynthesis.speaking && speechSynthesis.paused === false) || this.audio) {
             this.navigate(undefined, this.offset);
           }
         }
@@ -423,7 +497,7 @@
       previous.addEventListener('click', () => this.navigate('backward'));
       const play = div.querySelector('.play');
       play.addEventListener('click', () => {
-        if (speechSynthesis.speaking === false) {
+        if (speechSynthesis.speaking === false && !this.audio) {
           this.create();
           this.start();
         }
@@ -437,7 +511,10 @@
       const next = div.querySelector('.next');
       next.addEventListener('click', () => this.navigate('forward'));
       const stop = div.querySelector('.stop');
-      stop.addEventListener('click', () => this.stop());
+      stop.addEventListener('click', () => {
+        this.stop();
+        delete this.audio;
+      });
 
       this.ready().then(() => {
         play.disabled = false;
@@ -445,15 +522,16 @@
         let value;
         const langs = {};
         for (const o of this.voices) {
-          langs[o.lang] = langs[o.lang] || [];
-          langs[o.lang].push(o);
+          const lang = o.lang.split('-')[0];
+          langs[lang] = langs[lang] || [];
+          langs[lang].push(o);
         }
-        for (const [lang, os] of Object.entries(langs)) {
+        for (const [lang, os] of Object.entries(langs).sort()) {
           const optgroup = document.createElement('optgroup');
           optgroup.label = lang;
           os.forEach(o => {
             const option = document.createElement('option');
-            option.textContent = o.name;
+            option.textContent = `[${o.lang}] ` + o.name;
             option.value = lang + '/' + o.name;
             option.voice = o;
             if (o.default) {
@@ -464,8 +542,16 @@
           select.appendChild(optgroup);
         }
 
-        select.value = localStorage.getItem('tts-selected') || value || select.options[0].value;
-        select.dispatchEvent(new Event('change'));
+        if (select.options.length) {
+          select.value = localStorage.getItem('tts-selected') || value || select.options[0].value;
+          if (!select.value) {
+            select.value = value || select.options[0].value;
+          }
+          select.dispatchEvent(new Event('change'));
+        }
+        else {
+          console.warn('there is no TTS voice available');
+        }
       });
 
       const calc = () => {
@@ -502,6 +588,7 @@
           calc();
         }
       });
+      this.controls = {};
       // volume
       {
         const input = table.querySelector('[data-id=volume]');
@@ -512,8 +599,12 @@
           span.textContent = input.value;
           if (this.instance) {
             this.instance.volume = input.value;
+            if (this.audio) {
+              this.audio.volume = input.value;
+            }
           }
         });
+        this.controls.volume = input;
       }
       // pitch
       {
@@ -527,6 +618,7 @@
             this.instance.pitch = input.value;
           }
         });
+        this.controls.pitch = input;
       }
       // rate
       {
@@ -538,8 +630,12 @@
           span.textContent = input.value;
           if (this.instance) {
             this.instance.rate = input.value;
+            if (this.audio) {
+              this.audio.playbackRate = input.value;
+            }
           }
         });
+        this.controls.rate = input;
       }
 
       this.buttons = {
@@ -559,6 +655,14 @@
       if (selected) {
         this.voice(selected.voice);
       }
+    }
+    reset() {
+      this.controls.rate.value = 1;
+      this.controls.rate.dispatchEvent(new Event('input'));
+      this.controls.volume.value = 1;
+      this.controls.volume.dispatchEvent(new Event('input'));
+      this.controls.pitch.value = 1;
+      this.controls.pitch.dispatchEvent(new Event('input'));
     }
   }
 
