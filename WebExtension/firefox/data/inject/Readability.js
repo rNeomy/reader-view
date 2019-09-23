@@ -48,6 +48,7 @@ function Readability(doc, options) {
   this._nbTopCandidates = options.nbTopCandidates || this.DEFAULT_N_TOP_CANDIDATES;
   this._charThreshold = options.charThreshold || this.DEFAULT_CHAR_THRESHOLD;
   this._classesToPreserve = this.CLASSES_TO_PRESERVE.concat(options.classesToPreserve || []);
+  this._keepClasses = !!options.keepClasses;
 
   // Start with all flags set
   this._flags = this.FLAG_STRIP_UNLIKELYS |
@@ -163,8 +164,10 @@ Readability.prototype = {
     // Readability cannot open relative uris so we convert them to absolute uris.
     this._fixRelativeUris(articleContent);
 
-    // Remove classes.
-    this._cleanClasses(articleContent);
+    if (!this._keepClasses) {
+      // Remove classes.
+      this._cleanClasses(articleContent);
+    }
   },
 
   /**
@@ -1783,7 +1786,9 @@ Readability.prototype = {
   },
 
   _isProbablyVisible: function(node) {
-    return (!node.style || node.style.display != "none") && !node.hasAttribute("hidden");
+    return (!node.style || node.style.display != "none")
+      && !node.hasAttribute("hidden")
+      && (!node.hasAttribute("aria-hidden") || node.getAttribute("aria-hidden") != "true");
   },
 
   /**
