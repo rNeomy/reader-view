@@ -18,10 +18,14 @@ const nav = {
 const update = {
   async: () => {
     const prefs = config.prefs;
+    let lh = 'unset';
+    if (prefs['line-height']) {
+      lh = prefs['font-size'] * (prefs['line-height'] === 32 ? 1.5 : 1.1) + 'px';
+    }
     styles.internals.textContent = `body {
       font-size:  ${prefs['font-size']}px;
       font-family: ${getFont(prefs.font)};
-      line-height: ${prefs['line-height'] ? prefs['line-height'] + 'px' : 'unset'};
+      line-height: ${lh};
       width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
     }`;
     document.querySelector('[data-id=no-height] input').checked = Boolean(prefs['line-height']) === false;
