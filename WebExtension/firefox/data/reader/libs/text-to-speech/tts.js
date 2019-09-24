@@ -151,7 +151,6 @@
       window.clearTimeout(this.timer);
       // already playing
       const speaking = speechSynthesis.speaking || (this.audio ? !this.audio.paused : false);
-      console.log(speaking);
       if (speaking) {
         this.dead = true;
         speechSynthesis.cancel();
@@ -306,8 +305,8 @@
       };
       this.on('section', n => {
         cleanup();
-        const e = this.sections[n].target || this.sections[n];
-
+        const e = this.sections[n].target && this.sections[n].target.nodeType === 1 ?
+          this.sections[n].target : this.sections[n];
         e.classList.add('tts-speaking');
         if (isElementInViewport(e) === false) {
           e.scrollIntoView({
