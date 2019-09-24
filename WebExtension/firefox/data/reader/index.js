@@ -140,7 +140,7 @@ const shortcuts = [];
 /* speech */
 {
   const span = document.createElement('span');
-  span.title = 'Read this Article (Beta) (Meta + Shift + S)';
+  span.title = 'Read this Article (Beta)\nTo start from middle, select starting word, then press this button\n(Meta + Shift + S)';
   span.classList.add('icon-speech', 'hidden');
   span.id = 'speech-button';
   span.onclick = async () => {
@@ -165,10 +165,39 @@ const shortcuts = [];
       tts.buttons.play.title = 'Play/Pause (Meta + Shift + X)';
       tts.buttons.next.title = 'Next (Meta + Shift + C)';
       tts.buttons.previous.title += 'Previous (Meta + Shift + Z)';
+      // auto play
       tts.buttons.play.click();
+      // start from user selection
+      tts.jump = () => {
+        const selection = iframe.contentWindow.getSelection();
+        if (selection && selection.rangeCount && selection.toString().trim().length) {
+          let range;
+          if (selection.getRangeAt) {
+            range = selection.getRangeAt(0);
+          }
+          else {
+            range = document.createRange();
+            range.setStart(selection.anchorNode, selection.anchorOffset);
+            range.setEnd(selection.focusNode, selection.focusOffset);
+          }
+          let parent = range.commonAncestorContainer;
+          if (parent.nodeType !== parent.ELEMENT_NODE) {
+            parent = parent.parentElement;
+          }
+          const bounded = tts.sections.filter(e => {
+            return e === parent || e.target === parent || parent.contains(e.target || e);
+          });
+          if (bounded.length) {
+            const offset = tts.sections.indexOf(bounded[0]);
+            tts.navigate(undefined, offset);
+          }
+        }
+      };
+      tts.jump();
     }
     else {
       tts.buttons.play.click();
+      tts.jump();
       document.body.dataset.speech = true;
       iframe.contentDocument.body.dataset.speech = true;
     }
