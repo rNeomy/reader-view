@@ -512,10 +512,10 @@ const render = () => chrome.runtime.sendMessage({
     iframe.contentWindow.addEventListener('scroll', scroll);
     scroll();
     shortcuts.push({
-      condition: e => e.key === 'ArrowRight' && (e.metaKey || e.ctrlKey),
+      condition: e => e.shiftKey && e.key === 'ArrowRight' && (e.metaKey || e.ctrlKey),
       action: () => next.click()
     }, {
-      condition: e => e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey),
+      condition: e => e.shiftKey && e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey),
       action: () => previous.click()
     });
   }
