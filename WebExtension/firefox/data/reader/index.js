@@ -20,13 +20,18 @@ const update = {
     const prefs = config.prefs;
     let lh = 'unset';
     if (prefs['line-height']) {
-      lh = prefs['font-size'] * (prefs['line-height'] === 32 ? 1.5 : 1.1) + 'px';
+      lh = prefs['font-size'] * (prefs['line-height'] === 32 ? 1.5 : 1.2) + 'px';
     }
     styles.internals.textContent = `body {
       font-size:  ${prefs['font-size']}px;
       font-family: ${getFont(prefs.font)};
-      line-height: ${lh};
       width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
+    }
+    .page {
+      line-height: ${lh};
+    }
+    h1, h2, h3 {
+      line-height: initial;
     }`;
     document.querySelector('[data-id=no-height] input').checked = Boolean(prefs['line-height']) === false;
     document.querySelector('[data-id=full-width] input').checked = Boolean(prefs.width) === false;
@@ -157,6 +162,9 @@ const shortcuts = [];
       tts.feed(...iframe.contentDocument.querySelectorAll('.page p, .page h1, .page h2, .page h3, .page h4, .page li, .page td, .page th'));
       tts.attach(document.getElementById('speech'));
       await tts.ready();
+      tts.buttons.play.title = 'Play/Pause (Meta + Shift + X)';
+      tts.buttons.next.title = 'Next (Meta + Shift + C)';
+      tts.buttons.previous.title += 'Previous (Meta + Shift + Z)';
       tts.buttons.play.click();
     }
     else {
@@ -168,6 +176,15 @@ const shortcuts = [];
   shortcuts.push({
     condition: e => e.code === 'KeyS' && (e.metaKey || e.ctrlKey) && e.shiftKey,
     action: span.onclick
+  }, {
+    condition: e => e.code === 'KeyZ' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    action: () => tts && tts.buttons.previous.click()
+  }, {
+    condition: e => e.code === 'KeyC' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    action: () => tts && tts.buttons.next.click()
+  }, {
+    condition: e => e.code === 'KeyX' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    action: () => tts && tts.buttons.play.click()
   });
   document.getElementById('toolbar').appendChild(span);
 }
@@ -305,6 +322,7 @@ const render = () => chrome.runtime.sendMessage({
     return location.replace(args.get('url'));
   }
   iframe.contentDocument.open();
+  const {pathname, hostname} = (new URL(article.url));
   const html = `
 <!DOCTYPE html>
 <html>
@@ -343,13 +361,22 @@ const render = () => chrome.runtime.sendMessage({
     height: auto;
   }
   #reader-domain {
-    font-size: 0.9em;
-    line-height: 1.48em;
-    padding-bottom: 4px;
     font-family: Helvetica, Arial, sans-serif;
     text-decoration: none;
     border-bottom-color: currentcolor;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    display: inline-block;
     color: #0095dd;
+  }
+  #reader-domain>span:first-child {
+    font-size: 1.1em;
+  }
+  #reader-domain>span:last-child {
+    font-size: 0.8em;
+    white-spance: no
   }
   #reader-title {
     font-size: 1.6em;
@@ -393,7 +420,10 @@ const render = () => chrome.runtime.sendMessage({
 </head>
 <body>
   <span></span> <!-- for IntersectionObserver -->
-  <a id="reader-domain" href="${article.url}">${(new URL(article.url)).hostname}</a>
+  <a id="reader-domain" href="${article.url}">
+    <span>${hostname}</span>
+    <span>${pathname}</span>
+  </a>
   <h1 dir="auto" id="reader-title">${article.title || 'Unknown Title'}</h1>
   <div dir="auto" id="reader-credits">${article.byline || ''}</div>
   <div dir="auto" id="reader-estimated-time">${article.readingTimeMinsFast}-${article.readingTimeMinsSlow} minutes</div>
@@ -488,8 +518,8 @@ const render = () => chrome.runtime.sendMessage({
         }
       });
     };
-    iframe.contentDocument.addEventListener('keydown', callback);
-    document.addEventListener('keydown', callback);
+    iframe.contentWindow.addEventListener('keydown', callback);
+    window.addEventListener('keydown', callback);
     iframe.contentWindow.focus();
   }
   iframe.contentDocument.body.dataset.font = config.prefs.font;

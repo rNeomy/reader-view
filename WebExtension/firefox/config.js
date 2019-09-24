@@ -1,14 +1,15 @@
 'use strict';
 
-var config = {
+const config = {
   callbacks: [], // will be called when prefs are ready,
   onChanged: []
 };
+window.config = config;
 config.prefs = {
   'font-size': 13,
   'font': 'sans-serif',
   'width': 600,
-  'line-height': 28.8,
+  'line-height': 0,
   'new-tab': true,
   'reader-mode': false,
   'faqs': true,
