@@ -353,6 +353,8 @@ const render = () => chrome.runtime.sendMessage({
   }
   iframe.contentDocument.open();
   const {pathname, hostname} = (new URL(article.url));
+  const gcs = window.getComputedStyle(document.documentElement);
+  console.log(gcs.getPropertyValue('--color-mode-light-color'))
   const html = `
 <!DOCTYPE html>
 <html>
@@ -369,16 +371,28 @@ const render = () => chrome.runtime.sendMessage({
     padding: 10px;
   }
   body[data-mode="light"] {
-    color: #222222;
-    background-color: whitesmoke;
+    color: ${gcs.getPropertyValue('--color-mode-light-color')};
+    background-color: ${gcs.getPropertyValue('--color-mode-light-bg')};
   }
   body[data-mode="dark"] {
-    color: #eeeeee;
-    background-color: #333333;
+    color: ${gcs.getPropertyValue('--color-mode-dark-color')};
+    background-color: ${gcs.getPropertyValue('--color-mode-dark-bg')};
   }
   body[data-mode="sepia"] {
-    color: #5b4636;
-    background-color: #f4ecd8;
+    color: ${gcs.getPropertyValue('--color-mode-sepia-color')};
+    background-color: ${gcs.getPropertyValue('--color-mode-sepia-bg')};
+  }
+  body[data-mode="solarized-light"] {
+    color: ${gcs.getPropertyValue('--color-mode-solarized-light-color')};
+    background-color: ${gcs.getPropertyValue('--color-mode-solarized-light-bg')};
+  }
+  body[data-mode="groove-dark"] {
+    color: ${gcs.getPropertyValue('--color-mode-groove-dark-color')};
+    background-color: ${gcs.getPropertyValue('--color-mode-groove-dark-bg')};
+  }
+  body[data-mode="solarized-dark"] {
+    color: ${gcs.getPropertyValue('--color-mode-solarized-dark-color')};
+    background-color: ${gcs.getPropertyValue('--color-mode-solarized-dark-bg')};
   }
   body[data-loaded=true] {
     transition: color 0.4s, background-color 0.4s;
