@@ -1,3 +1,4 @@
+/* globals tokenizer */
 'use strict';
 
 {
@@ -20,7 +21,6 @@
 
   const LAZY = Symbol();
   const CALC = Symbol();
-  const BIULD = Symbol();
 
   class SimpleTTS extends Emitter {
     constructor(doc = document, options = {
@@ -48,12 +48,11 @@
           this.emit('section', this.offset);
         }
       });
+      // delete the audio element when idle is emitted
+      this.on('idle', () => delete this.audio);
       // for remote voices use end event to detect when a new section is played
       this.on('instance-end', () => {
         if (this.local === false) {
-          if (this.sections.length <= this.offset + 1) {
-            delete this.audio;
-          }
           if (this.sections.length > this.offset + 1 && this.dead === false) {
             this.offset += 1;
             this.emit('section', this.offset);
@@ -64,10 +63,14 @@
             this[LAZY](() => this.speak(), timeout);
           }
           else {
+            if (this.sections.length === this.offset + 1) {
+              this.emit('idle');
+            }
             this.emit('end');
           }
         }
         else {
+          this.emit('idle');
           this.emit('end');
         }
       });
@@ -222,14 +225,14 @@
     feed(...parents) {
       let nodes = [];
       const texts = node => {
-        for (node = node.firstChild; node; node = node.nextSibling) {
-          if (node.nodeType === Node.TEXT_NODE) {
-            if (node.nodeValue.trim()) {
-              nodes.unshift(node);
-            }
-          }
-          else {
-            texts(node);
+        if (node.nodeType === Node.TEXT_NODE) {
+          nodes.unshift(node);
+        }
+        else {
+          const iterator = document.createNodeIterator(node, NodeFilter.SHOW_TEXT);
+          let c;
+          while (c = iterator.nextNode()) {
+            nodes.unshift(c);
           }
         }
       };
@@ -237,9 +240,13 @@
       const sections = [];
       while (nodes.length) {
         const node = nodes.shift();
-        const e = node.parentElement;
-        sections.unshift(e);
-        nodes = nodes.filter(n => e.contains(n) === false);
+        if (node.nodeValue.trim()) {
+          const e = node.parentElement;
+          if (e.offsetParent !== null) { // is element hidden
+            sections.unshift(e);
+          }
+          nodes = nodes.filter(n => e.contains(n) === false);
+        }
       }
       // if a section is already included, remove it;
       const toBeRemoved = [];
@@ -260,7 +267,13 @@
           this.sections.push(section);
         }
         else {
-          const parts = section.textContent.split(/[.,]/g).filter(a => a);
+          const parts = [];
+          if (typeof tokenizer === 'object') {
+            parts.push(...tokenizer.sentences(section.textContent, {}));
+          }
+          else {
+            parts.push(...section.textContent.split(/[.,]/g).filter(a => a));
+          }
           const combined = [];
           let length = 0;
           let cache = [];
@@ -305,8 +318,8 @@
       };
       this.on('section', n => {
         cleanup();
-        const e = this.sections[n].target && this.sections[n].target.nodeType === 1 ?
-          this.sections[n].target : this.sections[n];
+        const e = this.sections[n].target || this.sections[n];
+
         e.classList.add('tts-speaking');
         if (isElementInViewport(e) === false) {
           e.scrollIntoView({
@@ -425,58 +438,181 @@
     }
   }
   class Intractive extends Options {
-    [BIULD](parent) {
-      parent.classList.add('tts');
-
-      const dom = (new DOMParser()).parseFromString(`
-        <div data-id="controls">
-          <label data-id="lang">
-            <select></select>
-          </label>
-          <input type="button" disabled="true" class="previous">
-          <input type="button" disabled="true" class="play">
-          <input type="button" disabled="true" class="next">
-          <input type="button" disabled="true" class="stop">
-        </div>
-        <table width="100%">
-          <colgroup>
-            <col width=60px>
-            <col>
-          </colgroup>
-          <tbody>
-            <tr title="A float that represents the volume value, between 0 (lowest) and 1 (highest.)">
-              <td>Volume</td>
-              <td>
-                <div>
-                  <input min="0.1" max="1" step="0.1" type="range" data-id="volume"><span>1</span>
-                </div>
-              </td>
-            </tr>
-            <tr title="A float representing the rate value. It can range between 0.5 (lowest) and 3 (highest), with 1 being the default (it takes sometime for this value to effect)">
-              <td>Speed</td>
-              <td>
-                <div>
-                  <input min="0.1" max="2" step="0.1" type="range" data-id="rate"><span>1</span>
-                </div>
-              </td>
-            </tr>
-            <tr title="A float representing the pitch value. It can range between 0 (lowest) and 2 (highest), with 1 being the default pitch for the current platform or voice.">
-              <td>Pitch</td>
-              <td>
-                <div>
-                  <input min="0.1" max="2" step="0.1" type="range" data-id="pitch"><span>1</span>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      `, 'text/html');
-
-      const div = dom.querySelector('div');
-      parent.appendChild(div);
-      const table = dom.querySelector('table');
-      parent.appendChild(table);
-
+    async attach(parent) {
+      const iframe = document.createElement('iframe');
+      iframe.style = `
+        border: none;
+        width: 300px;
+        height: 100px;
+        opacity: 0;
+      `;
+      iframe.srcdoc = `
+<html>
+  <head>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        padding: 10px;
+      }
+      body,
+      table {
+        font-size: 13px;
+        font-family: Arial,"Helvetica Neue",Helvetica,sans-serif;
+      }
+      [data-id=controls] {
+        display: flex;
+        align-items: center;
+      }
+      button {
+        width: 32px;
+        height: 32px;
+        outline: none;
+        border: none;
+        cursor: pointer;
+        background-size: 24px;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-color: transparent;
+        opacity: 0.7;
+      }
+      button:hover,
+      input[type=button]:hover {
+        opacity: 1;
+      }
+      button:active,
+      input[type=button]:active {
+        opacity: 0.3;
+      }
+      button:disabled,
+      input[type=button]:disabled {
+        opacity: 0.3;
+        cursor: default;
+      }
+      select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        width: 100%;
+        opacity: 0;
+        background-size: 35px;
+        text-indent: 100px;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        background-color: transparent;
+        height: 24px;
+      }
+      label {
+        position: relative;
+        flex: 1;
+      }
+      label::before {
+        content: attr(data-value);
+        position: absolute;
+        pointer-events: none;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+      table div {
+        display: flex;
+        align-items: center;
+      }
+      table input {
+        flex: 1;
+        margin-right: 5px;
+      }
+      input[type="range"] + span {
+        background-color: rgba(0, 0, 0, 0.1);
+        min-width: 20px;
+        text-align: center;
+        padding: 0 5px;
+      }
+      .play svg:last-child {
+        display: none;
+      }
+      .pause svg:first-child {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-id="controls">
+      <label data-id="lang">
+        <select></select>
+      </label>
+      <button disabled="true" class="previous">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+          <path class="st0" d="M75.7,96h8.1c6.7,0,12.2,5,12.2,11.7v113.5L283.1,98.7c2.5-1.7,5.1-2.3,8.1-2.3c8.3,0,15.4,7,15.4,17v63.1  l118.5-78.2c2.5-1.7,5-2.3,8.1-2.3c8.3,0,14.9,7.4,14.9,17.4v286c0,10-6.7,16.5-15,16.5c-3.1,0-5.4-1.2-8.2-2.9l-118.3-77.6v64  c0,10-7.2,16.5-15.5,16.5c-3.1,0-5.5-1.2-8.2-2.9L96,290.8v113c0,6.7-5.4,12.2-12.2,12.2h-8.1c-6.7,0-11.7-5.5-11.7-12.2V107.7  C64,101,68.9,96,75.7,96z"/>
+        </svg>
+      </button>
+      <button disabled="true" class="play">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+          <path d="M405.2,232.9L126.8,67.2c-3.4-2-6.9-3.2-10.9-3.2c-10.9,0-19.8,9-19.8,20H96v344h0.1c0,11,8.9,20,19.8,20  c4.1,0,7.5-1.4,11.2-3.4l278.1-165.5c6.6-5.5,10.8-13.8,10.8-23.1C416,246.7,411.8,238.5,405.2,232.9z"/>
+        </svg>
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+          <rect height="320" width="79" x="128" y="96"/><rect height="320" width="79" x="305" y="96"/>
+        </svg>
+      </button>
+      <button disabled="true" class="next">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+          <path class="st0" d="M436.3,96h-8.1c-6.7,0-12.2,5-12.2,11.7v113.5L228.9,98.7c-2.5-1.7-5.1-2.3-8.1-2.3c-8.3,0-15.4,7-15.4,17v63.1  L86.9,98.3c-2.5-1.7-5.1-2.3-8.1-2.3c-8.3,0-14.9,7.4-14.9,17.4v286c0,10,6.7,16.5,15,16.5c3.1,0,5.4-1.2,8.2-2.9l118.3-77.6v64  c0,10,7.2,16.5,15.5,16.5c3.1,0,5.5-1.2,8.2-2.9L416,290.8v113c0,6.7,5.4,12.2,12.2,12.2h8.1c6.7,0,11.7-5.5,11.7-12.2V107.7  C448,101,443.1,96,436.3,96z"/>
+        </svg>
+      </button>
+      <button disabled="true" class="stop">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+          <path d="M437.4,64H74.6C68.7,64,64,68.7,64,74.6v362.8c0,5.9,4.7,10.6,10.6,10.6h362.8c5.8,0,10.6-4.7,10.6-10.6V74.6  C448,68.7,443.2,64,437.4,64z"/>
+        </svg>
+      </button>
+    </div>
+    <table width="100%">
+      <colgroup>
+        <col width=60px>
+        <col>
+      </colgroup>
+      <tbody>
+        <tr title="A float that represents the volume value, between 0 (lowest) and 1 (highest.)">
+          <td>Volume</td>
+          <td>
+            <div>
+              <input min="0.1" max="1" step="0.1" type="range" id="volume"><span>1</span>
+            </div>
+          </td>
+        </tr>
+        <tr title="A float representing the rate value. It can range between 0.5 (lowest) and 3 (highest), with 1 being the default (it takes sometime for this value to effect)">
+          <td>Speed</td>
+          <td>
+            <div>
+              <input min="0.1" max="2" step="0.1" type="range" id="rate"><span>1</span>
+            </div>
+          </td>
+        </tr>
+        <tr title="A float representing the pitch value. It can range between 0 (lowest) and 2 (highest), with 1 being the default pitch for the current platform or voice.">
+          <td>Pitch</td>
+          <td>
+            <div>
+              <input min="0.1" max="2" step="0.1" type="range" id="pitch"><span>1</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>
+      `;
+      parent.appendChild(iframe);
+      await new Promise(resolve => iframe.onload = resolve);
+      iframe.removeAttribute('srcdoc');
+      Object.assign(iframe.style, {
+        opacity: 1,
+        width: iframe.contentDocument.body.clientWidth + 'px',
+        height: iframe.contentDocument.body.clientHeight + 'px'
+      });
+      const div = iframe.contentDocument.querySelector('div');
       // voice
       const select = div.querySelector('select');
       const label = div.querySelector('label');
@@ -512,7 +648,7 @@
       const stop = div.querySelector('.stop');
       stop.addEventListener('click', () => {
         this.stop();
-        delete this.audio;
+        this.emit('idle');
       });
 
       this.ready().then(() => {
@@ -577,20 +713,24 @@
       this.on('status', s => {
         if (s === 'stop' || s === 'pause') {
           play.classList.remove('pause');
+          play.classList.add('play');
           stop.disabled = s === 'stop' ? true : false;
           next.disabled = true;
           previous.disabled = true;
         }
         else {
           play.classList.add('pause');
+          play.classList.remove('play');
           stop.disabled = false;
           calc();
         }
       });
       this.controls = {};
+
+      const doc = iframe.contentDocument;
       // volume
       {
-        const input = table.querySelector('[data-id=volume]');
+        const input = doc.getElementById('volume');
         const span = input.nextElementSibling;
         span.textContent = input.value = this.options.volume;
         input.addEventListener('input', () => {
@@ -607,7 +747,7 @@
       }
       // pitch
       {
-        const input = table.querySelector('[data-id=pitch]');
+        const input = doc.getElementById('pitch');
         const span = input.nextElementSibling;
         span.textContent = input.value = this.options.pitch;
         input.addEventListener('input', () => {
@@ -621,7 +761,7 @@
       }
       // rate
       {
-        const input = table.querySelector('[data-id=rate]');
+        const input = doc.getElementById('rate');
         const span = input.nextElementSibling;
         span.textContent = input.value = this.options.rate;
         input.addEventListener('input', () => {
@@ -644,9 +784,6 @@
         next,
         stop
       };
-    }
-    attach(parent) {
-      this[BIULD](parent);
     }
     create() {
       super.create();
