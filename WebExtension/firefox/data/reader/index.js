@@ -161,7 +161,7 @@ const shortcuts = [];
       await add('libs/text-to-speech/vendors/sentence-boundary-detection/sbd.js');
       tts = new TTS(iframe.contentDocument);
       tts.feed(...iframe.contentDocument.querySelectorAll('.page p, .page h1, .page h2, .page h3, .page h4, .page li, .page td, .page th'));
-      tts.attach(document.getElementById('speech'));
+      await tts.attach(document.getElementById('speech'));
       await tts.ready();
       tts.buttons.play.title = 'Play/Pause (Meta + Shift + X)'; // eslint-disable-line require-atomic-updates
       tts.buttons.next.title = 'Next (Meta + Shift + C)'; // eslint-disable-line require-atomic-updates
