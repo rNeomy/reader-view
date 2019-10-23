@@ -11,6 +11,7 @@
   --color-mode-solarized-light-bg: #fdf6e3;
   --color-mode-solarized-dark-color: #93a1a1;
   --color-mode-solarized-dark-bg: #002b36;
+  --border-color: rgba(181, 181, 181, 0.7);
 }
 
 [class^="icon-"]::before,
@@ -70,7 +71,7 @@ iframe {
   flex-direction: column;
   align-items: center;
   position: relative;
-  box-shadow: 0 0 1px currentColor;
+  box-shadow: 0 0 1px var(--border-color);
 }
 #toolbar .active:not([data-cmd="full-width"]):not([data-cmd="no-height"]) {
   opacity: 0.5;
@@ -83,7 +84,7 @@ iframe {
   width: 40px;
   height: 50px;
   line-height: 50px;
-  border-bottom: solid 1px currentColor;
+  border-bottom: solid 1px var(--border-color);
   cursor: pointer;
   opacity: 0.7;
 }
@@ -115,7 +116,7 @@ iframe {
   height: 60px;
   color: #333;
   font-size: 20px;
-  border: 1px solid #b5b5b5;
+  border: 1px solid var(--border-color);
 }
 #image-utils td,
 #font-utils td {
@@ -220,13 +221,13 @@ iframe {
 
 #toolbar > div::after {
   border-color: rgba(251, 251, 251, 0);
-  border-right-color: #fbfbfb;
+  border-right-color: var(--border-color);
   border-width: 10px;
   margin-top: -10px;
 }
 #toolbar > div::before {
   border-color: rgba(181, 181, 181, 0);
-  border-right-color: #b5b5b5;
+  border-right-color: var(--border-color);
   border-width: 11px;
   margin-top: -11px;
 }

@@ -354,7 +354,6 @@ const render = () => chrome.runtime.sendMessage({
   iframe.contentDocument.open();
   const {pathname, hostname} = (new URL(article.url));
   const gcs = window.getComputedStyle(document.documentElement);
-  console.log(gcs.getPropertyValue('--color-mode-light-color'))
   const html = `
 <!DOCTYPE html>
 <html>
@@ -404,6 +403,10 @@ const render = () => chrome.runtime.sendMessage({
     max-width: 100%;
     height: auto;
   }
+  a {
+    color: #0095dd;
+    text-decoration: none;
+  }
   #reader-domain {
     font-family: Helvetica, Arial, sans-serif;
     text-decoration: none;
@@ -413,7 +416,6 @@ const render = () => chrome.runtime.sendMessage({
     text-overflow: ellipsis;
     width: 100%;
     display: inline-block;
-    color: #0095dd;
   }
   #reader-domain>span:first-child {
     font-size: 1.1em;
