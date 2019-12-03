@@ -488,17 +488,58 @@ const render = () => chrome.runtime.sendMessage({
     .forEach(e => e.setAttribute('dir', 'auto'));
 
   document.title = article.title + ' :: Reader View';
+  // hash
+  const hash = link => {
+    const hash = link.hash.substr(1);
+    const a = iframe.contentDocument.querySelector(`[name="${hash}"],#${hash}`);
+    if (a) {
+      a.scrollIntoView({
+        block: 'start',
+        inline: 'nearest'
+      });
+      a.focus();
+    }
+    else {
+      console.warn('hash', link.hash, 'is unreachable');
+    }
+  };
   // link handling
   iframe.contentDocument.addEventListener('click', e => {
     const a = e.target.closest('a');
-    if (a && a.href && a.href.startsWith('http') && e.button === 0) {
-      e.preventDefault();
-      chrome.runtime.sendMessage({
-        cmd: 'open',
-        url: a.href,
-        reader: config.prefs['reader-mode'],
-        current: config.prefs['new-tab'] === false
-      });
+    if (a && a.href) {
+      // external links
+      if (a.href.startsWith('http') && e.button === 0 && e.metaKey === false) {
+        e.preventDefault();
+        return chrome.runtime.sendMessage({
+          cmd: 'open',
+          url: a.href,
+          reader: config.prefs['reader-mode'],
+          current: config.prefs['new-tab'] === false
+        });
+      }
+      // internal links
+      // https://github.com/rNeomy/reader-view/issues/52
+      try {
+        const link = new URL(a.href);
+        if (link.pathname === location.pathname && link.origin === location.origin) {
+          e.preventDefault();
+          if (link.hash) {
+            if (e.button === 0 && e.metaKey === false) {
+              hash(link);
+            }
+            else {
+              chrome.runtime.sendMessage({
+                cmd: 'open',
+                url: args.get('url').split('#')[0] + link.hash,
+                reader: config.prefs['reader-mode']
+              });
+            }
+          }
+        }
+      }
+      catch (e) {
+        console.warn(e);
+      }
     }
   });
 
@@ -537,7 +578,6 @@ const render = () => chrome.runtime.sendMessage({
     });
   }
 
-
   iframe.contentDocument.documentElement.appendChild(styles.internals);
   iframe.contentDocument.documentElement.appendChild(styles.iframe);
   iframe.addEventListener('load', () => {
@@ -569,6 +609,11 @@ const render = () => chrome.runtime.sendMessage({
     iframe.contentWindow.focus();
   }
   iframe.contentDocument.body.dataset.font = config.prefs.font;
+  // move to hash
+  if (args.get('url').indexOf('#') !== -1) {
+    const link = new URL(args.get('url'));
+    hash(link);
+  }
 });
 
 // pref changes

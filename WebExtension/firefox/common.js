@@ -1,6 +1,13 @@
 /* globals config */
 'use strict';
 
+// polyfill
+chrome.tabs.goBack = chrome.tabs.goBack || function(tabId) {
+  chrome.tabs.executeScript(tabId, {
+    code: 'history.back()'
+  });
+};
+
 function notify(message) {
   chrome.notifications.create({
     title: 'Reader View',
@@ -93,8 +100,16 @@ chrome.pageAction.onClicked.addListener(onClicked);
   chrome.runtime.onStartup.addListener(callback);
 }
 
-var onContext = ({menuItemId, pageUrl, linkUrl}, tab) => {
-  const url = linkUrl || pageUrl;
+const onContext = ({menuItemId, pageUrl, linkUrl}, tab) => {
+  let url = linkUrl || pageUrl;
+  // dealing with internal pages
+  if (url.startsWith('http') === false) {
+    const link = new URL(url);
+    const args = new URLSearchParams(link.search);
+    if (args.has('url')) {
+      url = args.get('url').split('#')[0] + link.hash;
+    }
+  }
   if (menuItemId === 'switch-to-reader-view') {
     onClicked(tab);
   }
@@ -130,7 +145,7 @@ chrome.commands.onCommand.addListener(function(command) {
   }
 });
 
-var onUpdated = (tabId, info, tab) => {
+const onUpdated = (tabId, info, tab) => {
   if (onUpdated.cache[tabId] && info.url) {
     onClicked(tab);
     delete onUpdated.cache[tabId];
@@ -140,7 +155,7 @@ var onUpdated = (tabId, info, tab) => {
   }
 };
 onUpdated.cache = {};
-var cache = {};
+const cache = {};
 chrome.tabs.onRemoved.addListener(tabId => delete cache[tabId]);
 
 chrome.runtime.onMessage.addListener((request, sender, response) => {
