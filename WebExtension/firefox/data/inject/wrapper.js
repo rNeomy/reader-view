@@ -50,7 +50,7 @@
 // The implementation is from https://stackoverflow.com/a/5084441/260793
 function getSelectionHTML() {
   const selection = window.getSelection();
-  if (selection && selection.rangeCount && selection.toString().length > 5) {
+  if (selection && selection.rangeCount && selection.toString().length > 100) {
     let range;
     if (selection.getRangeAt) {
       range = selection.getRangeAt(0);

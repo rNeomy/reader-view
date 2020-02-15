@@ -1,4 +1,4 @@
-/* globals config */
+/* global config */
 'use strict';
 
 // polyfill
@@ -156,6 +156,8 @@ const onUpdated = (tabId, info, tab) => {
 };
 onUpdated.cache = {};
 const cache = {};
+const highlights = {};
+window.highlights = highlights;
 chrome.tabs.onRemoved.addListener(tabId => delete cache[tabId]);
 
 chrome.runtime.onMessage.addListener((request, sender, response) => {
@@ -172,6 +174,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     notify('Sorry, this page cannot be converted!');
   }
   else if (request.cmd === 'read-data') {
+    cache[id].highlights = highlights[cache[id].url];
     response(cache[id]);
     chrome.pageAction.show(id, () => chrome.pageAction.setIcon({
       tabId: id,
@@ -203,6 +206,26 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   }
   else if (request.cmd === 'go-back') {
     chrome.tabs.goBack(sender.tab.id);
+  }
+  else if (request.cmd === 'highlights') {
+    if (request.value.length && config.prefs['cache-highlights']) {
+      highlights[request.href] = request.value;
+    }
+    else {
+      delete highlights[request.href];
+    }
+  }
+});
+
+// on change
+config.onChanged.push(prefs => {
+  if (prefs['cache-highlights']) {
+    if (prefs['cache-highlights'].newValue === false) {
+      console.log(highlights);
+      for (const key of Object.keys(highlights)) {
+        delete highlights[key];
+      }
+    }
   }
 });
 

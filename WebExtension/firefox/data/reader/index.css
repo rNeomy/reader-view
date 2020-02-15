@@ -18,6 +18,14 @@
 [class*=" icon-"]::before {
   line-height: 2em;
 }
+[class^="icon-"][data-disabled=true],
+[class*=" icon-"][data-disabled=true] {
+  pointer-events: none;
+}
+[class^="icon-"][data-disabled=true]::before,
+[class*=" icon-"][data-disabled=true]::before {
+  opacity: 0.3;
+}
 
 html,
 body {
@@ -345,3 +353,4 @@ body[data-speech=false] #speech {
 .hidden {
   display: none !important;
 }
+

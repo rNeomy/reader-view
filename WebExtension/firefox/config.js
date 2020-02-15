@@ -20,9 +20,11 @@ config.prefs = {
   'fullscreen-button': localStorage.getItem('fullscreen-button') !== 'false',
   'speech-button': localStorage.getItem('speech-button') !== 'false',
   'images-button': localStorage.getItem('images-button') !== 'false',
+  'highlight-button': localStorage.getItem('highlight-button') !== 'false',
   'show-images': localStorage.getItem('show-images') !== 'false',
   'navigate-buttons': localStorage.getItem('navigate-buttons') !== 'false',
   'top-css': localStorage.getItem('top-css') || '',
+  'cache-highlights': true,
   'user-css': localStorage.getItem('user-css') || `body {
   padding-bottom: 64px;
 }

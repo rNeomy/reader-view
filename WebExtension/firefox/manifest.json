@@ -3,7 +3,7 @@
   "short_name": "reader-view",
   "description": "strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability",
   "author": "Richard Neomy",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "manifest_version": 2,
   "permissions": [
     "storage",
@@ -30,7 +30,7 @@
       "64": "data/icons/64.png"
     }
   },
-  "homepage_url": "http://add0n.com/chrome-reader-view.html",
+  "homepage_url": "https://add0n.com/chrome-reader-view.html",
   "icons": {
     "16": "data/icons/16.png",
     "32": "data/icons/32.png",

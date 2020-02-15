@@ -65,6 +65,11 @@
         <td></td>
       </tr>
       <tr>
+        <td><input type="checkbox" id="highlight-button"></td>
+        <td><label for="highlight-button">Show "toggle highlight button" in the reader view</label></td>
+        <td></td>
+      </tr>
+      <tr>
         <td><input type="checkbox" id="navigate-buttons"></td>
         <td><label for="navigate-buttons">Show "navigation buttons" in the reader view</label></td>
         <td></td>
@@ -143,6 +148,11 @@
         <td><label for="faqs"> Open FAQs page on updates</label></td>
         <td></td>
       </tr>
+      <tr>
+        <td><input type="checkbox" id="cache-highlights"></td>
+        <td><label for="cache-highlights"> Restore the user highlights when possible (if checked, the extension tries to persist the user highlights for each page during the current session or until the background page unloads)</label></td>
+        <td></td>
+      </tr>
     </tbody>
   </table>
   <p>
@@ -150,9 +160,13 @@
   </p>
   <div id="explore" data-inc=50></div>
   <p>
+    <button id="import-highlights" title="Import a JSON file containing the user highlights from a previous session and append it into the currently available cache">Import Highlights</button>
+    <button id="export-highlights" title="Export the current cache of the user highlights to a JSON file">Export Highlights</button>
+  </p>
+  <p>
     <button id="support">Support Development</button>
-    <button id="reload">Restart</button>
-    <button id="reset">Reset</button> - <button id="save">Save</button>
+    <button id="reload" title="Restart the runtime">Restart</button>
+    <button id="reset" title="Reset all settings to the factory values">Reset</button> - <button id="save">Save</button>
     <span id="status"></span>
   </p>
 

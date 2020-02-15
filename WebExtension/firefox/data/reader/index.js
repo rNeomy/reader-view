@@ -4,6 +4,7 @@
 let article;
 
 let tts;
+let highlight;
 
 const args = new URLSearchParams(location.search);
 
@@ -237,6 +238,36 @@ const shortcuts = [];
   document.getElementById('toolbar').appendChild(span);
 }
 
+/* highlight */
+{
+  const span = document.createElement('span');
+  span.classList.add('hidden', 'icon-highlight');
+  span.id = 'highlight-button';
+  span.title = `Toggle highlight (Meta + Shift + H)`;
+  span.dataset.cmd = 'toggle-highlight';
+  span.dataset.disabled = true;
+  shortcuts.push({
+    condition: e => e.code === 'KeyH' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    action() {
+      span.click();
+    }
+  });
+  document.getElementById('toolbar').appendChild(span);
+
+  // post highlights to bg
+  const post = () => chrome.runtime.sendMessage({
+    cmd: 'highlights',
+    value: highlight.export(),
+    href: args.get('url')
+  });
+  window.addEventListener('beforeunload', post);
+  chrome.runtime.onMessage.addListener(request => {
+    if (request.cmd === 'export-highlights') {
+      post();
+    }
+  });
+}
+
 const styles = {
   top: document.createElement('style'),
   iframe: document.createElement('style'),
@@ -337,6 +368,9 @@ document.addEventListener('click', e => {
     chrome.storage.local.set({
       'show-images': cmd === 'image-show'
     });
+  }
+  else if (cmd === 'toggle-highlight') {
+    highlight.toggle();
   }
 });
 /* transition */
@@ -462,6 +496,9 @@ const render = () => chrome.runtime.sendMessage({
   body[data-speech="false"] .tts-speaking::after {
     display: none;
   }
+  mark.hghlght {
+    background-color: #ffff81;
+  }
   </style>
 </head>
 <body>
@@ -476,6 +513,7 @@ const render = () => chrome.runtime.sendMessage({
   <hr/>
   ${article.content}
   <span></span> <!-- for IntersectionObserver -->
+  <script async src="libs/highlight/highlight.js"></script>
 </body>
 </html>`;
   iframe.contentDocument.write(html);
@@ -583,6 +621,18 @@ const render = () => chrome.runtime.sendMessage({
   iframe.addEventListener('load', () => {
     // apply transition after initial changes
     document.body.dataset.loaded = iframe.contentDocument.body.dataset.loaded = true;
+
+    highlight = new iframe.contentWindow.Highlight();
+    if (article.highlights) {
+      console.log(article);
+      highlight.import(article.highlights);
+    }
+  });
+  // highlight
+  iframe.contentDocument.addEventListener('selectionchange', () => {
+    const s = iframe.contentDocument.getSelection();
+    const active = s.toString().trim() !== '';
+    document.getElementById('highlight-button').dataset.disabled = active === false;
   });
   // close on escape
   {
@@ -652,6 +702,9 @@ config.load(() => {
   }
   if (config.prefs['images-button']) {
     document.getElementById('images-button').classList.remove('hidden');
+  }
+  if (config.prefs['highlight-button']) {
+    document.getElementById('highlight-button').classList.remove('hidden');
   }
   update.images();
   update.async();

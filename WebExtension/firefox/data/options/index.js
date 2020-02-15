@@ -10,6 +10,7 @@ function save() {
   localStorage.setItem('fullscreen-button', document.getElementById('fullscreen-button').checked);
   localStorage.setItem('speech-button', document.getElementById('speech-button').checked);
   localStorage.setItem('images-button', document.getElementById('images-button').checked);
+  localStorage.setItem('highlight-button', document.getElementById('highlight-button').checked);
   localStorage.setItem('navigate-buttons', document.getElementById('navigate-buttons').checked);
 
   localStorage.setItem('auto-fullscreen', document.getElementById('auto-fullscreen').checked);
@@ -19,6 +20,7 @@ function save() {
     'new-tab': document.getElementById('new-tab').checked,
     'reader-mode': document.getElementById('reader-mode').checked,
     'faqs': document.getElementById('faqs').checked,
+    'cache-highlights': document.getElementById('cache-highlights').checked,
     'context-open-in-reader-view': document.getElementById('context-open-in-reader-view').checked,
     'context-open-in-reader-view-bg': document.getElementById('context-open-in-reader-view-bg').checked,
     'context-switch-to-reader-view': document.getElementById('context-switch-to-reader-view').checked
@@ -39,12 +41,14 @@ function restore() {
   document.getElementById('speech-button').checked = localStorage.getItem('speech-button') !== 'false';
   document.getElementById('auto-fullscreen').checked = localStorage.getItem('auto-fullscreen') === 'true';
   document.getElementById('images-button').checked = localStorage.getItem('images-button') !== 'false';
+  document.getElementById('highlight-button').checked = localStorage.getItem('highlight-button') !== 'false';
   document.getElementById('navigate-buttons').checked = localStorage.getItem('navigate-buttons') !== 'false';
 
   chrome.storage.local.get(config.prefs, prefs => {
     document.getElementById('new-tab').checked = prefs['new-tab'];
     document.getElementById('reader-mode').checked = prefs['reader-mode'];
     document.getElementById('faqs').checked = prefs['faqs'];
+    document.getElementById('cache-highlights').checked = prefs['cache-highlights'];
     document.getElementById('context-open-in-reader-view').checked = prefs['context-open-in-reader-view'];
     document.getElementById('context-open-in-reader-view-bg').checked = prefs['context-open-in-reader-view-bg'];
     document.getElementById('context-switch-to-reader-view').checked = prefs['context-switch-to-reader-view'];
@@ -84,3 +88,59 @@ else if (navigator.userAgent.indexOf('OPR') !== -1) {
 }
 
 document.getElementById('ref').href = chrome.runtime.getManifest().homepage_url + '#faq5';
+
+document.getElementById('export-highlights').addEventListener('click', () => {
+  chrome.runtime.getBackgroundPage(bg => {
+    const blob = new Blob([
+      JSON.stringify(bg.highlights, null, '  ')
+    ], {type: 'application/json'});
+    const href = URL.createObjectURL(blob);
+    Object.assign(document.createElement('a'), {
+      href,
+      type: 'application/json',
+      download: 'reader-view-highlights.json'
+    }).dispatchEvent(new MouseEvent('click'));
+    setTimeout(() => URL.revokeObjectURL(href));
+  });
+});
+// ask all tabs to export their highlights so that the object is ready for exporting
+chrome.tabs.query({}, (tabs = []) => {
+  for (const tab of tabs) {
+    chrome.tabs.sendMessage(tab.id, {
+      cmd: 'export-highlights'
+    });
+  }
+});
+
+document.getElementById('import-highlights').addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.style.display = 'none';
+  input.type = 'file';
+  input.accept = '.json';
+  input.acceptCharset = 'utf-8';
+
+  document.body.appendChild(input);
+  input.initialValue = input.value;
+  input.onchange = () => {
+    if (input.value !== input.initialValue) {
+      const file = input.files[0];
+      if (file.size > 100e6) {
+        console.warn('100MB backup? I don\'t believe you.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = event => {
+        input.remove();
+        const json = JSON.parse(event.target.result);
+        chrome.runtime.getBackgroundPage(bg => {
+          for (const key of Object.keys(json)) {
+            bg.highlights[key] = bg.highlights[key] || [];
+            bg.highlights[key].push(...json[key]);
+          }
+        });
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+  };
+  input.click();
+});

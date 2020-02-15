@@ -606,7 +606,7 @@
       `;
       parent.appendChild(iframe);
       await new Promise(resolve => iframe.onload = resolve);
-      iframe.removeAttribute('srcdoc');
+      // iframe.removeAttribute('srcdoc');
       Object.assign(iframe.style, {
         opacity: 1,
         width: iframe.contentDocument.body.clientWidth + 'px',
