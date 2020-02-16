@@ -4,7 +4,7 @@
 {
   if (Readability.prototype._getReadTime === undefined) {
     Readability.prototype._getReadTime = function(textContent) {
-      const lang = this._doc.documentElement.lang || 'en';
+      const lang = document.documentElement.lang || 'en';
       const readingSpeed = this._getReadingSpeedForLanguage(lang);
       const charactersPerMinuteLow = readingSpeed.cpm - readingSpeed.variance;
       const charactersPerMinuteHigh = readingSpeed.cpm + readingSpeed.variance;
@@ -74,6 +74,13 @@ function getSelectionHTML() {
   const article = new Readability(
     getSelectionHTML() || document.cloneNode(true)
   ).parse();
+  // https://get.foundation/sites/docs/rtl.html
+  if (article.dir === null) {
+    const lang = document.documentElement.lang;
+    if (lang && ['ar', 'zh', 'fa', 'he', 'iw', 'ur', 'yi', 'ji'].some(a => lang.indexOf(a) !== -1)) {
+      article.dir = 'rtl';
+    }
+  }
 
   // if a website has an automatic redirect use this method to wait for a new page load
   if (location.href.indexOf('://news.google.') !== -1 &&

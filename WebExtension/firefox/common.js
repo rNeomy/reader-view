@@ -114,20 +114,15 @@ const onContext = ({menuItemId, pageUrl, linkUrl}, tab) => {
     onClicked(tab);
   }
   else if (menuItemId.startsWith('open-in-reader-view')) {
-    chrome.permissions.request({
-      permissions: ['tabs'],
-      origins: ['*://*/*']
-    }, () => {
-      chrome.tabs.create({
-        url,
-        openerTabId: tab.id,
-        index: tab.index + 1,
-        active: !menuItemId.endsWith('-bg')
-      }, t => window.setTimeout(onClicked, 1000, {
-        id: t.id,
-        url
-      }));
-    });
+    chrome.tabs.create({
+      url,
+      openerTabId: tab.id,
+      index: tab.index + 1,
+      active: !menuItemId.endsWith('-bg')
+    }, t => window.setTimeout(onClicked, 1000, {
+      id: t.id,
+      url
+    }));
   }
 };
 chrome.contextMenus.onClicked.addListener(onContext);

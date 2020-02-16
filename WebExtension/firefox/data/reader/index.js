@@ -138,6 +138,23 @@ const shortcuts = [];
   });
   document.getElementById('toolbar').appendChild(span);
 }
+/* design mode */
+{
+  const span = document.createElement('span');
+  span.classList.add('hidden', 'icon-design');
+  span.id = 'design-mode-button';
+  span.title = `Toggle design mode (Meta + Shift + D)
+
+When active, you can edit the document or delete elements like MS word`;
+  span.dataset.cmd = 'toggle-design-mode';
+  shortcuts.push({
+    condition: e => e.code === 'KeyD' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    action() {
+      span.click();
+    }
+  });
+  document.getElementById('toolbar').appendChild(span);
+}
 /* speech */
 {
   const span = document.createElement('span');
@@ -160,7 +177,11 @@ const shortcuts = [];
       await add('libs/text-to-speech/engines/watson.js');
       await add('libs/text-to-speech/tts.js');
       await add('libs/text-to-speech/vendors/sentence-boundary-detection/sbd.js');
-      tts = new TTS(iframe.contentDocument);
+      tts = new TTS(iframe.contentDocument, {
+        separator: config.prefs['tts-separator'],
+        delay: config.prefs['tts-delay'],
+        maxlength: config.prefs['tts-maxlength']
+      });
       tts.feed(...iframe.contentDocument.querySelectorAll('.page p, .page h1, .page h2, .page h3, .page h4, .page li, .page td, .page th'));
       await tts.attach(document.getElementById('speech'));
       await tts.ready();
@@ -372,6 +393,11 @@ document.addEventListener('click', e => {
   else if (cmd === 'toggle-highlight') {
     highlight.toggle();
   }
+  else if (cmd === 'toggle-design-mode') {
+    const active = iframe.contentDocument.designMode === 'on';
+    e.target.dataset.active = active === false;
+    iframe.contentDocument.designMode = active ? 'off' : 'on';
+  }
 });
 /* transition */
 document.getElementById('toolbar').addEventListener('transitionend', e => {
@@ -390,7 +416,7 @@ const render = () => chrome.runtime.sendMessage({
   const gcs = window.getComputedStyle(document.documentElement);
   const html = `
 <!DOCTYPE html>
-<html>
+<html${article.dir ? ' dir=' + article.dir : ''}>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <style>
@@ -450,6 +476,7 @@ const render = () => chrome.runtime.sendMessage({
     text-overflow: ellipsis;
     width: 100%;
     display: inline-block;
+    direction: ltr;
   }
   #reader-domain>span:first-child {
     font-size: 1.1em;
@@ -520,10 +547,6 @@ const render = () => chrome.runtime.sendMessage({
   iframe.contentDocument.close();
   iframe.contentDocument.body.dataset.images = config.prefs['show-images'];
   iframe.contentDocument.body.dataset.mode = config.prefs.mode;
-
-  // automatically detect ltr and rtl
-  [...iframe.contentDocument.querySelectorAll('article>*')]
-    .forEach(e => e.setAttribute('dir', 'auto'));
 
   document.title = article.title + ' :: Reader View';
   // hash
@@ -624,7 +647,6 @@ const render = () => chrome.runtime.sendMessage({
 
     highlight = new iframe.contentWindow.Highlight();
     if (article.highlights) {
-      console.log(article);
       highlight.import(article.highlights);
     }
   });
@@ -705,6 +727,9 @@ config.load(() => {
   }
   if (config.prefs['highlight-button']) {
     document.getElementById('highlight-button').classList.remove('hidden');
+  }
+  if (config.prefs['design-mode-button']) {
+    document.getElementById('design-mode-button').classList.remove('hidden');
   }
   update.images();
   update.async();

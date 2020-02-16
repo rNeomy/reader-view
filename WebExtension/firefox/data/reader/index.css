@@ -214,6 +214,9 @@ iframe {
   content: '\e807|\e806';
   display: inline;
 }
+#toolbar [data-cmd="toggle-design-mode"][data-active=true] {
+  color: blue;
+}
 
 #toolbar > div::after,
 #toolbar > div::before {

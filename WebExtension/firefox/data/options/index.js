@@ -1,6 +1,25 @@
 /* globals config */
 'use strict';
 
+// optional permission
+{
+  const request = e => {
+    if (e.target.checked) {
+      chrome.permissions.request({
+        permissions: ['tabs'],
+        origins: ['*://*/*']
+      }, granted => {
+        if (granted === false) {
+          e.target.checked = false;
+        }
+      });
+    }
+  };
+  document.getElementById('context-open-in-reader-view').addEventListener('change', request);
+  document.getElementById('context-open-in-reader-view-bg').addEventListener('change', request);
+  document.getElementById('reader-mode').addEventListener('change', request);
+}
+
 function save() {
   localStorage.setItem('top-css', document.getElementById('top-style').value || '');
   localStorage.setItem('user-css', document.getElementById('user-css').value || '');
@@ -11,6 +30,7 @@ function save() {
   localStorage.setItem('speech-button', document.getElementById('speech-button').checked);
   localStorage.setItem('images-button', document.getElementById('images-button').checked);
   localStorage.setItem('highlight-button', document.getElementById('highlight-button').checked);
+  localStorage.setItem('design-mode-button', document.getElementById('design-mode-button').checked);
   localStorage.setItem('navigate-buttons', document.getElementById('navigate-buttons').checked);
 
   localStorage.setItem('auto-fullscreen', document.getElementById('auto-fullscreen').checked);
@@ -20,6 +40,7 @@ function save() {
     'new-tab': document.getElementById('new-tab').checked,
     'reader-mode': document.getElementById('reader-mode').checked,
     'faqs': document.getElementById('faqs').checked,
+    'tts-delay': Math.max(document.getElementById('tts-delay').value, 0),
     'cache-highlights': document.getElementById('cache-highlights').checked,
     'context-open-in-reader-view': document.getElementById('context-open-in-reader-view').checked,
     'context-open-in-reader-view-bg': document.getElementById('context-open-in-reader-view-bg').checked,
@@ -42,12 +63,14 @@ function restore() {
   document.getElementById('auto-fullscreen').checked = localStorage.getItem('auto-fullscreen') === 'true';
   document.getElementById('images-button').checked = localStorage.getItem('images-button') !== 'false';
   document.getElementById('highlight-button').checked = localStorage.getItem('highlight-button') !== 'false';
+  document.getElementById('design-mode-button').checked = localStorage.getItem('design-mode-button') !== 'false';
   document.getElementById('navigate-buttons').checked = localStorage.getItem('navigate-buttons') !== 'false';
 
   chrome.storage.local.get(config.prefs, prefs => {
     document.getElementById('new-tab').checked = prefs['new-tab'];
     document.getElementById('reader-mode').checked = prefs['reader-mode'];
     document.getElementById('faqs').checked = prefs['faqs'];
+    document.getElementById('tts-delay').value = prefs['tts-delay'];
     document.getElementById('cache-highlights').checked = prefs['cache-highlights'];
     document.getElementById('context-open-in-reader-view').checked = prefs['context-open-in-reader-view'];
     document.getElementById('context-open-in-reader-view-bg').checked = prefs['context-open-in-reader-view-bg'];

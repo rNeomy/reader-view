@@ -23,6 +23,9 @@
       padding: 5px;
       background-color: rgba(0, 0, 0, 0.05);
     }
+    input[type=number] {
+      width: 100px;
+    }
   </style>
 </head>
 
@@ -41,58 +44,51 @@
     <tbody>
       <tr>
         <td><input type="checkbox" id="printing-button"></td>
-        <td><label for="printing-button">Show "printing button" in the reader view</label></td>
-        <td></td>
+        <td colspan="2"><label for="printing-button">Show "printing button" in the reader view</label></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="save-button"></td>
-        <td><label for="save-button">Show "save button" in the reader view</label></td>
-        <td></td>
+        <td colspan="2"><label for="save-button">Show "save button" in the reader view</label></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="fullscreen-button"></td>
-        <td><label for="fullscreen-button">Show "fullscreen button" in the reader view</label></td>
-        <td></td>
+        <td colspan="2"><label for="fullscreen-button">Show "fullscreen button" in the reader view</label></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="speech-button"></td>
-        <td><label for="speech-button">Show "speech button" in the reader view</label></td>
-        <td></td>
+        <td colspan="2"><label for="speech-button">Show "speech button" in the reader view</label></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="images-button"></td>
-        <td><label for="images-button">Show "toggle images button" in the reader view</label></td>
-        <td></td>
+        <td colspan="2"><label for="images-button">Show "toggle images button" in the reader view</label></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="highlight-button"></td>
-        <td><label for="highlight-button">Show "toggle highlight button" in the reader view</label></td>
-        <td></td>
+        <td colspan="2"><label for="highlight-button">Show "toggle highlight button" in the reader view</label></td>
+      </tr>
+      <tr>
+        <td><input type="checkbox" id="design-mode-button"></td>
+        <td colspan="2"><label for="design-mode-button">Show "toggle design mode button" in the reader view</label></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="navigate-buttons"></td>
-        <td><label for="navigate-buttons">Show "navigation buttons" in the reader view</label></td>
-        <td></td>
+        <td colspan="2"><label for="navigate-buttons">Show "navigation buttons" in the reader view</label></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="context-open-in-reader-view"></td>
-        <td><label for="context-open-in-reader-view">Show "Open in Reader View" context-menu item (restart required) (requires chrome.tabs permission)</label></td>
-        <td></td>
+        <td colspan="2"><label for="context-open-in-reader-view">Show "Open in Reader View" context-menu item (restart required)</label></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="context-open-in-reader-view-bg"></td>
-        <td><label for="context-open-in-reader-view-bg">Show "Open in background Reader View" context-menu item (restart required) (requires chrome.tabs permission)</label></td>
-        <td></td>
+        <td colspan="2"><label for="context-open-in-reader-view-bg">Show "Open in background Reader View" context-menu item (restart required)</label></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="context-switch-to-reader-view"></td>
-        <td><label for="context-switch-to-reader-view">Show "Switch to Reader View" context-menu item (restart required)</label></td>
-        <td></td>
+        <td><label for="context-switch-to-reader-view">Show "Switch to Reader View" context-menu item (restart required)</l colspan="2"abel></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="auto-fullscreen"></td>
-        <td><label for="auto-fullscreen">Automatically switch to the fullscreen (window mode)</label></td>
-        <td></td>
+        <td colspan="2"><label for="auto-fullscreen">Automatically switch to the fullscreen (window mode)</label></td>
       </tr>
     </tbody>
     <thead>
@@ -128,13 +124,25 @@
     <tbody>
       <tr>
         <td><input type="checkbox" id="new-tab"></td>
-        <td><label for="new-tab">Open links in new tabs</label></td>
-        <td></td>
+        <td colspan="2"><label for="new-tab">Open links in new tabs</label></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="reader-mode"></td>
-        <td><label for="reader-mode">Open links in the reader view mode</label></td>
+        <td colspan="2"><label for="reader-mode">Open links in the reader view mode</label></td>
+      </tr>
+    </tbody>
+    <thead>
+      <tr>
+        <th colspan="3">TTS</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
         <td></td>
+        <td>
+          <label for="tts-delay"> Delay between paragraphs (in milliseconds)</label>
+        </td>
+        <td><input type="number" min="0" id="tts-delay"></td>
       </tr>
     </tbody>
     <thead>
@@ -145,13 +153,11 @@
     <tbody>
       <tr>
         <td><input type="checkbox" id="faqs"></td>
-        <td><label for="faqs"> Open FAQs page on updates</label></td>
-        <td></td>
+        <td colspan="2"><label for="faqs"> Open FAQs page on updates</label></td>
       </tr>
       <tr>
         <td><input type="checkbox" id="cache-highlights"></td>
-        <td><label for="cache-highlights"> Restore the user highlights when possible (if checked, the extension tries to persist the user highlights for each page during the current session or until the background page unloads)</label></td>
-        <td></td>
+        <td colspan="2"><label for="cache-highlights"> Restore the user highlights when possible (if checked, the extension tries to persist the user highlights for each page during the current session or until the background page unloads)</label></td>
       </tr>
     </tbody>
   </table>
