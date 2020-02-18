@@ -109,6 +109,10 @@ else if (navigator.userAgent.indexOf('OPR') !== -1) {
   document.getElementById('rate').href =
     'https://addons.opera.com/en/extensions/details/reader-view-2/#feedback-container';
 }
+else if (navigator.userAgent.indexOf('Edg/') !== -1) {
+  document.getElementById('rate').href =
+    'https://microsoftedge.microsoft.com/addons/detail/lpmbefndcmjoaepdpgmoonafikcalmnf';
+}
 
 document.getElementById('ref').href = chrome.runtime.getManifest().homepage_url + '#faq5';
 
