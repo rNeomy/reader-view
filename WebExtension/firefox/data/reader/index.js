@@ -483,7 +483,6 @@ const render = () => chrome.runtime.sendMessage({
   }
   #reader-domain>span:last-child {
     font-size: 0.8em;
-    white-spance: no
   }
   #reader-title {
     font-size: 1.6em;
