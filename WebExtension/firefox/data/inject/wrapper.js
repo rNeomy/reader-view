@@ -97,7 +97,18 @@ function getSelectionHTML() {
       const prefs = config.prefs;
       if (prefs.embedded || window.embedded === true) {
         const {pathname, hostname} = (new URL(article.url));
+        const title = document.title;
+        const getFont = font => {
+          switch (font) {
+          case 'serif':
+            return 'Georgia, "Times New Roman", serif';
+          case 'sans-serif':
+          default:
+            return 'Helvetica, Arial, sans-serif';
+          }
+        }
         document.open();
+
         document.write((await (await fetch(chrome.runtime.getURL('/data/reader/template.html'))).text())
           .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
           .replace('%light-color%', '#222')
@@ -120,12 +131,19 @@ function getSelectionHTML() {
           .replace('%href%', article.url)
           .replace('%hostname%', hostname)
           .replace('%pathname%', pathname)
-          .replace('/*user-css*/', prefs['user-css'])
+          .replace('/*user-css*/', `
+            body {
+              font-size:  ${prefs['font-size']}px;
+              font-family: ${getFont(prefs.font)} !important;
+              width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
+            }
+          ` + prefs['user-css'])
           .replace('%data-images%', prefs['show-images'])
           .replace('%data-mode%', prefs.mode)
           .replace('%data-font%', prefs.font)
           .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ''));
         document.close();
+        document.title = title;
       }
       else {
         chrome.runtime.sendMessage({

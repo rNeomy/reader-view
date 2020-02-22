@@ -198,10 +198,12 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     chrome.pageAction.show(id, () => chrome.pageAction.setIcon({
       tabId: id,
       path: {
-        16: 'data/icons/orange/16.png',
-        32: 'data/icons/orange/32.png',
-        48: 'data/icons/orange/48.png',
-        64: 'data/icons/orange/64.png'
+        16: 'data/icons/blue/16.png',
+        19: 'data/icons/blue/19.png',
+        32: 'data/icons/blue/32.png',
+        38: 'data/icons/blue/38.png',
+        48: 'data/icons/blue/48.png',
+        64: 'data/icons/blue/64.png'
       }
     }));
   }

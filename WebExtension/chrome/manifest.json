@@ -1,9 +1,9 @@
 {
   "name": "Reader View",
   "short_name": "reader-view",
-  "description": "strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability",
+  "description": "Strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability",
   "author": "Richard Neomy",
-  "version": "0.3.6.1",
+  "version": "0.3.7",
   "manifest_version": 2,
   "permissions": [
     "storage",
@@ -23,22 +23,18 @@
       "common.js"
     ]
   },
-  "page_action": {
-    "default_icon": {
-      "16": "data/icons/16.png",
-      "32": "data/icons/32.png",
-      "48": "data/icons/48.png",
-      "64": "data/icons/64.png"
-    }
-  },
+  "page_action": {},
   "homepage_url": "https://add0n.com/chrome-reader-view.html",
   "icons": {
     "16": "data/icons/16.png",
+    "19": "data/icons/19.png",
     "32": "data/icons/32.png",
+    "38": "data/icons/38.png",
     "48": "data/icons/48.png",
     "64": "data/icons/64.png",
     "128": "data/icons/128.png",
-    "256": "data/icons/256.png"
+    "256": "data/icons/256.png",
+    "512": "data/icons/512.png"
   },
   "options_ui": {
     "page": "data/options/index.html",
