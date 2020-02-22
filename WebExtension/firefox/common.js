@@ -43,7 +43,7 @@ else {
   chrome.tabs.query({}, tabs => tabs.forEach(tab => chrome.pageAction.show(tab.id)));
 }
 
-function onClicked(tab) {
+function onClicked(tab, embedded = false) {
   const root = chrome.runtime.getURL('');
   if (tab.url && tab.url.startsWith(root)) {
     chrome.tabs.goBack(tab.id);
@@ -62,8 +62,18 @@ function onClicked(tab) {
           });
         }
         chrome.tabs.executeScript(tab.id, {
-          file: 'data/inject/wrapper.js'
-        }, () => chrome.runtime.lastError);
+          file: 'config.js'
+        }, () => {
+          chrome.runtime.lastError;
+          chrome.tabs.executeScript(tab.id, {
+            code: 'window.embedded = ' + embedded
+          }, () => {
+            chrome.runtime.lastError;
+            chrome.tabs.executeScript(tab.id, {
+              file: 'data/inject/wrapper.js'
+            }, () => chrome.runtime.lastError);
+          });
+        });
       }
     });
   }
@@ -72,6 +82,11 @@ function onClicked(tab) {
 chrome.pageAction.onClicked.addListener(onClicked);
 
 const menus = () => config.load(() => {
+  chrome.contextMenus.create({
+    id: 'open-in-embedded-reader-view',
+    title: 'Open in Simple Mode',
+    contexts: ['page_action']
+  }, () => chrome.runtime.lastError);
   if (config.prefs['context-open-in-reader-view']) {
     chrome.contextMenus.create({
       id: 'open-in-reader-view',
@@ -110,7 +125,7 @@ chrome.runtime.onStartup.addListener(menus);
 const onContext = ({menuItemId, pageUrl, linkUrl}, tab) => {
   let url = linkUrl || pageUrl;
   // dealing with internal pages
-  if (url.startsWith('http') === false) {
+  if (url && url.startsWith('http') === false) {
     const link = new URL(url);
     const args = new URLSearchParams(link.search);
     if (args.has('url')) {
@@ -119,6 +134,9 @@ const onContext = ({menuItemId, pageUrl, linkUrl}, tab) => {
   }
   if (menuItemId === 'switch-to-reader-view') {
     onClicked(tab);
+  }
+  else if (menuItemId === 'open-in-embedded-reader-view') {
+    onClicked(tab, true);
   }
   else if (menuItemId.startsWith('open-in-reader-view')) {
     chrome.tabs.create({

@@ -49,5 +49,8 @@
     "toggle-reader-view": {
       "description": "Toggle the Reader View"
     }
-  }
+  },
+  "web_accessible_resources": [
+    "/data/reader/template.html"
+  ]
 }

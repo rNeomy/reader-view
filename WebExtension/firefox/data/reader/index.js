@@ -8,12 +8,35 @@ let highlight;
 
 const args = new URLSearchParams(location.search);
 
+// hash
+const hash = link => {
+  const hash = link.hash.substr(1);
+  const a = iframe.contentDocument.querySelector(`[name="${hash}"],#${hash}`);
+  if (a) {
+    a.scrollIntoView({
+      block: 'start',
+      inline: 'nearest'
+    });
+    a.focus();
+  }
+  else {
+    console.warn('hash', link.hash, 'is unreachable');
+  }
+};
+window.hash = hash;
+
 const nav = {
   back() {
     chrome.runtime.sendMessage({
       'cmd': 'go-back'
     });
   }
+};
+window.nav = nav;
+
+const template = async () => {
+  const r = await await fetch('template.html');
+  return await r.text();
 };
 
 const update = {
@@ -38,9 +61,6 @@ const update = {
     document.querySelector('[data-id=full-width] input').checked = Boolean(prefs.width) === false;
     // as a CSS selector
     document.body.dataset.font = prefs.font;
-    if (iframe.contentDocument) {
-      iframe.contentDocument.body.dataset.font = prefs.font;
-    }
   },
   images: () => {
     const bol = config.prefs['show-images'];
@@ -53,7 +73,6 @@ const update = {
       span.classList.add('icon-picture-false');
       span.classList.remove('icon-picture-true');
     }
-    iframe.contentDocument.body.dataset.images = bol;
   }
 };
 
@@ -93,7 +112,11 @@ const shortcuts = [];
   span.classList.add('icon-save', 'hidden');
   span.id = 'save-button';
   span.onclick = () => {
-    const content = iframe.contentDocument.documentElement.outerHTML;
+    const content = iframe.contentDocument.documentElement.outerHTML
+      // remove all script tags
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      // remove transition
+      .replace(/transition:.*/, '');
     const blob = new Blob([content], {
       type: 'text/html'
     });
@@ -291,7 +314,6 @@ When active, you can edit the document or delete elements like MS word`;
 
 const styles = {
   top: document.createElement('style'),
-  iframe: document.createElement('style'),
   internals: document.createElement('style')
 };
 
@@ -406,206 +428,42 @@ document.getElementById('toolbar').addEventListener('transitionend', e => {
 
 const render = () => chrome.runtime.sendMessage({
   cmd: 'read-data'
-}, obj => {
+}, async obj => {
   article = obj;
+  document.title = article.title + ' :: Reader View';
   if (!article) { // open this page from history for instance
     return location.replace(args.get('url'));
   }
   iframe.contentDocument.open();
   const {pathname, hostname} = (new URL(article.url));
   const gcs = window.getComputedStyle(document.documentElement);
-  const html = `
-<!DOCTYPE html>
-<html${article.dir ? ' dir=' + article.dir : ''}>
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <style>
-  html {
-    scroll-behavior: smooth;
-  }
-  body {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    margin: 30px auto 0 auto;
-    padding: 10px;
-  }
-  body[data-mode="light"] {
-    color: ${gcs.getPropertyValue('--color-mode-light-color')};
-    background-color: ${gcs.getPropertyValue('--color-mode-light-bg')};
-  }
-  body[data-mode="dark"] {
-    color: ${gcs.getPropertyValue('--color-mode-dark-color')};
-    background-color: ${gcs.getPropertyValue('--color-mode-dark-bg')};
-  }
-  body[data-mode="sepia"] {
-    color: ${gcs.getPropertyValue('--color-mode-sepia-color')};
-    background-color: ${gcs.getPropertyValue('--color-mode-sepia-bg')};
-  }
-  body[data-mode="solarized-light"] {
-    color: ${gcs.getPropertyValue('--color-mode-solarized-light-color')};
-    background-color: ${gcs.getPropertyValue('--color-mode-solarized-light-bg')};
-  }
-  body[data-mode="groove-dark"] {
-    color: ${gcs.getPropertyValue('--color-mode-groove-dark-color')};
-    background-color: ${gcs.getPropertyValue('--color-mode-groove-dark-bg')};
-  }
-  body[data-mode="solarized-dark"] {
-    color: ${gcs.getPropertyValue('--color-mode-solarized-dark-color')};
-    background-color: ${gcs.getPropertyValue('--color-mode-solarized-dark-bg')};
-  }
-  body[data-loaded=true] {
-    transition: color 0.4s, background-color 0.4s;
-  }
-  body[data-images=false] img {
-    display: none;
-  }
-  img {
-    max-width: 100%;
-    height: auto;
-  }
-  a {
-    color: #0095dd;
-    text-decoration: none;
-  }
-  #reader-domain {
-    font-family: Helvetica, Arial, sans-serif;
-    text-decoration: none;
-    border-bottom-color: currentcolor;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    display: inline-block;
-    direction: ltr;
-  }
-  #reader-domain>span:first-child {
-    font-size: 1.1em;
-  }
-  #reader-domain>span:last-child {
-    font-size: 0.8em;
-    white-spance: no
-  }
-  #reader-title {
-    font-size: 1.6em;
-    line-height: 1.25em;
-    width: 100%;
-    margin: 20px 0;
-    padding: 0;
-  }
-  #reader-credits {
-    font-size: 0.9em;
-    line-height: 1.48em;
-    margin: 0 0 10px 0;
-    padding: 0;
-    font-style: italic;
-  }
-  #reader-estimated-time {
-    font-size: 0.85em;
-    line-height: 1.48em;
-    margin: 0 0 10px 0;
-    padding: 0;
-  }
-  #reader-credits:empty {
-    disply: none;
-  }
-  .tts-speaking {
-    position: relative;
-  }
-  .tts-speaking::after {
-    content: '';
-    position: absolute;
-    left: -100vw;
-    top: -5px;
-    width: 300vw;
-    height: calc(100% + 10px);
-    box-shadow: 0 0 0 1000vw rgba(128,128,128,0.2);
-  }
-  body[data-speech="false"] .tts-speaking::after {
-    display: none;
-  }
-  mark.hghlght {
-    background-color: #ffff81;
-  }
-  </style>
-</head>
-<body>
-  <span></span> <!-- for IntersectionObserver -->
-  <a id="reader-domain" href="${article.url}">
-    <span>${hostname}</span>
-    <span>${pathname}</span>
-  </a>
-  <h1 dir="auto" id="reader-title">${article.title || 'Unknown Title'}</h1>
-  <div dir="auto" id="reader-credits">${article.byline || ''}</div>
-  <div dir="auto" id="reader-estimated-time">${article.readingTimeMinsFast}-${article.readingTimeMinsSlow} minutes</div>
-  <hr/>
-  ${article.content}
-  <span></span> <!-- for IntersectionObserver -->
-  <script async src="libs/highlight/highlight.js"></script>
-</body>
-</html>`;
-  iframe.contentDocument.write(html);
+  iframe.contentDocument.write((await template())
+    .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
+    .replace('%light-color%', gcs.getPropertyValue('--color-mode-light-color'))
+    .replace('%light-bg%', gcs.getPropertyValue('--color-mode-light-bg'))
+    .replace('%dark-color%', gcs.getPropertyValue('--color-mode-dark-color'))
+    .replace('%dark-bg%', gcs.getPropertyValue('--color-mode-dark-bg'))
+    .replace('%sepia-color%', gcs.getPropertyValue('--color-mode-sepia-color'))
+    .replace('%sepia-bg%', gcs.getPropertyValue('--color-mode-sepia-bg'))
+    .replace('%solarized-light-color%', gcs.getPropertyValue('--color-mode-solarized-light-color'))
+    .replace('%solarized-light-bg%', gcs.getPropertyValue('--color-mode-solarized-light-bg'))
+    .replace('%groove-dark-color%', gcs.getPropertyValue('--color-mode-groove-dark-color'))
+    .replace('%groove-dark-bg%', gcs.getPropertyValue('--color-mode-groove-dark-bg'))
+    .replace('%solarized-dark-color%', gcs.getPropertyValue('--color-mode-solarized-dark-color'))
+    .replace('%solarized-dark-bg%', gcs.getPropertyValue('--color-mode-solarized-dark-bg'))
+    .replace('%content%', article.content)
+    .replace('%title%', article.title || 'Unknown Title')
+    .replace('%byline%', article.byline || '')
+    .replace('%reading-time-fast%', article.readingTimeMinsFast)
+    .replace('%reading-time-slow%', article.readingTimeMinsSlow)
+    .replace('%href%', article.url)
+    .replace('%hostname%', hostname)
+    .replace('%pathname%', pathname)
+    .replace('/*user-css*/', config.prefs['user-css'])
+    .replace('%data-images%', config.prefs['show-images'])
+    .replace('%data-font%', config.prefs.font)
+    .replace('%data-mode%', config.prefs.mode));
   iframe.contentDocument.close();
-  iframe.contentDocument.body.dataset.images = config.prefs['show-images'];
-  iframe.contentDocument.body.dataset.mode = config.prefs.mode;
-
-  document.title = article.title + ' :: Reader View';
-  // hash
-  const hash = link => {
-    const hash = link.hash.substr(1);
-    const a = iframe.contentDocument.querySelector(`[name="${hash}"],#${hash}`);
-    if (a) {
-      a.scrollIntoView({
-        block: 'start',
-        inline: 'nearest'
-      });
-      a.focus();
-    }
-    else {
-      console.warn('hash', link.hash, 'is unreachable');
-    }
-  };
-  // link handling
-  iframe.contentDocument.addEventListener('click', e => {
-    const a = e.target.closest('a');
-    if (a && a.href) {
-      // external links
-      if (a.href.startsWith('http') && e.button === 0) {
-        e.preventDefault();
-        e.stopPropagation();
-        return chrome.runtime.sendMessage({
-          cmd: 'open',
-          url: a.href,
-          reader: config.prefs['reader-mode'],
-          current: e.ctrlKey === false && e.metaKey === false
-        });
-      }
-      // internal links
-      // https://github.com/rNeomy/reader-view/issues/52
-      try {
-        const link = new URL(a.href);
-        if (link.pathname === location.pathname && link.origin === location.origin) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (link.hash) {
-            if (e.button === 0 && e.metaKey === false) {
-              hash(link);
-            }
-            else {
-              chrome.runtime.sendMessage({
-                cmd: 'open',
-                url: args.get('url').split('#')[0] + link.hash,
-                reader: config.prefs['reader-mode'],
-                current: e.ctrlKey === false && e.metaKey === false
-              });
-            }
-          }
-        }
-      }
-      catch (e) {
-        console.warn(e);
-      }
-    }
-  });
 
   document.head.appendChild(Object.assign(
     document.querySelector(`link[rel*='icon']`) || document.createElement('link'), {
@@ -614,10 +472,6 @@ const render = () => chrome.runtime.sendMessage({
       href: 'chrome://favicon/' + article.url
     }
   ));
-  iframe.contentDocument.getElementById('reader-domain').onclick = () => {
-    nav.back();
-    return false;
-  };
   // navigation
   {
     const next = document.getElementById('navigate-next');
@@ -643,7 +497,6 @@ const render = () => chrome.runtime.sendMessage({
   }
 
   iframe.contentDocument.documentElement.appendChild(styles.internals);
-  iframe.contentDocument.documentElement.appendChild(styles.iframe);
   iframe.addEventListener('load', () => {
     // apply transition after initial changes
     document.body.dataset.loaded = iframe.contentDocument.body.dataset.loaded = true;
@@ -683,7 +536,6 @@ const render = () => chrome.runtime.sendMessage({
     window.addEventListener('keydown', callback);
     iframe.contentWindow.focus();
   }
-  iframe.contentDocument.body.dataset.font = config.prefs.font;
   // move to hash
   if (args.get('url').indexOf('#') !== -1) {
     const link = new URL(args.get('url'));
@@ -696,9 +548,6 @@ config.onChanged.push(ps => {
   if (ps['top-css']) {
     styles.top.textContent = config.prefs['top-css'];
   }
-  if (ps['user-css']) {
-    styles.iframe.textContent = config.prefs['user-css'];
-  }
   if (ps['font-size'] || ps['font'] || ps['line-height'] || ps['width']) {
     update.async();
   }
@@ -706,7 +555,7 @@ config.onChanged.push(ps => {
     update.images();
   }
   if (ps['mode']) {
-    document.body.dataset.mode = iframe.contentDocument.body.dataset.mode = config.prefs.mode;
+    document.body.dataset.mode = config.prefs.mode;
   }
 });
 
@@ -739,7 +588,6 @@ config.load(() => {
 
   styles.top.textContent = config.prefs['top-css'];
   document.documentElement.appendChild(styles.top);
-  styles.iframe.textContent = config.prefs['user-css'];
 
   if (config.prefs['navigate-buttons']) {
     document.getElementById('navigate').classList.remove('hidden');

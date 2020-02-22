@@ -1,4 +1,4 @@
-/* globals Readability */
+/* globals Readability, config */
 'use strict';
 
 {
@@ -93,10 +93,48 @@ function getSelectionHTML() {
     }));
   }
   else {
-    const convert = () => chrome.runtime.sendMessage({
-      cmd: 'open-reader',
-      article
+    const convert = () => config.load(async () => {
+      const prefs = config.prefs;
+      if (prefs.embedded || window.embedded === true) {
+        const {pathname, hostname} = (new URL(article.url));
+        document.open();
+        document.write((await (await fetch(chrome.runtime.getURL('/data/reader/template.html'))).text())
+          .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
+          .replace('%light-color%', '#222')
+          .replace('%light-bg%', 'whitesmoke')
+          .replace('%dark-color%', '#eee')
+          .replace('%dark-bg%', '#333')
+          .replace('%sepia-color%', '#5b4636')
+          .replace('%sepia-bg%', '#f4ecd8')
+          .replace('%solarized-light-color%', '#586e75')
+          .replace('%solarized-light-bg%', '#fdf6e3')
+          .replace('%groove-dark-color%', '#cec4ac')
+          .replace('%groove-dark-bg%', '#282828')
+          .replace('%solarized-dark-color%', '#93a1a1')
+          .replace('%solarized-dark-bg%', '#002b36')
+          .replace('%content%', article.content)
+          .replace('%title%', article.title || 'Unknown Title')
+          .replace('%byline%', article.byline || '')
+          .replace('%reading-time-fast%', article.readingTimeMinsFast)
+          .replace('%reading-time-slow%', article.readingTimeMinsSlow)
+          .replace('%href%', article.url)
+          .replace('%hostname%', hostname)
+          .replace('%pathname%', pathname)
+          .replace('/*user-css*/', prefs['user-css'])
+          .replace('%data-images%', prefs['show-images'])
+          .replace('%data-mode%', prefs.mode)
+          .replace('%data-font%', prefs.font)
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ''));
+        document.close();
+      }
+      else {
+        chrome.runtime.sendMessage({
+          cmd: 'open-reader',
+          article
+        });
+      }
     });
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', convert);
     }
