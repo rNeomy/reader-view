@@ -63,7 +63,7 @@ function onClicked(tab) {
         }
         chrome.tabs.executeScript(tab.id, {
           file: 'data/inject/wrapper.js'
-        });
+        }, () => chrome.runtime.lastError);
       }
     });
   }
@@ -71,34 +71,41 @@ function onClicked(tab) {
 
 chrome.pageAction.onClicked.addListener(onClicked);
 
-{
-  const callback = () => config.load(() => {
-    if (config.prefs['context-open-in-reader-view']) {
-      chrome.contextMenus.create({
-        id: 'open-in-reader-view',
-        title: 'Open in Reader View',
-        contexts: ['link']
-      });
-    }
-    if (config.prefs['context-open-in-reader-view-bg']) {
-      chrome.contextMenus.create({
-        id: 'open-in-reader-view-bg',
-        title: 'Open in background Reader View',
-        contexts: ['link']
-      });
-    }
-    if (config.prefs['context-switch-to-reader-view']) {
-      chrome.contextMenus.create({
-        id: 'switch-to-reader-view',
-        title: 'Switch to Reader View',
-        contexts: ['page'],
-        documentUrlPatterns: ['*://*/*']
-      });
-    }
-  });
-  chrome.runtime.onInstalled.addListener(callback);
-  chrome.runtime.onStartup.addListener(callback);
-}
+const menus = () => config.load(() => {
+  if (config.prefs['context-open-in-reader-view']) {
+    chrome.contextMenus.create({
+      id: 'open-in-reader-view',
+      title: 'Open in Reader View',
+      contexts: ['link']
+    }, () => chrome.runtime.lastError);
+  }
+  else {
+    chrome.contextMenus.remove('open-in-reader-view', () => chrome.runtime.lastError);
+  }
+  if (config.prefs['context-open-in-reader-view-bg']) {
+    chrome.contextMenus.create({
+      id: 'open-in-reader-view-bg',
+      title: 'Open in background Reader View',
+      contexts: ['link']
+    }, () => chrome.runtime.lastError);
+  }
+  else {
+    chrome.contextMenus.remove('open-in-reader-view-bg', () => chrome.runtime.lastError);
+  }
+  if (config.prefs['context-switch-to-reader-view']) {
+    chrome.contextMenus.create({
+      id: 'switch-to-reader-view',
+      title: 'Switch to Reader View',
+      contexts: ['page'],
+      documentUrlPatterns: ['*://*/*']
+    }, () => chrome.runtime.lastError);
+  }
+  else {
+    chrome.contextMenus.remove('switch-to-reader-view', () => chrome.runtime.lastError);
+  }
+});
+chrome.runtime.onInstalled.addListener(menus);
+chrome.runtime.onStartup.addListener(menus);
 
 const onContext = ({menuItemId, pageUrl, linkUrl}, tab) => {
   let url = linkUrl || pageUrl;
@@ -119,7 +126,7 @@ const onContext = ({menuItemId, pageUrl, linkUrl}, tab) => {
       openerTabId: tab.id,
       index: tab.index + 1,
       active: !menuItemId.endsWith('-bg')
-    }, t => window.setTimeout(onClicked, 1000, {
+    }, t => onClicked({
       id: t.id,
       url
     }));
@@ -141,7 +148,7 @@ chrome.commands.onCommand.addListener(function(command) {
 });
 
 const onUpdated = (tabId, info, tab) => {
-  if (onUpdated.cache[tabId] && info.url) {
+  if (onUpdated.cache[tabId] && (info.url || info.status === 'complete')) {
     onClicked(tab);
     delete onUpdated.cache[tabId];
     if (Object.keys(onUpdated.cache).length === 0) {
@@ -160,7 +167,6 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   const url = sender.tab ? sender.tab.url : '';
   if (request.cmd === 'open-reader' && request.article) {
     cache[sender.tab.id] = request.article;
-    cache[sender.tab.id].url = url;
     chrome.tabs.update(id, {
       url: chrome.runtime.getURL('data/reader/index.html?id=' + id + '&url=' + encodeURIComponent(url))
     });
@@ -183,15 +189,20 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   }
   else if (request.cmd === 'open') {
     if (request.current) {
+      if (request.reader) {
+        onUpdated.cache[id] = true;
+        chrome.tabs.onUpdated.addListener(onUpdated);
+      }
       chrome.tabs.update({
         url: request.url
-      }, tab => request.reader && window.setTimeout(onClicked, 1000, tab));
+      });
     }
     else {
       chrome.tabs.create({
         url: request.url,
         openerTabId: id,
-        index: sender.tab.index + 1
+        index: sender.tab.index + 1,
+        active: false
       }, tab => request.reader && onClicked(tab));
     }
   }
@@ -216,37 +227,46 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
 config.onChanged.push(prefs => {
   if (prefs['cache-highlights']) {
     if (prefs['cache-highlights'].newValue === false) {
-      console.log(highlights);
       for (const key of Object.keys(highlights)) {
         delete highlights[key];
       }
     }
   }
+  if (
+    prefs['context-open-in-reader-view'] ||
+    prefs['context-open-in-reader-view-bg'] ||
+    prefs['context-switch-to-reader-view']
+  ) {
+    menus();
+  }
 });
 
-// FAQs
+// FAQs & Feedback
 {
   const {onInstalled, setUninstallURL, getManifest} = chrome.runtime;
   const {name, version} = getManifest();
   const page = getManifest().homepage_url;
-  onInstalled.addListener(({reason, previousVersion}) => {
-    chrome.storage.local.get({
-      'faqs': true,
-      'last-update': 0
-    }, prefs => {
-      if (reason === 'install' || (prefs.faqs && reason === 'update')) {
-        const doUpdate = (Date.now() - prefs['last-update']) / 1000 / 60 / 60 / 24 > 45;
-        if (doUpdate && previousVersion !== version) {
-          chrome.tabs.create({
-            url: page + '?version=' + version +
-              (previousVersion ? '&p=' + previousVersion : '') +
-              '&type=' + reason,
-            active: reason === 'install'
-          });
-          chrome.storage.local.set({'last-update': Date.now()});
+  const update = getManifest().update_url;
+  if (update && navigator.webdriver !== true) {
+    onInstalled.addListener(({reason, previousVersion}) => {
+      chrome.storage.local.get({
+        'faqs': true,
+        'last-update': 0
+      }, prefs => {
+        if (reason === 'install' || (prefs.faqs && reason === 'update')) {
+          const doUpdate = (Date.now() - prefs['last-update']) / 1000 / 60 / 60 / 24 > 45;
+          if (doUpdate && previousVersion !== version) {
+            chrome.tabs.create({
+              url: page + '?version=' + version +
+                (previousVersion ? '&p=' + previousVersion : '') +
+                '&type=' + reason,
+              active: reason === 'install'
+            });
+            chrome.storage.local.set({'last-update': Date.now()});
+          }
         }
-      }
+      });
     });
-  });
-  setUninstallURL(page + '?rd=feedback&name=' + encodeURIComponent(name) + '&version=' + version);
+    setUninstallURL(page + '?rd=feedback&name=' + encodeURIComponent(name) + '&version=' + version);
+  }
 }

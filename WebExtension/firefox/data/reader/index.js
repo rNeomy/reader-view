@@ -569,13 +569,14 @@ const render = () => chrome.runtime.sendMessage({
     const a = e.target.closest('a');
     if (a && a.href) {
       // external links
-      if (a.href.startsWith('http') && e.button === 0 && e.metaKey === false) {
+      if (a.href.startsWith('http') && e.button === 0) {
         e.preventDefault();
+        e.stopPropagation();
         return chrome.runtime.sendMessage({
           cmd: 'open',
           url: a.href,
           reader: config.prefs['reader-mode'],
-          current: config.prefs['new-tab'] === false
+          current: e.ctrlKey === false && e.metaKey === false
         });
       }
       // internal links
@@ -584,6 +585,7 @@ const render = () => chrome.runtime.sendMessage({
         const link = new URL(a.href);
         if (link.pathname === location.pathname && link.origin === location.origin) {
           e.preventDefault();
+          e.stopPropagation();
           if (link.hash) {
             if (e.button === 0 && e.metaKey === false) {
               hash(link);
@@ -592,7 +594,8 @@ const render = () => chrome.runtime.sendMessage({
               chrome.runtime.sendMessage({
                 cmd: 'open',
                 url: args.get('url').split('#')[0] + link.hash,
-                reader: config.prefs['reader-mode']
+                reader: config.prefs['reader-mode'],
+                current: e.ctrlKey === false && e.metaKey === false
               });
             }
           }

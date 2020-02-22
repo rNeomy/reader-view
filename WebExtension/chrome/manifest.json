@@ -14,10 +14,7 @@
     "chrome://favicon/"
   ],
   "optional_permissions": [
-    "tabs",
-    "*://*/*",
-    "tts",
-    "ttsEngine"
+    "*://*/*"
   ],
   "background": {
     "persist": false,

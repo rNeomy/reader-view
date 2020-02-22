@@ -6,7 +6,6 @@
   const request = e => {
     if (e.target.checked) {
       chrome.permissions.request({
-        permissions: ['tabs'],
         origins: ['*://*/*']
       }, granted => {
         if (granted === false) {
@@ -37,7 +36,6 @@ function save() {
 
   chrome.storage.local.set({
     'user-css': document.getElementById('user-css').value,
-    'new-tab': document.getElementById('new-tab').checked,
     'reader-mode': document.getElementById('reader-mode').checked,
     'faqs': document.getElementById('faqs').checked,
     'tts-delay': Math.max(document.getElementById('tts-delay').value, 0),
@@ -67,7 +65,6 @@ function restore() {
   document.getElementById('navigate-buttons').checked = localStorage.getItem('navigate-buttons') !== 'false';
 
   chrome.storage.local.get(config.prefs, prefs => {
-    document.getElementById('new-tab').checked = prefs['new-tab'];
     document.getElementById('reader-mode').checked = prefs['reader-mode'];
     document.getElementById('faqs').checked = prefs['faqs'];
     document.getElementById('tts-delay').value = prefs['tts-delay'];
@@ -135,7 +132,7 @@ chrome.tabs.query({}, (tabs = []) => {
   for (const tab of tabs) {
     chrome.tabs.sendMessage(tab.id, {
       cmd: 'export-highlights'
-    });
+    }, () => chrome.runtime.lastError);
   }
 });
 

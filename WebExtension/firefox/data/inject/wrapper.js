@@ -70,10 +70,13 @@ function getSelectionHTML() {
     return;
   }
 }
+
 {
   const article = new Readability(
     getSelectionHTML() || document.cloneNode(true)
   ).parse();
+  article.url = article.url || location.href;
+
   // https://get.foundation/sites/docs/rtl.html
   if (article.dir === null) {
     const lang = document.documentElement.lang;
@@ -90,9 +93,15 @@ function getSelectionHTML() {
     }));
   }
   else {
-    chrome.runtime.sendMessage({
+    const convert = () => chrome.runtime.sendMessage({
       cmd: 'open-reader',
       article
     });
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', convert);
+    }
+    else {
+      convert();
+    }
   }
 }

@@ -10,7 +10,6 @@ config.prefs = {
   'font': 'sans-serif',
   'width': 600,
   'line-height': 0,
-  'new-tab': true,
   'reader-mode': false,
   'tts-delay': 300,
   'tts-maxlength': 160,
