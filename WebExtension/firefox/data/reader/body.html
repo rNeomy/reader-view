@@ -1,0 +1,16 @@
+<body data-images=%data-images% data-mode=%data-mode% data-font=%data-font%>
+  <span></span> <!-- for IntersectionObserver -->
+  <a id="reader-domain" href="%href%">
+    <span>%hostname%</span>
+    <span>%pathname%</span>
+  </a>
+  <h1 dir="auto" id="reader-title">%title%</h1>
+  <div dir="auto" id="reader-credits">%byline%</div>
+  <div dir="auto" id="reader-estimated-time">%reading-time-fast%-%reading-time-slow% minutes</div>
+  <hr/>
+  %content%
+  <span></span> <!-- for IntersectionObserver -->
+  <script src="/config.js"></script>
+  <script src="template.js"></script>
+  <script async src="libs/highlight/highlight.js"></script>
+</body>

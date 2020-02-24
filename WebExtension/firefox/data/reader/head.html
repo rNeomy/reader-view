@@ -1,0 +1,111 @@
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <style>
+html {
+  scroll-behavior: smooth;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 30px auto 0 auto;
+  padding: 10px;
+}
+body[data-mode="light"] {
+  color: %light-color%;
+  background-color: %light-bg%;
+}
+body[data-mode="dark"] {
+  color: %dark-color%;
+  background-color: %dark-bg%;
+}
+body[data-mode="sepia"] {
+  color: %sepia-color%;
+  background-color: %sepia-bg%;
+}
+body[data-mode="solarized-light"] {
+  color: %solarized-light-color%;
+  background-color: %solarized-light-bg%;
+}
+body[data-mode="groove-dark"] {
+  color: %groove-dark-color%;
+  background-color: %groove-dark-bg%;
+}
+body[data-mode="solarized-dark"] {
+  color: %solarized-dark-color%;
+  background-color: %solarized-dark-bg%;
+}
+body[data-loaded=true] {
+  transition: color 0.4s, background-color 0.4s;
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+body[data-images=false] img {
+  display: none;
+}
+a {
+  color: #0095dd;
+  text-decoration: none;
+}
+#reader-domain {
+  font-family: Helvetica, Arial, sans-serif;
+  text-decoration: none;
+  border-bottom-color: currentcolor;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  display: inline-block;
+  direction: ltr;
+}
+#reader-domain > span:first-child {
+  font-size: 1.1em;
+}
+#reader-domain > span:last-child {
+  font-size: 0.8em;
+}
+#reader-title {
+  font-size: 1.6em;
+  line-height: 1.25em;
+  width: 100%;
+  margin: 20px 0;
+  padding: 0;
+}
+#reader-credits {
+  font-size: 0.9em;
+  line-height: 1.48em;
+  margin: 0 0 10px 0;
+  padding: 0;
+  font-style: italic;
+}
+#reader-estimated-time {
+  font-size: 0.85em;
+  line-height: 1.48em;
+  margin: 0 0 10px 0;
+  padding: 0;
+}
+#reader-credits:empty {
+  display: none;
+}
+.tts-speaking {
+  position: relative;
+}
+.tts-speaking::after {
+  content: '';
+  position: absolute;
+  left: -100vw;
+  top: -5px;
+  width: 300vw;
+  height: calc(100% + 10px);
+  box-shadow: 0 0 0 1000vw rgba(128, 128, 128, 0.2);
+}
+body[data-speech="false"] .tts-speaking::after {
+  display: none;
+}
+mark.hghlght {
+  background-color: #ffff81;
+}
+</style>
+  <style id="user-css">/*user-css*/</style>
+</head>

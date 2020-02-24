@@ -106,11 +106,15 @@ function getSelectionHTML() {
           default:
             return 'Helvetica, Arial, sans-serif';
           }
-        }
-        document.open();
-
-        document.write((await (await fetch(chrome.runtime.getURL('/data/reader/template.html'))).text())
-          .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
+        };
+        document.head.outerHTML = (await (await fetch(chrome.runtime.getURL('/data/reader/head.html'))).text())
+          .replace('/*user-css*/', `
+            body {
+              font-size:  ${prefs['font-size']}px;
+              font-family: ${getFont(prefs.font)} !important;
+              width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
+            }
+          ` + prefs['user-css'])
           .replace('%light-color%', '#222')
           .replace('%light-bg%', 'whitesmoke')
           .replace('%dark-color%', '#eee')
@@ -122,7 +126,8 @@ function getSelectionHTML() {
           .replace('%groove-dark-color%', '#cec4ac')
           .replace('%groove-dark-bg%', '#282828')
           .replace('%solarized-dark-color%', '#93a1a1')
-          .replace('%solarized-dark-bg%', '#002b36')
+          .replace('%solarized-dark-bg%', '#002b36');
+        document.body.outerHTML = (await (await fetch(chrome.runtime.getURL('/data/reader/body.html'))).text())
           .replace('%content%', article.content)
           .replace('%title%', article.title || 'Unknown Title')
           .replace('%byline%', article.byline || '')
@@ -131,19 +136,12 @@ function getSelectionHTML() {
           .replace('%href%', article.url)
           .replace('%hostname%', hostname)
           .replace('%pathname%', pathname)
-          .replace('/*user-css*/', `
-            body {
-              font-size:  ${prefs['font-size']}px;
-              font-family: ${getFont(prefs.font)} !important;
-              width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
-            }
-          ` + prefs['user-css'])
           .replace('%data-images%', prefs['show-images'])
           .replace('%data-mode%', prefs.mode)
           .replace('%data-font%', prefs.font)
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ''));
-        document.close();
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
         document.title = title;
+        document.dir = article.dir ? article.dir : '';
       }
       else {
         chrome.runtime.sendMessage({
