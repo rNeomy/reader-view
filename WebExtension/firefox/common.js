@@ -261,13 +261,12 @@ config.onChanged.push(prefs => {
   }
 });
 
-// FAQs & Feedback
+/* FAQs & Feedback */
 {
   const {onInstalled, setUninstallURL, getManifest} = chrome.runtime;
   const {name, version} = getManifest();
   const page = getManifest().homepage_url;
-  const update = getManifest().update_url;
-  if (update && navigator.webdriver !== true) {
+  if (navigator.webdriver !== true) {
     onInstalled.addListener(({reason, previousVersion}) => {
       chrome.storage.local.get({
         'faqs': true,

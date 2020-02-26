@@ -108,7 +108,6 @@ function getSelectionHTML() {
           }
         }
         document.open();
-
         document.write((await (await fetch(chrome.runtime.getURL('/data/reader/template.html'))).text())
           .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
           .replace('%light-color%', '#222')

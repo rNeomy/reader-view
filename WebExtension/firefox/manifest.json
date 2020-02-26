@@ -44,6 +44,9 @@
       "description": "Toggle the Reader View"
     }
   },
+  "web_accessible_resources": [
+    "/data/reader/template.html"
+  ],
   "applications": {
     "gecko": {
       "id": "{2495d258-41e7-4cd5-bc7d-ac15981f064e}",
