@@ -77,10 +77,10 @@ function getSelectionHTML() {
   ).parse();
   article.url = article.url || location.href;
 
-  // https://get.foundation/sites/docs/rtl.html
+  // https://www.w3.org/International/questions/qa-scripts.en#directions
   if (article.dir === null) {
     const lang = document.documentElement.lang;
-    if (lang && ['ar', 'zh', 'fa', 'he', 'iw', 'ur', 'yi', 'ji'].some(a => lang.indexOf(a) !== -1)) {
+    if (lang && ['ar', 'fa', 'he', 'iw', 'ur', 'yi', 'ji'].some(a => lang.indexOf(a) !== -1)) {
       article.dir = 'rtl';
     }
   }
