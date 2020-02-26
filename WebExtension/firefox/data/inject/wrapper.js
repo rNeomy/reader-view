@@ -106,9 +106,9 @@ function getSelectionHTML() {
           default:
             return 'Helvetica, Arial, sans-serif';
           }
-        }
-        document.open();
-        document.write((await (await fetch(chrome.runtime.getURL('/data/reader/template.html'))).text())
+        };
+        const resp = await fetch(chrome.runtime.getURL('/data/reader/template.html'));
+        const html = (await resp.text())
           .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
           .replace('%light-color%', '#222')
           .replace('%light-bg%', 'whitesmoke')
@@ -140,8 +140,11 @@ function getSelectionHTML() {
           .replace('%data-images%', prefs['show-images'])
           .replace('%data-mode%', prefs.mode)
           .replace('%data-font%', prefs.font)
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ''));
-        document.close();
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
+        const dom = (new DOMParser()).parseFromString(html, `text/html`);
+        document.head.replaceWith(dom.querySelector('head'));
+        document.body.replaceWith(dom.querySelector('body'));
         document.title = title;
       }
       else {
