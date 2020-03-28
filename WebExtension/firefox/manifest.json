@@ -22,6 +22,8 @@
     ]
   },
   "page_action": {
+    "browser_style": true,
+    "show_matches": ["http://*/*", "https://*/*"],
     "default_icon": {
       "16": "data/icons/16.png",
       "19": "data/icons/19.png",

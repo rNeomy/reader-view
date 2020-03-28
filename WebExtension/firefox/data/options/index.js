@@ -42,7 +42,6 @@ function save() {
     'highlight-button': document.getElementById('highlight-button').checked,
     'design-mode-button': document.getElementById('design-mode-button').checked,
     'navigate-buttons': document.getElementById('navigate-buttons').checked
-
   }, () => {
     const status = document.getElementById('status');
     status.textContent = 'Options saved.';

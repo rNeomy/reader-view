@@ -10,37 +10,11 @@ chrome.tabs.goBack = chrome.tabs.goBack || function(tabId) {
 
 function notify(message) {
   chrome.notifications.create({
-    title: 'Reader View',
+    title: chrome.runtime.getManifest().name,
     type: 'basic',
     iconUrl: 'data/icons/48.png',
     message
   });
-}
-
-// page action
-if ('declarativeContent' in chrome) {
-  const observe = () => chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
-    chrome.declarativeContent.onPageChanged.addRules([{
-      conditions: [
-        new chrome.declarativeContent.PageStateMatcher({
-          pageUrl: {
-            schemes: ['http', 'https']
-          }
-        })
-      ],
-      actions: [new chrome.declarativeContent.ShowPageAction()]
-    }]);
-  });
-  if (chrome.extension.inIncognitoContext) {
-    observe();
-  }
-  else {
-    chrome.runtime.onInstalled.addListener(observe);
-  }
-}
-else {
-  chrome.tabs.onUpdated.addListener(tabId => chrome.pageAction.show(tabId));
-  chrome.tabs.query({}, tabs => tabs.forEach(tab => chrome.pageAction.show(tab.id)));
 }
 
 function onClicked(tab, embedded = false) {

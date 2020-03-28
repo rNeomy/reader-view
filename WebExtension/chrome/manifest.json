@@ -23,7 +23,10 @@
       "common.js"
     ]
   },
-  "page_action": {},
+  "page_action": {
+    "browser_style": true,
+    "show_matches": ["http://*/*", "https://*/*"]
+  },
   "homepage_url": "https://add0n.com/chrome-reader-view.html",
   "icons": {
     "16": "data/icons/16.png",
