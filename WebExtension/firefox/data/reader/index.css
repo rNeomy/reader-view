@@ -11,6 +11,7 @@
   --color-mode-solarized-light-bg: #fdf6e3;
   --color-mode-solarized-dark-color: #93a1a1;
   --color-mode-solarized-dark-bg: #002b36;
+  --color-font-utils-light: #c5c5c5;
   --border-color: rgba(181, 181, 181, 0.7);
 }
 
@@ -102,7 +103,7 @@ iframe {
   left: 60px;
   width: 100px;
   border-radius: 4px;
-  box-shadow: 0 1px 12px #c5c5c5;
+  box-shadow: 0 1px 12px var(--color-font-utils-light);
   min-width: 300px;
   background-color: #fbfbfb;
   outline: none;
@@ -146,7 +147,7 @@ iframe {
 }
 #font-utils tr:first-child span:last-child {
   margin-top: -4px;
-  color: #c5c5c5;
+  color: var(--color-font-utils-light);
   font-size: 12px;
 }
 #font-utils tr:last-child td div {
@@ -186,6 +187,18 @@ iframe {
 }
 #image-utils tr:last-child td {
   font-size: 14px;
+}
+#font-details {
+  height: 32px !important;
+}
+#font-details div {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  font-size: 12px;
+  color: var(--color-font-utils-light);
+}
+#font-details div span[data-id] {
+  color: initial;
 }
 
 #toolbar [data-id="no-height"] input,

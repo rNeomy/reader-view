@@ -44,7 +44,7 @@ const update = {
     const prefs = config.prefs;
     let lh = 'unset';
     if (prefs['line-height']) {
-      lh = prefs['font-size'] * (prefs['line-height'] === 32 ? 1.5 : 1.2) + 'px';
+      lh = (prefs['font-size'] * (prefs['line-height'] === 32 ? 1.5 : 1.2)).toFixed(1) + 'px';
     }
     styles.internals.textContent = `body {
       font-size:  ${prefs['font-size']}px;
@@ -61,6 +61,10 @@ const update = {
     document.querySelector('[data-id=full-width] input').checked = Boolean(prefs.width) === false;
     // as a CSS selector
     document.body.dataset.font = prefs.font;
+    //
+    document.querySelector('#font-details [data-id="font-size"]').textContent = prefs['font-size'] + 'px';
+    document.querySelector('#font-details [data-id="screen-width"]').textContent = prefs['width'] || 'unset';
+    document.querySelector('#font-details [data-id="line-height"]').textContent = lh;
   },
   images: () => {
     const bol = config.prefs['show-images'];
