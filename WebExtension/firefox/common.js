@@ -2,27 +2,23 @@
 'use strict';
 
 // polyfill
-const goBack = ({id, url}) => {
-  if (url) {
-    // temporary allow navigation
-    if (url.indexOf(chrome.runtime.id) !== -1) {
-      webNavigation.ids[id] = true;
-    }
-    if (chrome.tabs.goBack) {
-      chrome.tabs.goBack(id, () => {
-        if (chrome.runtime.lastError) {
-          const args = new URLSearchParams(url.split('?')[1]);
-          chrome.tabs.update({
-            url: args.get('url')
-          });
-        }
-      });
-    }
-    else {
-      chrome.tabs.executeScript(id, {
-        code: 'history.back()'
-      });
-    }
+const goBack = ({id, url = ''}) => {
+  // temporary allow navigation
+  webNavigation.ids[id] = true;
+  if (chrome.tabs.goBack) {
+    chrome.tabs.goBack(id, () => {
+      if (chrome.runtime.lastError) {
+        const args = new URLSearchParams(url.split('?')[1]);
+        chrome.tabs.update({
+          url: args.get('url')
+        });
+      }
+    });
+  }
+  else {
+    chrome.tabs.executeScript(id, {
+      code: 'history.back()'
+    });
   }
 };
 
@@ -255,20 +251,18 @@ config.onChanged.push(prefs => {
 
 /* automatic switch */
 const webNavigation = () => {
-  if (chrome.webNavigation) {
-    webNavigation.rules = JSON.parse(localStorage.getItem('auto-rules') || '[]').map(s => {
-      if (s.startsWith('r:')) {
-        try {
-          return new RegExp(s.substr(2), 'i');
-        }
-        catch (e) {
-          console.warn('Cannot create regexp from', s);
-          return '';
-        }
+  webNavigation.rules = JSON.parse(localStorage.getItem('auto-rules') || '[]').map(s => {
+    if (s.startsWith('r:')) {
+      try {
+        return new RegExp(s.substr(2), 'i');
       }
-      return s;
-    }).filter(a => a);
-  }
+      catch (e) {
+        console.warn('Cannot create regexp from', s);
+        return '';
+      }
+    }
+    return s;
+  }).filter(a => a);
   const next = d => {
     if (webNavigation.ids[d.tabId] !== true) {
       onClicked({
@@ -297,18 +291,42 @@ const webNavigation = () => {
       delete webNavigation.ids[d.tabId];
     }
   };
-  chrome.webNavigation.onDOMContentLoaded.removeListener(observe);
-  if (webNavigation.rules.length) {
-    chrome.webNavigation.onDOMContentLoaded.addListener(observe, {
-      url: [{
-        schemes: ['http', 'https']
-      }]
-    });
+  if (chrome.webNavigation) {
+    chrome.webNavigation.onDOMContentLoaded.removeListener(observe);
+    if (webNavigation.rules.length) {
+      chrome.webNavigation.onDOMContentLoaded.addListener(observe, {
+        url: [{
+          schemes: ['http', 'https']
+        }]
+      });
+    }
   }
 };
 webNavigation.ids = {};
 window.webNavigation = webNavigation;
 webNavigation();
+
+// page action
+if (chrome.declarativeContent) {
+  const observe = () => chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
+    chrome.declarativeContent.onPageChanged.addRules([{
+      conditions: [
+        new chrome.declarativeContent.PageStateMatcher({
+          pageUrl: {
+            schemes: ['http', 'https']
+          }
+        })
+      ],
+      actions: [new chrome.declarativeContent.ShowPageAction()]
+    }]);
+  });
+  if (chrome.extension.inIncognitoContext) {
+    observe();
+  }
+  else {
+    chrome.runtime.onInstalled.addListener(observe);
+  }
+}
 
 /* FAQs & Feedback */
 {

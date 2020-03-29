@@ -31,6 +31,12 @@
       width: 100%;
       box-sizing: border-box;
     }
+    #auto-permission {
+      float: right;
+    }
+    textarea:disabled {
+      opacity: 0.4;
+    }
   </style>
 </head>
 
@@ -155,7 +161,7 @@
     <tbody>
       <tr>
         <td colspan="3">
-          <textarea disabled placeholder="Comma-separated list of hostnames/regular expressions to automatically switch to the reader view (e.g.: google.com, r:.*.google.com)" id="auto-rules" rows="3"></textarea>
+          <textarea disabled placeholder="A comma-separated list of hostnames or regular expressions to automatically switch to the reader view if the 'request access' is granted (e.g.: google.com, r:\w+\.google\.com)" id="auto-rules" rows="4"></textarea>
         </td>
       </tr>
     </tbody>
