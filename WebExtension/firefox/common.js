@@ -109,6 +109,9 @@ const menus = () => config.load(() => {
 });
 chrome.runtime.onInstalled.addListener(menus);
 chrome.runtime.onStartup.addListener(menus);
+if (chrome.extension.inIncognitoContext) {
+  menus();
+}
 
 const onContext = ({menuItemId, pageUrl, linkUrl}, tab) => {
   let url = linkUrl || pageUrl;
