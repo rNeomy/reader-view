@@ -14,7 +14,8 @@
     "chrome://favicon/"
   ],
   "optional_permissions": [
-    "*://*/*"
+    "*://*/*",
+    "webNavigation"
   ],
   "background": {
     "persist": false,

@@ -12,7 +12,8 @@
     "notifications"
   ],
   "optional_permissions": [
-    "*://*/*"
+    "*://*/*",
+    "webNavigation"
   ],
   "background": {
     "persist": false,

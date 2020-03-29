@@ -10,6 +10,9 @@
       padding: 10px;
       min-width: 500px;
     }
+    table {
+      border-collapse: collapse;
+    }
     textarea {
       width: 100%;
       font-family: monospace;
@@ -22,9 +25,11 @@
       font-weight: 500;
       padding: 5px;
       background-color: rgba(0, 0, 0, 0.05);
+      white-space: nowrap;
     }
     input[type=number] {
-      width: 100px;
+      width: 100%;
+      box-sizing: border-box;
     }
   </style>
 </head>
@@ -139,6 +144,19 @@
           <label for="tts-delay"> Delay between paragraphs (in milliseconds)</label>
         </td>
         <td><input type="number" min="0" id="tts-delay"></td>
+      </tr>
+    </tbody>
+    <thead>
+      <tr>
+        <th colspan="2">Automatic Switch</th>
+        <th><a href="#" id="auto-permission">Request Access</a></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td colspan="3">
+          <textarea disabled placeholder="Comma-separated list of hostnames/regular expressions to automatically switch to the reader view (e.g.: google.com, r:.*.google.com)" id="auto-rules" rows="3"></textarea>
+        </td>
       </tr>
     </tbody>
     <thead>

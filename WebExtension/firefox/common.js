@@ -2,10 +2,28 @@
 'use strict';
 
 // polyfill
-chrome.tabs.goBack = chrome.tabs.goBack || function(tabId) {
-  chrome.tabs.executeScript(tabId, {
-    code: 'history.back()'
-  });
+const goBack = ({id, url}) => {
+  if (url) {
+    // temporary allow navigation
+    if (url.indexOf(chrome.runtime.id) !== -1) {
+      webNavigation.ids[id] = true;
+    }
+    if (chrome.tabs.goBack) {
+      chrome.tabs.goBack(id, () => {
+        if (chrome.runtime.lastError) {
+          const args = new URLSearchParams(url.split('?')[1]);
+          chrome.tabs.update({
+            url: args.get('url')
+          });
+        }
+      });
+    }
+    else {
+      chrome.tabs.executeScript(id, {
+        code: 'history.back()'
+      });
+    }
+  }
 };
 
 function notify(message) {
@@ -20,7 +38,7 @@ function notify(message) {
 function onClicked(tab, embedded = false) {
   const root = chrome.runtime.getURL('');
   if (tab.url && tab.url.startsWith(root)) {
-    chrome.tabs.goBack(tab.id);
+    goBack(tab);
   }
   else {
     chrome.tabs.executeScript(tab.id, {
@@ -205,7 +223,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     chrome.tabs.onUpdated.addListener(onUpdated);
   }
   else if (request.cmd === 'go-back') {
-    chrome.tabs.goBack(sender.tab.id);
+    goBack(sender.tab);
   }
   else if (request.cmd === 'highlights') {
     if (request.value.length && config.prefs['cache-highlights']) {
@@ -234,6 +252,63 @@ config.onChanged.push(prefs => {
     menus();
   }
 });
+
+/* automatic switch */
+const webNavigation = () => {
+  if (chrome.webNavigation) {
+    webNavigation.rules = JSON.parse(localStorage.getItem('auto-rules') || '[]').map(s => {
+      if (s.startsWith('r:')) {
+        try {
+          return new RegExp(s.substr(2), 'i');
+        }
+        catch (e) {
+          console.warn('Cannot create regexp from', s);
+          return '';
+        }
+      }
+      return s;
+    }).filter(a => a);
+  }
+  const next = d => {
+    if (webNavigation.ids[d.tabId] !== true) {
+      onClicked({
+        url: d.url,
+        id: d.tabId
+      });
+    }
+  };
+  const observe = d => {
+    if (d.frameId === 0) {
+      const {hostname} = new URL(d.url);
+      for (const rule of webNavigation.rules) {
+        if (rule.test) {
+          if (rule.test(d.url)) {
+            next(d);
+            break;
+          }
+        }
+        else {
+          if (hostname === rule) {
+            next(d);
+            break;
+          }
+        }
+      }
+      delete webNavigation.ids[d.tabId];
+    }
+  };
+  chrome.webNavigation.onDOMContentLoaded.removeListener(observe);
+  if (webNavigation.rules.length) {
+    chrome.webNavigation.onDOMContentLoaded.addListener(observe, {
+      url: [{
+        schemes: ['http', 'https']
+      }]
+    });
+  }
+};
+webNavigation.ids = {};
+window.webNavigation = webNavigation;
+webNavigation();
 
 /* FAQs & Feedback */
 {

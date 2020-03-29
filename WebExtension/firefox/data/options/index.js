@@ -18,9 +18,38 @@
   document.getElementById('context-open-in-reader-view-bg').addEventListener('change', request);
   document.getElementById('reader-mode').addEventListener('change', request);
 }
+// webnavigation
+document.getElementById('auto-permission').addEventListener('click', e => {
+  e.preventDefault();
+  chrome.permissions.request({
+    permissions: ['webNavigation'],
+    origins: ['*://*/*']
+  }, granted => {
+    if (granted) {
+      document.getElementById('auto-rules').disabled = false;
+      document.getElementById('auto-permission').style.display = 'none';
+    }
+  });
+});
+chrome.permissions.contains({
+  permissions: ['webNavigation'],
+  origins: ['*://*/*']
+}, granted => {
+  if (granted) {
+    document.getElementById('auto-rules').disabled = false;
+    document.getElementById('auto-permission').style.display = 'none';
+  }
+});
+
 
 function save() {
   localStorage.setItem('auto-fullscreen', document.getElementById('auto-fullscreen').checked);
+  const json = document.getElementById('auto-rules').value.split(/\s*,\s*/).filter((s, i, l) => {
+    return s && l.indexOf(s) === i;
+  });
+  document.getElementById('auto-rules').value = json.join(', ');
+  localStorage.setItem('auto-rules', JSON.stringify(json));
+  chrome.runtime.getBackgroundPage(bg => bg.webNavigation());
 
   chrome.storage.local.set({
     'embedded': document.getElementById('embedded').checked,
@@ -51,6 +80,7 @@ function save() {
 
 function restore() {
   document.getElementById('auto-fullscreen').checked = localStorage.getItem('auto-fullscreen') === 'true';
+  document.getElementById('auto-rules').value = JSON.parse((localStorage.getItem('auto-rules') || '[]')).join(', ');
 
   document.getElementById('embedded').checked = config.prefs['embedded'];
   document.getElementById('top-style').value = config.prefs['top-css'];
