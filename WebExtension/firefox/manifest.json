@@ -25,14 +25,11 @@
   "page_action": {
     "browser_style": true,
     "show_matches": ["http://*/*", "https://*/*"],
-    "default_icon": {
-      "16": "data/icons/16.png",
-      "19": "data/icons/19.png",
-      "32": "data/icons/32.png",
-      "38": "data/icons/38.png",
-      "48": "data/icons/48.png",
-      "64": "data/icons/64.png"
-    }
+    "default_icon": "data/icons/svg/default.svg",
+    "theme_icons": [{
+      "light": "data/icons/svg/white.svg",
+      "dark": "data/icons/svg/black.svg"
+    }]
   },
   "homepage_url": "https://add0n.com/chrome-reader-view.html",
   "icons": {
