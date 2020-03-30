@@ -482,7 +482,23 @@ const render = () => chrome.runtime.sendMessage({
     const previous = document.getElementById('navigate-previous');
     previous.onclick = next.onclick = e => {
       const {clientHeight} = iframe.contentDocument.documentElement;
-      iframe.contentDocument.documentElement.scrollTop += (e.target === next ? 1 : -1) * clientHeight;
+      const lineHeight = parseInt(window.getComputedStyle(document.body).fontSize) * config.prefs.guide;
+      const guide = document.getElementById('guide');
+      guide.style.height = lineHeight + 'px';
+      if (e.target === next) {
+        iframe.contentDocument.documentElement.scrollTop += clientHeight - lineHeight;
+        guide.style.top = 0;
+        guide.style.bottom = 'unset';
+      }
+      else {
+        iframe.contentDocument.documentElement.scrollTop -= clientHeight - lineHeight;
+        guide.style.top = 'unset';
+        guide.style.bottom = 0;
+      }
+      if (config.prefs.guide)
+      guide.classList.remove('hidden');
+      window.clearTimeout(guide.timeout);
+      guide.timeout = window.setTimeout(() => guide.classList.add('hidden'), config.prefs['guide-timeout']);
     };
     const scroll = () => {
       const {scrollHeight, clientHeight, scrollTop} = iframe.contentDocument.documentElement;

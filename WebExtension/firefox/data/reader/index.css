@@ -13,6 +13,7 @@
   --color-mode-solarized-dark-bg: #002b36;
   --color-font-utils-light: #c5c5c5;
   --border-color: rgba(181, 181, 181, 0.7);
+  --guide-color: rgba(181, 181, 181, 0.2);
 }
 
 [class^="icon-"]::before,
@@ -364,6 +365,13 @@ body[data-speech=false] #speech {
 }
 #navigate input:disabled {
   opacity: 0.3;
+}
+#guide {
+  position: fixed;
+  left: 40px;
+  width: calc(100vw - 40px);
+  background: var(--guide-color);
+  pointer-events: none;
 }
 
 .hidden {

@@ -24,6 +24,8 @@ if (typeof config === 'undefined') {
     'tts-separator': '\n!\n',
     'faqs': true,
     'version': null,
+    'guide': 3, // guide height is n times font-size; zero means no guide
+    'guide-timeout': 2000, // ms
     'mode': localStorage.getItem('mode') || 'sepia',
     'printing-button': localStorage.getItem('printing-button') !== 'false',
     'save-button': localStorage.getItem('save-button') !== 'false',
