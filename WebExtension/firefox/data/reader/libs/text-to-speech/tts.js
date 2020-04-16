@@ -186,8 +186,16 @@
       this.state = 'play';
       if (this._voice) {
         const src = this._voice.build(this.instance.text);
-        this.audio.src = src;
-        this.audio.play();
+        if (src.then != null) {
+          var selfTTs = this;
+          src.then(function (s) {
+            selfTTs.audio.src = s;
+            selfTTs.audio.play();
+          });
+        } else {
+          this.audio.src = src;
+          this.audio.play();
+        }
       }
       else {
         speechSynthesis.speak(this.instance);

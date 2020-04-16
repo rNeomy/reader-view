@@ -202,6 +202,7 @@ When active, you can edit the document or delete elements like MS word`;
       document.body.dataset.speech = true;
       iframe.contentDocument.body.dataset.speech = true;
       await add('libs/text-to-speech/engines/watson.js');
+      await add('libs/text-to-speech/engines/google-translate.js');
       await add('libs/text-to-speech/tts.js');
       await add('libs/text-to-speech/vendors/sentence-boundary-detection/sbd.js');
       tts = new TTS(iframe.contentDocument, {
