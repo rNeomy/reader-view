@@ -279,7 +279,7 @@
           let cache = [];
           for (const part of parts) {
             if (length > this.MAXLENGTH) {
-              combined.push(cache.join('. '));
+              combined.push(cache.join(' '));
               cache = [part.trim()];
               length = part.length;
             }
@@ -289,7 +289,7 @@
             }
           }
           if (cache.length !== 0) {
-            combined.push(cache.join('. '));
+            combined.push(cache.join(' '));
           }
           for (const content of combined) {
             this.sections.push({
@@ -319,6 +319,23 @@
       this.on('section', n => {
         cleanup();
         const e = this.sections[n].target || this.sections[n];
+        if (Mark != null) {
+          try {
+            if (this.oldMakId != n) {
+              this.oldMakId = n;
+              if (this.oldMark != null) {
+                this.oldMark.unmark();
+              }
+              var section = this.sections[n];
+              this.oldMark = new Mark(e);
+              this.oldMark.mark(section.textContent, {
+                accuracy: 'complementary',
+                separateWordSearch: false,
+                acrossElements: true
+              });
+            }
+          } catch (error) {}
+        }
 
         e.classList.add('tts-speaking');
         if (isElementInViewport(e) === false) {
