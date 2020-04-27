@@ -24,7 +24,7 @@
   },
   "page_action": {
     "browser_style": true,
-    "show_matches": ["http://*/*", "https://*/*"],
+    "show_matches": ["http://*/*", "https://*/*", "file://*/*"],
     "default_icon": "data/icons/svg/default.svg",
     "theme_icons": [{
       "light": "data/icons/svg/white.svg",
