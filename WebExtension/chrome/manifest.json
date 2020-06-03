@@ -18,7 +18,7 @@
     "webNavigation"
   ],
   "background": {
-    "persist": false,
+    "persistent": false,
     "scripts": [
       "config.js",
       "common.js"
