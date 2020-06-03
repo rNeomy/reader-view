@@ -51,10 +51,23 @@ function save() {
   localStorage.setItem('auto-rules', JSON.stringify(json));
   chrome.runtime.getBackgroundPage(bg => bg.webNavigation());
 
+  let actions = [];
+  try {
+    actions = JSON.parse(document.getElementById('user-action').value);
+  }
+  catch (e) {
+    alert('unable to parse "User actions":\n\n' + e.message);
+    console.warn(e);
+    if (config.prefs['user-action']) {
+      actions = config.prefs['user-action'];
+    }
+  }
+
   chrome.storage.local.set({
     'embedded': document.getElementById('embedded').checked,
     'top-css': document.getElementById('top-style').value,
     'user-css': document.getElementById('user-css').value,
+    'user-action': actions,
     'reader-mode': document.getElementById('reader-mode').checked,
     'faqs': document.getElementById('faqs').checked,
     'tts-delay': Math.max(document.getElementById('tts-delay').value, 0),
@@ -85,6 +98,7 @@ function restore() {
   document.getElementById('embedded').checked = config.prefs['embedded'];
   document.getElementById('top-style').value = config.prefs['top-css'];
   document.getElementById('user-css').value = config.prefs['user-css'];
+  document.getElementById('user-action').value = JSON.stringify(config.prefs['user-action'], null, '  ');
 
   document.getElementById('printing-button').checked = config.prefs['printing-button'];
   document.getElementById('save-button').checked = config.prefs['save-button'];
@@ -140,7 +154,15 @@ else if (navigator.userAgent.indexOf('Edg/') !== -1) {
     'https://microsoftedge.microsoft.com/addons/detail/lpmbefndcmjoaepdpgmoonafikcalmnf';
 }
 
-document.getElementById('ref').href = chrome.runtime.getManifest().homepage_url + '#faq5';
+document.getElementById('ref-1').onclick = () => chrome.tabs.create({
+  url: chrome.runtime.getManifest().homepage_url + '#faq5'
+});
+document.getElementById('ref-2').onclick = () => chrome.tabs.create({
+  url: chrome.runtime.getManifest().homepage_url + '#faq5'
+});
+document.getElementById('ref-3').onclick = () => chrome.tabs.create({
+  url: chrome.runtime.getManifest().homepage_url + '#faq16'
+});
 
 document.getElementById('export-highlights').addEventListener('click', () => {
   chrome.runtime.getBackgroundPage(bg => {

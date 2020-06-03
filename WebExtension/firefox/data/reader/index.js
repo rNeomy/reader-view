@@ -318,6 +318,34 @@ When active, you can edit the document or delete elements like MS word`;
   });
 }
 
+/* user actions */
+{
+  config.load(() => {
+    try {
+      for (const action of config.prefs['user-action']) {
+        const span = document.createElement('span');
+        span.classList.add('custom');
+        span.title = action.title || 'User Action';
+        const img = document.createElement('img');
+        img.src = action.icon || 'command.svg';
+        span.appendChild(img);
+        document.getElementById('toolbar').appendChild(span);
+        span.onclick = () => {
+          const s = document.createElement('script');
+          const b = new Blob([action.code]);
+          s.src = URL.createObjectURL(b);
+          iframe.contentDocument.body.appendChild(s);
+          URL.revokeObjectURL(s.src);
+          s.remove();
+        };
+      }
+    }
+    catch (e) {
+      console.warn('User Action Installation Failed', e);
+    }
+  });
+}
+
 const styles = {
   top: document.createElement('style'),
   internals: document.createElement('style')

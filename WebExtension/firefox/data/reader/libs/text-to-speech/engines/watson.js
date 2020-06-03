@@ -10,6 +10,7 @@
     const s = getVoices.call(speechSynthesis, loaded);
     if (s.length || loaded) {
       return [...s, ...[
+        {'key': 'Omar', 'name': 'IBM Watson Arabic (Omar)', 'lang': 'ar-AR'},
         {'key': 'Allison', 'name': 'IBM Watson American English (Allison)', 'lang': 'en-US'},
         {'key': 'AllisonV2', 'name': 'IBM Watson American English (AllisonV2)', 'lang': 'en-US'},
         {'key': 'Lisa', 'name': 'IBM Watson American English (Lisa)', 'lang': 'en-US'},

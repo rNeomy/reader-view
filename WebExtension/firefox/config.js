@@ -38,6 +38,7 @@ if (typeof config === 'undefined') {
     'navigate-buttons': localStorage.getItem('navigate-buttons') !== 'false',
     'top-css': localStorage.getItem('top-css') || '',
     'cache-highlights': true,
+    'user-action': [],
     'user-css': localStorage.getItem('user-css') || `body {
   padding-bottom: 64px;
 }
