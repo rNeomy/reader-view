@@ -316,7 +316,7 @@ if (chrome.declarativeContent) {
       conditions: [
         new chrome.declarativeContent.PageStateMatcher({
           pageUrl: {
-            schemes: ['http', 'https']
+            schemes: ['http', 'https', 'file']
           }
         })
       ],

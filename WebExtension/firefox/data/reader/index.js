@@ -120,7 +120,9 @@ const shortcuts = [];
       // remove all script tags
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       // remove transition
-      .replace(/transition:.*/, '');
+      .replace(/transition:.*/, '')
+      // add title
+      .replace('<head>', '<head><title>' + document.title + '</title>');
     const blob = new Blob([content], {
       type: 'text/html'
     });
@@ -434,7 +436,7 @@ const render = () => chrome.runtime.sendMessage({
   cmd: 'read-data'
 }, async obj => {
   article = obj;
-  document.title = article.title + ' :: Reader View';
+  document.title = article.title.replace(' :: Reader View', '') + ' :: Reader View';
   if (!article) { // open this page from history for instance
     return location.replace(args.get('url'));
   }
