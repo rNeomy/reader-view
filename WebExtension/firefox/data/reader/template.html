@@ -92,19 +92,7 @@ a {
 #reader-credits:empty {
   display: none;
 }
-.tts-speaking {
-  position: relative;
-}
-.tts-speaking::after {
-  content: '';
-  position: absolute;
-  left: -100vw;
-  top: -5px;
-  width: 300vw;
-  height: calc(100% + 10px);
-  box-shadow: 0 0 0 1000vw rgba(128, 128, 128, 0.2);
-}
-.tts-box {
+body[data-speech="true"] .tts-box {
   position: absolute;
   left: 0;
   width: 100vw;

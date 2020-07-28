@@ -1,3 +1,23 @@
+/**
+    Reader View - .Strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability
+
+    Copyright (C) 2014-2020 [@rNeomy](https://add0n.com/chrome-reader-view.html)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the Mozilla Public License as published by
+    the Mozilla Foundation, either version 2 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Mozilla Public License for more details.
+    You should have received a copy of the Mozilla Public License
+    along with this program.  If not, see {https://www.mozilla.org/en-US/MPL/}.
+
+    GitHub: https://github.com/rNeomy/reader-view/
+    Homepage: https://add0n.com/chrome-reader-view.html
+*/
+
 /* global config */
 'use strict';
 
@@ -183,6 +203,9 @@ const onMessage = (request, sender, response) => {
   else if (request.cmd === 'open-reader') {
     notify('Sorry, this page cannot be converted!');
   }
+  else if (request.cmd === 'notify') {
+    notify(request.msg);
+  }
   else if (request.cmd === 'read-data') {
     cache[id].highlights = highlights[cache[id].url];
     response(cache[id]);
@@ -240,7 +263,6 @@ const onMessage = (request, sender, response) => {
           config.prefs['highlights-keys'].splice(i, 1);
         }
       }
-      console.log(config.prefs['highlights-keys']);
       chrome.storage.local.set({
         'highlights-keys': config.prefs['highlights-keys'],
         'highlights-objects': config.prefs['highlights-keys'].reduce((p, c) => {

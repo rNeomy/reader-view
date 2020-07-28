@@ -140,8 +140,9 @@
         }
       });
       this.audio.addEventListener('error', e => {
-        window.alert(e.message || 'This audio cannot be decoded');
-        console.error(e);
+        console.warn('TTS Error', e);
+        this.emit('error', e.message || 'tts.js: Cannot decode this audio');
+        this.emit('status', 'error');
       });
     }
     voice(voice) {
@@ -212,6 +213,7 @@
     }
     resume() {
       this.state = 'play';
+      console.log('res');
       if (this._voice) {
         this.audio.play();
       }
@@ -328,7 +330,7 @@
       }
       // split by dot
       for (const section of sections) {
-        if (section.textContent.length < this.MAXLENGTH) {
+        if (section.textContent.length < this.MAXLENGTH || section.targets) {
           this.sections.push(section);
         }
         else {
@@ -785,9 +787,15 @@
         }
         else if (s === 'buffering') {
           play.disabled = true;
-          stop.disabled = true;
           next.disabled = true;
           previous.disabled = true;
+          stop.disabled = false;
+        }
+        else if (s === 'error') {
+          play.disabled = false;
+          next.disabled = true;
+          previous.disabled = true;
+          stop.disabled = true;
         }
         else { // play
           play.classList.add('pause');

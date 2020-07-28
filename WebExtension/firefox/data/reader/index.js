@@ -1,3 +1,23 @@
+/**
+    Reader View - .Strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability
+
+    Copyright (C) 2014-2020 [@rNeomy](https://add0n.com/chrome-reader-view.html)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the Mozilla Public License as published by
+    the Mozilla Foundation, either version 2 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Mozilla Public License for more details.
+    You should have received a copy of the Mozilla Public License
+    along with this program.  If not, see {https://www.mozilla.org/en-US/MPL/}.
+
+    GitHub: https://github.com/rNeomy/reader-view/
+    Homepage: https://add0n.com/chrome-reader-view.html
+*/
+
 /* global config, TTS */
 'use strict';
 
@@ -212,6 +232,14 @@ When active, you can edit the document or delete elements like MS word`;
         maxlength: config.prefs['tts-maxlength'],
         minlength: config.prefs['tts-minlength']
       });
+      tts.on('status', s => {
+        document.querySelector('#speech [data-id=msg-speech]').textContent = s === 'buffering' ? '...' : '';
+      });
+      tts.on('error', e => chrome.runtime.sendMessage({
+        cmd: 'notify',
+        msg: e.message || e
+      }));
+
       window.addEventListener('beforeunload', () => chrome.runtime.sendMessage({
         cmd: 'delete-cache',
         cache: tts.CACHE
@@ -242,7 +270,14 @@ When active, you can edit the document or delete elements like MS word`;
             parent = parent.parentElement;
           }
           const bounded = tts.sections.filter(e => {
-            return e === parent || e.target === parent || parent.contains(e.target || e);
+            for (const c of (e.targets ? e.targets : [e.target || e])) {
+              if (
+                c === parent || c.target === parent ||
+                parent.contains(c.target || c) || (c.target || c).contains(parent)
+              ) {
+                return true;
+              }
+            }
           });
           if (bounded.length) {
             const offset = tts.sections.indexOf(bounded[0]);

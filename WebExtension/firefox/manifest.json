@@ -1,9 +1,8 @@
 {
   "name": "Reader View",
-  "short_name": "reader-view",
   "description": "strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability",
   "author": "Richard Neomy",
-  "version": "0.3.9",
+  "version": "0.4.0",
   "manifest_version": 2,
   "permissions": [
     "storage",

@@ -337,6 +337,15 @@ body[data-speech=false] #speech {
   right: 5px;
   font-size: 14px;
 }
+#speech [data-id=msg-speech] {
+  position: absolute;
+  bottom: 0;
+  right: 5px;
+  font-size: 14px;
+}
+#speech [data-id=msg-speech]:empty {
+  display: none;
+}
 #speech [data-cmd]:hover {
   color: #000;
 }
