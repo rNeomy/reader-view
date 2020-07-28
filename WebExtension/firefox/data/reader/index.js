@@ -309,16 +309,23 @@ When active, you can edit the document or delete elements like MS word`;
   });
   document.getElementById('toolbar').appendChild(span);
 
-  // post highlights to bg
+  // post highlights to bg if this feature is used
   const post = () => chrome.runtime.sendMessage({
     cmd: 'highlights',
     value: highlight.export(),
-    href: args.get('url')
+    href: args.get('url').split('#')[0]
   });
-  window.addEventListener('beforeunload', post);
-  chrome.runtime.onMessage.addListener(request => {
-    if (request.cmd === 'export-highlights') {
+  window.addEventListener('beforeunload', () => {
+    if (highlight.used) {
       post();
+    }
+  });
+  chrome.runtime.onMessage.addListener(request => {
+    if (request.cmd === 'export-highlights' && highlight.used) {
+      post();
+    }
+    else if (request.cmd === 'append-highlights' && request.href === args.get('url').split('#')[0]) {
+      highlight.import(request.highlights);
     }
   });
 }
@@ -453,6 +460,7 @@ document.addEventListener('click', e => {
   }
   else if (cmd === 'toggle-highlight') {
     highlight.toggle();
+    highlight.used = true;
   }
   else if (cmd === 'toggle-design-mode') {
     const active = iframe.contentDocument.designMode === 'on';
@@ -530,8 +538,9 @@ const render = () => chrome.runtime.sendMessage({
         guide.style.top = 'unset';
         guide.style.bottom = 0;
       }
-      if (config.prefs.guide)
-      guide.classList.remove('hidden');
+      if (config.prefs.guide) {
+        guide.classList.remove('hidden');
+      }
       window.clearTimeout(guide.timeout);
       guide.timeout = window.setTimeout(() => guide.classList.add('hidden'), config.prefs['guide-timeout']);
     };

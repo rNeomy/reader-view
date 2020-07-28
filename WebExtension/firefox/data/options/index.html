@@ -186,6 +186,11 @@
         <td colspan="2"><label for="cache-highlights"> Restore the user highlights when possible (if checked, the extension tries to persist the user highlights for each page during the current session or until the background page unloads)</label></td>
       </tr>
       <tr>
+        <td></td>
+        <td><label for="highlights-count"> Total number of highlighting objects to save and restore after a restart (use zero to disable)</label></td>
+        <td><input type="number" min="0" id="highlights-count"></td>
+      </tr>
+      <tr>
         <td><input type="checkbox" id="embedded"></td>
         <td colspan="2"><label for="embedded"> Simple mode (do not redirect to the reader view, instead update the current document) (not recommended)</label></td>
       </tr>

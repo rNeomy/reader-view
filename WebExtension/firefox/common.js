@@ -171,7 +171,7 @@ const highlights = {};
 window.highlights = highlights;
 chrome.tabs.onRemoved.addListener(tabId => delete cache[tabId]);
 
-chrome.runtime.onMessage.addListener((request, sender, response) => {
+const onMessage = (request, sender, response) => {
   const id = sender.tab ? sender.tab.id : '';
   const url = sender.tab ? sender.tab.url : '';
   if (request.cmd === 'open-reader' && request.article) {
@@ -225,19 +225,45 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     goBack(sender.tab);
   }
   else if (request.cmd === 'highlights') {
-    if (request.value.length && config.prefs['cache-highlights']) {
-      highlights[request.href] = request.value;
-    }
-    else {
-      delete highlights[request.href];
-    }
+    config.load(() => {
+      if (request.value.length && config.prefs['cache-highlights']) {
+        highlights[request.href] = request.value;
+        config.prefs['highlights-keys'].unshift(request.href);
+        config.prefs['highlights-keys'] = config.prefs['highlights-keys'].filter((s, i, l) => {
+          return s && l.indexOf(s) === i;
+        }).slice(0, config.prefs['highlights-count']);
+      }
+      else {
+        delete highlights[request.href];
+        const i = config.prefs['highlights-keys'].indexOf(request.href);
+        if (i !== -1) {
+          config.prefs['highlights-keys'].splice(i, 1);
+        }
+      }
+      console.log(config.prefs['highlights-keys']);
+      chrome.storage.local.set({
+        'highlights-keys': config.prefs['highlights-keys'],
+        'highlights-objects': config.prefs['highlights-keys'].reduce((p, c) => {
+          p[c] = highlights[c] || {};
+          return p;
+        }, {})
+      });
+    });
   }
   else if (request.cmd === 'delete-cache') {
     if (typeof caches !== 'undefined') {
       caches.delete(request.cache);
     }
   }
-});
+};
+window.onMessage = onMessage;
+chrome.runtime.onMessage.addListener(onMessage);
+
+// restore highlights
+{
+  const startup = config.load(() => Object.assign(highlights, config.prefs['highlights-objects']));
+  chrome.runtime.onStartup.addListener(startup);
+}
 
 // on change
 config.onChanged.push(prefs => {
@@ -246,6 +272,10 @@ config.onChanged.push(prefs => {
       for (const key of Object.keys(highlights)) {
         delete highlights[key];
       }
+      chrome.storage.local.set({
+        'highlights-keys': [],
+        'highlights-objects': {}
+      });
     }
   }
   if (
