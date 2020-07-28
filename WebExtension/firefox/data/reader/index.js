@@ -209,8 +209,13 @@ When active, you can edit the document or delete elements like MS word`;
       tts = new TTS(iframe.contentDocument, {
         separator: config.prefs['tts-separator'],
         delay: config.prefs['tts-delay'],
-        maxlength: config.prefs['tts-maxlength']
+        maxlength: config.prefs['tts-maxlength'],
+        minlength: config.prefs['tts-minlength']
       });
+      window.addEventListener('beforeunload', () => chrome.runtime.sendMessage({
+        cmd: 'delete-cache',
+        cache: tts.CACHE
+      }));
       tts.feed(...iframe.contentDocument.querySelectorAll('.page p, .page h1, .page h2, .page h3, .page h4, .page li, .page td, .page th'));
       await tts.attach(document.getElementById('speech'));
       await tts.ready();

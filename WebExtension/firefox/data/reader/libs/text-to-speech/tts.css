@@ -75,6 +75,16 @@
 .tts-speaking {
   color: red;
 }
+.tts-box {
+  position: absolute;
+  width: 100vw;
+  height: 32px;
+  z-index: 1;
+  background-color: rgba(128, 128, 128, 0.5);
+}
+.tts-box.hidden {
+  display: none;
+}
 .tts table div {
   display: flex;
   align-items: center;
@@ -89,3 +99,4 @@
   text-align: center;
   padding: 0 5px;
 }
+

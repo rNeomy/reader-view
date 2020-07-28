@@ -21,12 +21,16 @@
 
   const LAZY = Symbol();
   const CALC = Symbol();
+  const TEXT = Symbol();
+  const SRC = Symbol();
+  const CACHE = Math.random().toString(36).substring(7);
 
   class SimpleTTS extends Emitter {
     constructor(doc = document, options = {
       separator: '\n!\n',
       delay: 300,
-      maxlength: 160
+      maxlength: 160,
+      minlength: 60
     }) {
       super();
       this.doc = doc;
@@ -34,6 +38,7 @@
       this.SEPARATOR = options.separator; // this is used to combine multiple sections on local voice case
       this.DELAY = options.delay; // delay between sections
       this.MAXLENGTH = options.maxlength; // max possible length for each section
+      this.MINLENGTH = options.minlength; // min possible length for each section
 
       this.postponed = []; // functions that need to be called when voices are ready
       this.sections = [];
@@ -44,8 +49,11 @@
       // for local voices, use separator to detect when a new section is played
       this.on('instance-boundary', e => {
         if (e.charIndex && e.target.text.substr(e.charIndex - 1, 3) === this.SEPARATOR) {
-          this.offset += 1;
-          this.emit('section', this.offset);
+          const passed = e.target.text.substr(0, e.charIndex - 1);
+          if (passed.endsWith(this.sections[this.offset].textContent)) {
+            this.offset += 1;
+            this.emit('section', this.offset);
+          }
         }
       });
       // delete the audio element when idle is emitted
@@ -56,7 +64,7 @@
           if (this.sections.length > this.offset + 1 && this.dead === false) {
             this.offset += 1;
             this.emit('section', this.offset);
-            this.instance.text = this.sections[this.offset].textContent;
+            this.instance.text = this[TEXT]();
             // delay only if there is a section
             const timeout = this.sections[this.offset].target === this.sections[this.offset - 1].target ?
               0 : this.DELAY;
@@ -166,6 +174,15 @@
         this.audio.pause();
       }
     }
+    [TEXT](offset = this.offset) {
+      if (this.local) {
+        return this.sections.slice(offset).map(e => e.textContent).join(this.SEPARATOR);
+      }
+      else {
+        const section = this.sections[offset];
+        return section ? section.textContent : '';
+      }
+    }
     start(offset = 0) {
       this.state = 'play';
       this.offset = offset;
@@ -173,19 +190,19 @@
         this.stop();
       }
       // initiate
-      if (this.local) {
-        this.instance.text = this.sections.slice(offset).map(e => e.textContent).join(this.SEPARATOR);
-      }
-      else {
-        this.instance.text = this.sections[offset].textContent;
-      }
+      this.instance.text = this[TEXT]();
       this.dead = false;
       this.speak();
     }
-    speak() {
+    async [SRC](text) {
+      const r = new RegExp(this.SEPARATOR.replace(/\//g, '//'), 'g');
+      return this._voice.build(text.replace(r, `<break strength="strong"/>`));
+    }
+    async speak() {
       this.state = 'play';
       if (this._voice) {
-        const src = this._voice.build(this.instance.text);
+        const src = await this[SRC](this.instance.text);
+        this.emit('status', 'buffering');
         this.audio.src = src;
         this.audio.play();
       }
@@ -221,7 +238,38 @@
       }
     }
   }
-  class Parser extends SimpleTTS {
+  class PreLoadTTS extends SimpleTTS {
+    constructor(...args) {
+      super(...args);
+      this.CACHE = CACHE;
+    }
+    create() {
+      super.create();
+      this.audio.addEventListener('canplaythrough', async () => {
+        const next = this[TEXT](this.offset + 1);
+        if (next && typeof caches !== 'undefined') {
+          const src = await super[SRC](next);
+          const c = await caches.open(CACHE);
+          // only add src if it is not available
+          (await c.match(src)) || c.add(src);
+        }
+      });
+    }
+    async [SRC](text) {
+      const src = await super[SRC](text);
+      try {
+        const c = await caches.open(CACHE);
+        const r = await c.match(src);
+        if (r) {
+          const b = await r.blob();
+          return URL.createObjectURL(b);
+        }
+      }
+      catch (e) {}
+      return src;
+    }
+  }
+  class Parser extends PreLoadTTS {
     feed(...parents) {
       let nodes = [];
       const texts = node => {
@@ -260,6 +308,23 @@
       for (const e of toBeRemoved) {
         const index = sections.indexOf(e);
         sections.splice(index, 1);
+      }
+      // marge small sections
+      for (let i = 0; i < sections.length; i += 1) {
+        const a = sections[i];
+        const b = sections[i + 1];
+        if (
+          a.textContent.length < this.MINLENGTH && b &&
+          a.textContent.length + b.textContent.length < this.MAXLENGTH
+        ) {
+          const o = {
+            textContent: a.textContent + this.SEPARATOR + b.textContent,
+            targets: [a.targets ? a.targets : (a.target || a), b.targets ? b.targets : (b.target || b)].flat()
+          };
+          o.target = o.targets[0];
+          sections.splice(i, 2, o);
+          i -= 1;
+        }
       }
       // split by dot
       for (const section of sections) {
@@ -305,24 +370,25 @@
     constructor(doc, options) {
       super(doc, options);
 
-      const cleanup = () => {
-        const e = this.doc.querySelector('.tts-speaking');
-        if (e) {
-          e.classList.remove('tts-speaking');
-        }
-      };
-      const isElementInViewport = el => {
-        const rect = el.getBoundingClientRect();
+      const box = document.createElement('div');
+      box.classList.add('tts-box', 'hidden');
+      doc.body.appendChild(box);
+
+      const visible = e => {
+        const rect = e.getBoundingClientRect();
         return rect.top >= 0 &&
                rect.bottom <= (this.doc.defaultView.innerHeight || this.doc.documentElement.clientHeight);
       };
       this.on('section', n => {
-        cleanup();
-        const e = this.sections[n].target || this.sections[n];
-
-        e.classList.add('tts-speaking');
-        if (isElementInViewport(e) === false) {
-          e.scrollIntoView({
+        const section = this.sections[n];
+        const es = section.targets ? section.targets : [section.target || section];
+        const boxes = es.map(e => e.getBoundingClientRect());
+        const top = Math.min(...boxes.map(r => r.top)) - 5;
+        box.style.top = (doc.documentElement.scrollTop + top) + 'px';
+        box.style.height = (Math.max(...boxes.map(r => r.bottom)) - top + 5) + 'px';
+        box.classList.remove('hidden');
+        if (visible(es[0]) === false) {
+          es[0].scrollIntoView({
             block: 'center',
             inline: 'nearest'
           });
@@ -332,7 +398,7 @@
       this.on('instance-resume', () => this.emit('status', 'play'));
       this.on('instance-pause', () => this.emit('status', 'pause'));
       this.on('end', () => this.emit('status', 'stop'));
-      this.on('end', cleanup);
+      this.on('end', () => box.classList.add('hidden'));
     }
   }
   class Navigate extends Styling {
@@ -340,7 +406,7 @@
       const offset = this.offset;
       let jump = 1;
       if (direction === 'forward' && this.sections[offset].target) {
-        const target = this.sections[offset].target;
+        const {target} = this.sections[offset];
         for (const section of this.sections.slice(offset + 1)) {
           if (section.target !== target) {
             break;
@@ -388,7 +454,6 @@
     navigate(direction = 'forward', offset) {
       try {
         offset = typeof offset === 'undefined' ? this.validate(direction) : offset;
-        const voice = this._voice || this.instance.voice;
         this.stop();
         this.create();
         this.offset = offset;
@@ -718,13 +783,21 @@
           next.disabled = true;
           previous.disabled = true;
         }
-        else {
+        else if (s === 'buffering') {
+          play.disabled = true;
+          stop.disabled = true;
+          next.disabled = true;
+          previous.disabled = true;
+        }
+        else { // play
           play.classList.add('pause');
           play.classList.remove('play');
           stop.disabled = false;
+          play.disabled = false;
           calc();
         }
       });
+      this.on('section', calc);
       this.controls = {};
 
       const doc = iframe.contentDocument;

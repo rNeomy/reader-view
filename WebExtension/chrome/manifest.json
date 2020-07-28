@@ -11,7 +11,8 @@
     "contextMenus",
     "notifications",
     "declarativeContent",
-    "chrome://favicon/"
+    "chrome://favicon/",
+    "https://text-to-speech-demo.ng.bluemix.net/api/*"
   ],
   "optional_permissions": [
     "*://*/*",

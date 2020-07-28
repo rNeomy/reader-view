@@ -102,6 +102,17 @@ a {
   height: calc(100% + 10px);
   box-shadow: 0 0 0 1000vw rgba(128, 128, 128, 0.2);
 }
+.tts-box {
+  position: absolute;
+  left: 0;
+  width: 100vw;
+  height: 32px;
+  z-index: 1;
+  box-shadow: 0 0 0 1000vw rgba(128, 128, 128, 0.2);
+}
+.tts-box.hidden {
+  display: none;
+}
 body[data-speech="false"] .tts-speaking::after {
   display: none;
 }

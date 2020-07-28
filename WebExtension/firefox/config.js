@@ -21,6 +21,7 @@ if (typeof config === 'undefined') {
     'reader-mode': false,
     'tts-delay': 300,
     'tts-maxlength': 160,
+    'tts-minlength': 60,
     'tts-separator': '\n!\n',
     'faqs': true,
     'version': null,
