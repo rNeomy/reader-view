@@ -694,7 +694,7 @@ config.load(() => {
   if (config.prefs['printing-button']) {
     document.getElementById('printing-button').classList.remove('hidden');
   }
-  if (config.prefs['mail-button'] || true) {
+  if (config.prefs['mail-button']) {
     document.getElementById('mail-button').classList.remove('hidden');
   }
   if (config.prefs['save-button']) {
