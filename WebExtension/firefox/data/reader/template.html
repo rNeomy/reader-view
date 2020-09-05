@@ -36,6 +36,17 @@ body[data-mode="solarized-dark"] {
   color: %solarized-dark-color%;
   background-color: %solarized-dark-bg%;
 }
+@media print {
+  body[data-mode="light"],
+  body[data-mode="dark"],
+  body[data-mode="sepia"],
+  body[data-mode="solarized-light"],
+  body[data-mode="groove-dark"],
+  body[data-mode="solarized-dark"] {
+    color: #000;
+    background-color: #fff;
+  }
+}
 body[data-loaded=true] {
   transition: color 0.4s, background-color 0.4s;
 }
