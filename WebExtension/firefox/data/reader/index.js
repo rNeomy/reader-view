@@ -129,6 +129,36 @@ const shortcuts = [];
   });
   document.getElementById('toolbar').appendChild(span);
 }
+/* email */
+{
+  const span = document.createElement('span');
+  span.title = 'Email Content (Meta + Shift + E)';
+  span.classList.add('icon-mail', 'hidden');
+  span.id = 'mail-button';
+
+  span.onclick = () => {
+    const a = document.createElement('a');
+    a.target = '_blank';
+    a.href = 'mailto:' + config.prefs['mail-to'] + '?subject=' + encodeURIComponent(article.title.trim()) + '&body=';
+    let body = article.textContent.trim().replace(/\n{4,}/g, '\n\n\n');
+    const ending = config.prefs['mail-ending'].replace(/\[(\w+)\]/g, (a, b) => {
+      return article[b.toLowerCase()] || a;
+    });
+    const max = config.prefs['mail-max'] - a.href.length - ending.length;
+
+    if (body.length > max) {
+      body = body.substr(0, max - 3) + '...';
+    }
+    body += ending;
+    a.href += encodeURIComponent(body);
+    a.click();
+  };
+  shortcuts.push({
+    condition: e => e.code === 'KeyE' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    action: span.onclick
+  });
+  document.getElementById('toolbar').appendChild(span);
+}
 /* save as HTML*/
 {
   const span = document.createElement('span');
@@ -663,6 +693,9 @@ config.load(() => {
   document.body.dataset.mode = config.prefs.mode;
   if (config.prefs['printing-button']) {
     document.getElementById('printing-button').classList.remove('hidden');
+  }
+  if (config.prefs['mail-button'] || true) {
+    document.getElementById('mail-button').classList.remove('hidden');
   }
   if (config.prefs['save-button']) {
     document.getElementById('save-button').classList.remove('hidden');

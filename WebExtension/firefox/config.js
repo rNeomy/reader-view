@@ -43,6 +43,12 @@ if (typeof config === 'undefined') {
     'tts-maxlength': 160,
     'tts-minlength': 60,
     'tts-separator': '\n!\n',
+    'mail-to': 'email@example.com',
+    'mail-max': 1500,
+    'mail-ending': `
+
+--
+Original Page: [URL]`,
     'faqs': true,
     'version': null,
     'guide': 3, // guide height is n times font-size; zero means no guide
