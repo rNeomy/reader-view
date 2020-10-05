@@ -55,6 +55,7 @@ Original Page: [URL]`,
     'guide-timeout': 2000, // ms
     'mode': localStorage.getItem('mode') || 'sepia',
     'printing-button': localStorage.getItem('printing-button') !== 'false',
+    'mail-button': localStorage.getItem('mail-button') !== 'false',
     'save-button': localStorage.getItem('save-button') !== 'false',
     'fullscreen-button': localStorage.getItem('fullscreen-button') !== 'false',
     'speech-button': localStorage.getItem('speech-button') !== 'false',

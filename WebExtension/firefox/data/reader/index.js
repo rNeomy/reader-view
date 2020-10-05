@@ -324,6 +324,9 @@ When active, you can edit the document or delete elements like MS word`;
       iframe.contentDocument.body.dataset.speech = true;
     }
   };
+  chrome.storage.local.get({
+    'speech-mode': ''
+  }, prefs => document.getElementById('speech').dataset.mode = prefs['speech-mode']);
   shortcuts.push({
     condition: e => e.code === 'KeyS' && (e.metaKey || e.ctrlKey) && e.shiftKey,
     action: span.onclick
@@ -499,6 +502,21 @@ document.addEventListener('click', e => {
     document.body.dataset.speech = false;
     iframe.contentDocument.body.dataset.speech = false;
     tts.buttons.stop.click();
+  }
+  else if (cmd === 'minimize-speech') {
+    const e = document.getElementById('speech');
+    const mode = e.dataset.mode;
+    if (mode === 'collapsed') {
+      e.dataset.mode = '';
+      target.textContent = '-';
+    }
+    else {
+      e.dataset.mode = 'collapsed';
+      target.textContent = '□';
+    }
+    chrome.storage.local.set({
+      'speech-mode': e.dataset.mode
+    });
   }
   else if (cmd === 'open-font-utils') {
     fontUtils.classList.remove('hidden');
@@ -694,7 +712,7 @@ config.load(() => {
   if (config.prefs['printing-button']) {
     document.getElementById('printing-button').classList.remove('hidden');
   }
-  if (config.prefs['mail-button'] || true) {
+  if (config.prefs['mail-button']) {
     document.getElementById('mail-button').classList.remove('hidden');
   }
   if (config.prefs['save-button']) {
