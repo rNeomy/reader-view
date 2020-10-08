@@ -50,6 +50,10 @@ function Readability(doc, options) {
   this._charThreshold = options.charThreshold || this.DEFAULT_CHAR_THRESHOLD;
   this._classesToPreserve = this.CLASSES_TO_PRESERVE.concat(options.classesToPreserve || []);
   this._keepClasses = !!options.keepClasses;
+  this._serializer = options.serializer || function(el) {
+    return el.innerHTML;
+  };
+  this._disableJSONLD = !!options.disableJSONLD;
 
   // Start with all flags set
   this._flags = this.FLAG_STRIP_UNLIKELYS |
@@ -132,8 +136,12 @@ Readability.prototype = {
     whitespace: /^\s*$/,
     hasContent: /\S$/,
     srcsetUrl: /(\S+)(\s+[\d.]+[xw])?(\s*(?:,|$))/g,
-    b64DataUrl: /^data:\s*([^\s;,]+)\s*;\s*base64\s*,/i
+    b64DataUrl: /^data:\s*([^\s;,]+)\s*;\s*base64\s*,/i,
+    // See: https://schema.org/Article
+    jsonLdArticleTypes: /^Article|AdvertiserContentArticle|NewsArticle|AnalysisNewsArticle|AskPublicNewsArticle|BackgroundNewsArticle|OpinionNewsArticle|ReportageNewsArticle|ReviewNewsArticle|Report|SatiricalArticle|ScholarlyArticle|MedicalScholarlyArticle|SocialMediaPosting|BlogPosting|LiveBlogPosting|DiscussionForumPosting|TechArticle|APIReference$/
   },
+
+  UNLIKELY_ROLES: [ "menu", "menubar", "complementary", "navigation", "alert", "alertdialog", "dialog" ],
 
   DIV_TO_P_ELEMS: [ "A", "BLOCKQUOTE", "DL", "DIV", "IMG", "OL", "P", "PRE", "TABLE", "UL", "SELECT" ],
 
@@ -175,6 +183,8 @@ Readability.prototype = {
   _postProcessContent: function(articleContent) {
     // Readability cannot open relative uris so we convert them to absolute uris.
     this._fixRelativeUris(articleContent);
+
+    this._simplifyNestedElements(articleContent);
 
     if (!this._keepClasses) {
       // Remove classes.
@@ -239,6 +249,21 @@ Readability.prototype = {
    */
   _forEachNode: function(nodeList, fn) {
     Array.prototype.forEach.call(nodeList, fn, this);
+  },
+
+  /**
+   * Iterate over a NodeList, and return the first node that passes
+   * the supplied test function
+   *
+   * For convenience, the current object context is applied to the provided
+   * test function.
+   *
+   * @param  NodeList nodeList The NodeList.
+   * @param  Function fn       The test function.
+   * @return void
+   */
+  _findNode: function(nodeList, fn) {
+    return Array.prototype.find.call(nodeList, fn, this);
   },
 
   /**
@@ -399,6 +424,29 @@ Readability.prototype = {
         media.setAttribute("srcset", newSrcset);
       }
     });
+  },
+
+  _simplifyNestedElements: function(articleContent) {
+    var node = articleContent;
+
+    while (node) {
+      if (node.parentNode && ["DIV", "SECTION"].includes(node.tagName) && !(node.id && node.id.startsWith("readability"))) {
+        if (this._isElementWithoutContent(node)) {
+          node = this._removeAndGetNext(node);
+          continue;
+        } else if (this._hasSingleTagInsideElement(node, "DIV") || this._hasSingleTagInsideElement(node, "SECTION")) {
+          var child = node.children[0];
+          for (var i = 0; i < node.attributes.length; i++) {
+            child.setAttribute(node.attributes[i].name, node.attributes[i].value);
+          }
+          node.parentNode.replaceChild(child, node);
+          node = child;
+          continue;
+        }
+      }
+
+      node = this._getNextNode(node);
+    }
   },
 
   /**
@@ -871,8 +919,8 @@ Readability.prototype = {
             continue;
           }
 
-          if (node.getAttribute("role") == "complementary") {
-            this.log("Removing complementary content - " + matchString);
+          if (this.UNLIKELY_ROLES.includes(node.getAttribute("role"))) {
+            this.log("Removing content with role " + node.getAttribute("role") + " - " + matchString);
             node = this._removeAndGetNext(node);
             continue;
           }
@@ -949,7 +997,7 @@ Readability.prototype = {
           return;
 
         // Exclude nodes with no ancestor.
-        var ancestors = this._getNodeAncestors(elementToScore, 3);
+        var ancestors = this._getNodeAncestors(elementToScore, 5);
         if (ancestors.length === 0)
           return;
 
@@ -1290,11 +1338,90 @@ Readability.prototype = {
   },
 
   /**
+   * Try to extract metadata from JSON-LD object.
+   * For now, only Schema.org objects of type Article or its subtypes are supported.
+   * @return Object with any metadata that could be extracted (possibly none)
+   */
+  _getJSONLD: function (doc) {
+    var scripts = this._getAllNodesWithTag(doc, ["script"]);
+
+    var jsonLdElement = this._findNode(scripts, function(el) {
+      return el.getAttribute("type") === "application/ld+json";
+    });
+
+    if (jsonLdElement) {
+      try {
+        // Strip CDATA markers if present
+        var content = jsonLdElement.textContent.replace(/^\s*<!\[CDATA\[|\]\]>\s*$/g, "");
+        var parsed = JSON.parse(content);
+        var metadata = {};
+        if (
+          !parsed["@context"] ||
+          !parsed["@context"].match(/^https?\:\/\/schema\.org$/)
+        ) {
+          return metadata;
+        }
+
+        if (!parsed["@type"] && Array.isArray(parsed["@graph"])) {
+          parsed = parsed["@graph"].find(function(it) {
+            return (it["@type"] || "").match(
+              this.REGEXPS.jsonLdArticleTypes
+            );
+          });
+        }
+
+        if (
+          !parsed ||
+          !parsed["@type"] ||
+          !parsed["@type"].match(this.REGEXPS.jsonLdArticleTypes)
+        ) {
+          return metadata;
+        }
+        if (typeof parsed.name === "string") {
+          metadata.title = parsed.name.trim();
+        } else if (typeof parsed.headline === "string") {
+          metadata.title = parsed.headline.trim();
+        }
+        if (parsed.author) {
+          if (typeof parsed.author.name === "string") {
+            metadata.byline = parsed.author.name.trim();
+          } else if (Array.isArray(parsed.author) && parsed.author[0] && typeof parsed.author[0].name === "string") {
+            metadata.byline = parsed.author
+              .filter(function(author) {
+                return author && typeof author.name === "string";
+              })
+              .map(function(author) {
+                return author.name.trim();
+              })
+              .join(", ");
+          }
+        }
+        if (typeof parsed.description === "string") {
+          metadata.excerpt = parsed.description.trim();
+        }
+        if (
+          parsed.publisher &&
+          typeof parsed.publisher.name === "string"
+        ) {
+          metadata.siteName = parsed.publisher.name.trim();
+        }
+        return metadata;
+      } catch (err) {
+        this.log(err.message);
+      }
+    }
+    return {};
+  },
+
+  /**
    * Attempts to get excerpt and byline metadata for the article.
+   *
+   * @param {Object} jsonld — object containing any metadata that
+   * could be extracted from JSON-LD object.
    *
    * @return Object with optional "excerpt" and "byline" properties
    */
-  _getArticleMetadata: function() {
+  _getArticleMetadata: function(jsonld) {
     var metadata = {};
     var values = {};
     var metaElements = this._doc.getElementsByTagName("meta");
@@ -1340,7 +1467,8 @@ Readability.prototype = {
     });
 
     // get title
-    metadata.title = values["dc:title"] ||
+    metadata.title = jsonld.title ||
+                     values["dc:title"] ||
                      values["dcterm:title"] ||
                      values["og:title"] ||
                      values["weibo:article:title"] ||
@@ -1353,12 +1481,14 @@ Readability.prototype = {
     }
 
     // get author
-    metadata.byline = values["dc:creator"] ||
+    metadata.byline = jsonld.byline ||
+                      values["dc:creator"] ||
                       values["dcterm:creator"] ||
                       values["author"];
 
     // get description
-    metadata.excerpt = values["dc:description"] ||
+    metadata.excerpt = jsonld.excerpt ||
+                       values["dc:description"] ||
                        values["dcterm:description"] ||
                        values["og:description"] ||
                        values["weibo:article:description"] ||
@@ -1367,7 +1497,8 @@ Readability.prototype = {
                        values["twitter:description"];
 
     // get site name
-    metadata.siteName = values["og:site_name"];
+    metadata.siteName = jsonld.siteName ||
+                        values["og:site_name"];
 
     // in many sites the meta value is escaped with HTML entities,
     // so here we need to unescape it
@@ -2026,12 +2157,15 @@ Readability.prototype = {
     // Unwrap image from noscript
     this._unwrapNoscriptImages(this._doc);
 
+    // Extract JSON-LD metadata before removing scripts
+    var jsonLd = this._disableJSONLD ? {} : this._getJSONLD(this._doc);
+
     // Remove script tags from the document.
     this._removeScripts(this._doc);
 
     this._prepDocument();
 
-    var metadata = this._getArticleMetadata();
+    var metadata = this._getArticleMetadata(jsonLd);
     this._articleTitle = metadata.title;
 
     var articleContent = this._grabArticle();
@@ -2057,7 +2191,7 @@ Readability.prototype = {
       title: this._articleTitle,
       byline: metadata.byline || this._articleByline,
       dir: this._articleDir,
-      content: articleContent.innerHTML,
+      content: this._serializer(articleContent),
       textContent: textContent,
       length: textContent.length,
       excerpt: metadata.excerpt,

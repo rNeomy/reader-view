@@ -59,10 +59,15 @@
     const pars = Readability.prototype.parse;
     Readability.prototype.parse = function(...args) {
       const rtn = pars.apply(this, args);
-      return Object.assign(
-        rtn,
-        this._getReadTime(rtn.textContent)
-      );
+      if (rtn) {
+        return Object.assign(
+          rtn,
+          this._getReadTime(rtn.textContent)
+        );
+      }
+      else {
+        return pars(...args);
+      }
     };
   }
 }
@@ -91,7 +96,9 @@ function getSelectionHTML() {
   }
 }
 
-{
+try {
+  console.log(getSelectionHTML(), document.cloneNode(true));
+
   const article = new Readability(
     getSelectionHTML() || document.cloneNode(true)
   ).parse();
@@ -182,4 +189,10 @@ function getSelectionHTML() {
       convert();
     }
   }
+}
+catch (e) {
+  chrome.runtime.sendMessage({
+    cmd: 'notify',
+    msg: 'Convert to reader view failed, ' + e.message
+  });
 }
