@@ -213,11 +213,8 @@ const onMessage = (request, sender, response) => {
       tabId: id,
       path: {
         16: 'data/icons/blue/16.png',
-        19: 'data/icons/blue/19.png',
         32: 'data/icons/blue/32.png',
-        38: 'data/icons/blue/38.png',
-        48: 'data/icons/blue/48.png',
-        64: 'data/icons/blue/64.png'
+        48: 'data/icons/blue/48.png'
       }
     }));
   }
@@ -283,7 +280,7 @@ chrome.runtime.onMessage.addListener(onMessage);
 
 // restore highlights
 {
-  const startup = config.load(() => Object.assign(highlights, config.prefs['highlights-objects']));
+  const startup = () => config.load(() => Object.assign(highlights, config.prefs['highlights-objects']));
   chrome.runtime.onStartup.addListener(startup);
 }
 
@@ -389,7 +386,7 @@ if (chrome.declarativeContent) {
 }
 /* delete all old caches */
 {
-  const startup = caches.keys().then(keys => {
+  const startup = () => typeof caches === 'object' && caches.keys().then(keys => {
     for (const key of keys) {
       caches.delete(key);
     }

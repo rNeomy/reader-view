@@ -46,6 +46,7 @@
       this.dead = false;
       this.offset = 0;
       this.state = 'stop';
+
       // for local voices, use separator to detect when a new section is played
       this.on('instance-boundary', e => {
         if (e.charIndex && e.target.text.substr(e.charIndex - 1, 3) === this.SEPARATOR) {
@@ -213,7 +214,6 @@
     }
     resume() {
       this.state = 'play';
-      console.log('res');
       if (this._voice) {
         this.audio.play();
       }
@@ -290,7 +290,7 @@
       const sections = [];
       while (nodes.length) {
         const node = nodes.shift();
-        if (node.nodeValue.trim()) {
+        if (node.nodeValue) {
           const e = node.parentElement;
           if (e.offsetParent !== null) { // is element hidden
             sections.unshift(e);
@@ -328,7 +328,7 @@
           i -= 1;
         }
       }
-      // split by dot
+      // split by [.,]
       for (const section of sections) {
         if (section.textContent.length < this.MAXLENGTH || section.targets) {
           this.sections.push(section);
@@ -339,30 +339,55 @@
             parts.push(...tokenizer.sentences(section.textContent, {}));
           }
           else {
-            parts.push(...section.textContent.split(/[.,]/g).filter(a => a));
+            let offset = 0;
+            for (const i of [...section.textContent.matchAll(/[.,]\s/g), {
+              index: section.textContent.length
+            }].map(m => m.index)) {
+              const p = section.textContent.substring(offset, i + 1).replace(/\u00A0/g, ' ');
+              parts.push(p);
+              offset = i + 2;
+            }
           }
           const combined = [];
           let length = 0;
           let cache = [];
           for (const part of parts) {
             if (length > this.MAXLENGTH) {
-              combined.push(cache.join('. '));
-              cache = [part.trim()];
+              combined.push(cache.join(' '));
+              cache = [part];
               length = part.length;
             }
             else {
-              cache.push(part.trim());
+              cache.push(part);
               length += part.length;
             }
           }
           if (cache.length !== 0) {
-            combined.push(cache.join('. '));
+            combined.push(cache.join(' '));
           }
+          let offset = 0;
+          const textContent = section.textContent.replace(/\u00A0/g, ' ');
           for (const content of combined) {
-            this.sections.push({
+            let pos = textContent.indexOf(content, offset);
+            if (pos === -1) {
+              pos = textContent.indexOf(content.split(/[,.]\s/)[0], offset);
+            }
+            if (pos === -1) {
+              pos = textContent.indexOf(content.split('\n')[0].trim(), offset);
+            }
+            if (pos === -1) {
+              offset = 0;
+              console.warn('cannot detect part', content, section);
+            }
+            else {
+              offset = pos;
+            }
+            const s = {
               target: section,
-              textContent: content
-            });
+              textContent: content,
+              offset
+            };
+            this.sections.push(s);
           }
         }
       }
@@ -375,6 +400,79 @@
       const box = document.createElement('div');
       box.classList.add('tts-box', 'hidden');
       doc.body.appendChild(box);
+
+      const range = new Range();
+      const word = document.createElement('div');
+      word.classList.add('tts-word', 'hidden');
+      doc.body.appendChild(word);
+
+      const extract = es => {
+        let n;
+        const a = [];
+        for (const e of es) {
+          const walk = document.createTreeWalker(e, NodeFilter.SHOW_TEXT, null, false);
+          while (n = walk.nextNode()) {
+            a.push(n);
+          }
+        }
+        return a;
+      };
+      {
+        let offset = 0;
+        let padding = 0;
+        this.on('instance-boundary', e => {
+          if (e.name === 'word') {
+            const search = e.target.text.substr(e.charIndex, e.charLength);
+            if (search.length < 2) { // to prevent SEPARATOR search
+              return;
+            }
+            const section = this.sections[this.offset];
+            const target = section.target || section;
+            const targets = section.targets || [target];
+            const nodes = extract(targets);
+            const r = new Range();
+            r.setStart(nodes[0], 0);
+            for (let index = offset; index < nodes.length; index += 1) {
+              const node = nodes[index];
+              r.setEnd(node, node.nodeValue.length);
+              if (section.offset && section.offset > r.toString().length) {
+                continue;
+              }
+              let p = 0;
+              if (index === offset && padding === 0 && section.offset) {
+                p = section.offset;
+              }
+              else if (index === offset) {
+                p = padding;
+              }
+              const start = node.nodeValue.indexOf(search, p);
+              if (start !== -1) {
+                padding = start + search.length;
+                offset = index;
+                range.setStart(node, start);
+                range.setEnd(node, start + e.charLength);
+                const rect = [...range.getClientRects()].pop();
+                word.style.left = rect.x + 'px';
+                word.style.top = (doc.documentElement.scrollTop + rect.y + rect.height) + 'px';
+                word.style.width = rect.width + 'px';
+                break;
+              }
+            }
+          }
+        });
+        this.on('section', () => {
+          offset = 0;
+          padding = 0;
+        });
+        this.on('instance-start', () => {
+          offset = 0;
+          padding = 0;
+        });
+        this.on('instance-resume', () => {
+          offset = 0;
+          padding = 0;
+        });
+      }
 
       const visible = e => {
         const rect = e.getBoundingClientRect();
@@ -389,6 +487,7 @@
         box.style.top = (doc.documentElement.scrollTop + top) + 'px';
         box.style.height = (Math.max(...boxes.map(r => r.bottom)) - top + 5) + 'px';
         box.classList.remove('hidden');
+        word.classList.remove('hidden');
         if (visible(es[0]) === false) {
           es[0].scrollIntoView({
             block: 'center',
@@ -400,7 +499,16 @@
       this.on('instance-resume', () => this.emit('status', 'play'));
       this.on('instance-pause', () => this.emit('status', 'pause'));
       this.on('end', () => this.emit('status', 'stop'));
-      this.on('end', () => box.classList.add('hidden'));
+      this.on('end', () => {
+        box.classList.add('hidden');
+        word.classList.add('hidden');
+      });
+      this.on('instance-start', () => {
+        word.classList[this.local ? 'remove' : 'add']('hidden');
+      });
+      this.on('instance-resume', () => {
+        word.classList[this.local ? 'remove' : 'add']('hidden');
+      });
     }
   }
   class Navigate extends Styling {

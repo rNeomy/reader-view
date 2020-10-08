@@ -326,7 +326,10 @@ When active, you can edit the document or delete elements like MS word`;
   };
   chrome.storage.local.get({
     'speech-mode': ''
-  }, prefs => document.getElementById('speech').dataset.mode = prefs['speech-mode']);
+  }, prefs => {
+    document.getElementById('speech').dataset.mode = prefs['speech-mode'];
+    document.querySelector('[data-cmd="minimize-speech"]').textContent = prefs['speech-mode'] === '' ? '-' : '□';
+  });
   shortcuts.push({
     condition: e => e.code === 'KeyS' && (e.metaKey || e.ctrlKey) && e.shiftKey,
     action: span.onclick
@@ -641,6 +644,17 @@ const render = () => chrome.runtime.sendMessage({
       condition: e => e.shiftKey && e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey),
       action: () => previous.click()
     });
+
+    // scrollbar
+    if (navigator.platform !== 'MacIntel') {
+      const html = iframe.contentDocument.documentElement;
+      const check = () => {
+        const bol = html.scrollHeight > html.clientHeight;
+        document.body.dataset.scroll = bol;
+      };
+      const resizeObserver = new ResizeObserver(check);
+      resizeObserver.observe(html);
+    }
   }
 
   iframe.contentDocument.documentElement.appendChild(styles.internals);

@@ -2,7 +2,7 @@
   "name": "Reader View",
   "description": "Strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability",
   "author": "Richard Neomy",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "manifest_version": 2,
   "permissions": [
     "storage",
@@ -30,9 +30,7 @@
   "homepage_url": "https://add0n.com/chrome-reader-view.html",
   "icons": {
     "16": "data/icons/16.png",
-    "19": "data/icons/19.png",
     "32": "data/icons/32.png",
-    "38": "data/icons/38.png",
     "48": "data/icons/48.png",
     "64": "data/icons/64.png",
     "128": "data/icons/128.png",

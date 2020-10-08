@@ -79,12 +79,20 @@
   position: absolute;
   width: 100vw;
   height: 32px;
+  pointer-events: none;
   z-index: 1;
   background-color: rgba(128, 128, 128, 0.5);
 }
 .tts-box.hidden {
   display: none;
 }
+.tts-word {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  background-color: rgba(128, 255, 255, 0.5);
+}
+
 .tts table div {
   display: flex;
   align-items: center;

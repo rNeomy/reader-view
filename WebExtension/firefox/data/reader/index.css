@@ -315,6 +315,10 @@ body:not([data-tips=true]) #tips {
   padding: 10px;
   user-select: none;
 }
+body[data-scroll=true] #speech {
+  right: 28px;
+}
+
 #speech > div {
   display: flex;
   align-items: center;
@@ -333,7 +337,6 @@ body[data-speech=false] #speech {
 }
 #speech[data-mode=collapsed] {
   overflow: hidden;
-  opacity: 0.7;
   height: 0;
   width: 15px;
 }

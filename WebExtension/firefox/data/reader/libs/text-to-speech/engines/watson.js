@@ -3,7 +3,7 @@
   function build(text) {
     return 'https://text-to-speech-demo.ng.bluemix.net/api/v3/synthesize?text=' + encodeURIComponent(text) +
       '&voice=' + encodeURIComponent(this.lang + '_' + this.key + 'Voice') +
-      '&download=true&accept=' + encodeURIComponent('audio/mp3');
+      '&download=true&accept=' + encodeURIComponent('audio/ogg;codec=opus');
   }
   const getVoices = speechSynthesis.getVoices;
   speechSynthesis.getVoices = function(loaded = false) {
