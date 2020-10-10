@@ -1,6 +1,6 @@
-## Reader View (a browwser extension)
+## Reader View (a browser extension)
 
-Strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability
+Strips away clutter like buttons, background images, and changes the page's text size, contrast, and layout for better readability
 
 ### Preview
 
