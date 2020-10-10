@@ -75,7 +75,7 @@
 // The implementation is from https://stackoverflow.com/a/5084441/260793
 function getSelectionHTML() {
   const selection = window.getSelection();
-  if (selection && selection.rangeCount && selection.toString().length > 100) {
+  if (selection && selection.rangeCount) {
     let range;
     if (selection.getRangeAt) {
       range = selection.getRangeAt(0);
@@ -88,17 +88,26 @@ function getSelectionHTML() {
     const doc = document.implementation.createHTMLDocument(document.title);
 
     const article = doc.body.appendChild(doc.createElement('article'));
-    article.appendChild(range.extractContents());
-    return doc;
+    let start = range.startContainer;
+    if (start.nodeType === Element.TEXT_NODE) {
+      start = start.parentElement;
+    }
+    range.setStart(start, 0);
+    let end = range.endContainer;
+    if (end.nodeType === Element.TEXT_NODE) {
+      end = end.parentElement;
+    }
+    range.setEnd(end, end.childNodes.length);
+    article.appendChild(range.cloneContents());
+
+    if (article.textContent.length > 20) {
+      return doc;
+    }
   }
-  else {
-    return;
-  }
+  return;
 }
 
 try {
-  console.log(getSelectionHTML(), document.cloneNode(true));
-
   const article = new Readability(
     getSelectionHTML() || document.cloneNode(true)
   ).parse();
@@ -191,6 +200,7 @@ try {
   }
 }
 catch (e) {
+  console.error(e);
   chrome.runtime.sendMessage({
     cmd: 'notify',
     msg: 'Convert to reader view failed, ' + e.message
