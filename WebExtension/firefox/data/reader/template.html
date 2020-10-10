@@ -29,6 +29,10 @@ body[data-mode="solarized-light"] {
   color: %solarized-light-color%;
   background-color: %solarized-light-bg%;
 }
+body[data-mode="nord-light"] {
+  color: %nord-light-color%;
+  background-color: %nord-light-bg%;
+}
 body[data-mode="groove-dark"] {
   color: %groove-dark-color%;
   background-color: %groove-dark-bg%;
@@ -37,13 +41,19 @@ body[data-mode="solarized-dark"] {
   color: %solarized-dark-color%;
   background-color: %solarized-dark-bg%;
 }
+body[data-mode="nord-dark"] {
+  color: %nord-dark-color%;
+  background-color: %nord-dark-bg%;
+}
 @media print {
   body[data-mode="light"],
   body[data-mode="dark"],
   body[data-mode="sepia"],
   body[data-mode="solarized-light"],
+  body[data-mode="nord-light"],
   body[data-mode="groove-dark"],
-  body[data-mode="solarized-dark"] {
+  body[data-mode="solarized-dark"],
+  body[data-mode="nord-dark"] {
     color: #000;
     background-color: #fff;
   }

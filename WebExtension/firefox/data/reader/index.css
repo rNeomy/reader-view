@@ -11,6 +11,10 @@
   --color-mode-solarized-light-bg: #fdf6e3;
   --color-mode-solarized-dark-color: #93a1a1;
   --color-mode-solarized-dark-bg: #002b36;
+  --color-mode-nord-light-color: #2e3440;
+  --color-mode-nord-light-bg: #e5e9f0;
+  --color-mode-nord-dark-color: #e5e9f0;
+  --color-mode-nord-dark-bg: #2e3440;
   --color-font-utils-light: #c5c5c5;
   --border-color: rgba(181, 181, 181, 0.7);
   --guide-color: rgba(181, 181, 181, 0.2);
@@ -65,6 +69,14 @@ body[data-mode="solarized-dark"] {
   color: var(--color-mode-solarized-dark-color);
   background-color: var(--color-mode-solarized-dark-bg);
 }
+body[data-mode="nord-light"] {
+  color: var(--color-mode-nord-light-color);
+  background-color: var(--color-mode-nord-light-bg);
+}
+body[data-mode="nord-dark"] {
+  color: var(--color-mode-nord-dark-color);
+  background-color: var(--color-mode-nord-dark-bg);
+}
 input {
   font-family: fontello, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -105,7 +117,7 @@ iframe {
   width: 100px;
   border-radius: 4px;
   box-shadow: 0 1px 12px var(--color-font-utils-light);
-  min-width: 300px;
+  min-width: 320px;
   background-color: #fbfbfb;
   outline: none;
 }
@@ -153,7 +165,7 @@ iframe {
 }
 #font-utils tr:last-child td div {
   display: flex;
-  font-size: 14px;
+  font-size: 12px;
 }
 #font-utils tr:last-child td span {
   flex: 1;
@@ -185,6 +197,14 @@ iframe {
 #font-utils tr:last-child td span[data-cmd="color-mode-solarized-dark"] {
   color: var(--color-mode-solarized-dark-color);
   background-color: var(--color-mode-solarized-dark-bg);
+}
+#font-utils tr:last-child td span[data-cmd="color-mode-nord-light"] {
+  color: var(--color-mode-nord-light-color);
+  background-color: var(--color-mode-nord-light-bg);
+}
+#font-utils tr:last-child td span[data-cmd="color-mode-nord-dark"] {
+  color: var(--color-mode-nord-dark-color);
+  background-color: var(--color-mode-nord-dark-bg);
 }
 #image-utils tr:last-child td {
   font-size: 14px;
