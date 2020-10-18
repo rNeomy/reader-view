@@ -624,6 +624,12 @@ const render = () => chrome.runtime.sendMessage({
     .replace('%data-mode%', config.prefs.mode));
   iframe.contentDocument.close();
 
+  // fix relative links;
+  const es = [...iframe.contentDocument.querySelectorAll('[src^="//"]')];
+  for (const e of es) {
+    e.src = article.url.split(':')[0] + ':' + e.getAttribute('src');
+  }
+
   document.head.appendChild(Object.assign(
     document.querySelector(`link[rel*='icon']`) || document.createElement('link'), {
       type: 'image/x-icon',
