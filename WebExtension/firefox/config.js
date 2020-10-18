@@ -43,6 +43,7 @@ if (typeof config === 'undefined') {
     'tts-maxlength': 160,
     'tts-minlength': 60,
     'tts-separator': '\n!\n',
+    'tts-scroll': 'center',
     'mail-to': 'email@example.com',
     'mail-max': 1500,
     'mail-ending': `

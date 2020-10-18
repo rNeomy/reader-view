@@ -115,6 +115,7 @@ function save() {
     'reader-mode': document.getElementById('reader-mode').checked,
     'faqs': document.getElementById('faqs').checked,
     'tts-delay': Math.max(document.getElementById('tts-delay').value, 0),
+    'tts-scroll': document.getElementById('tts-scroll').value,
     'cache-highlights': Math.max(document.getElementById('cache-highlights').checked, 0),
     'highlights-count': document.getElementById('highlights-count').value,
     'context-open-in-reader-view': document.getElementById('context-open-in-reader-view').checked,
@@ -161,6 +162,7 @@ function restore() {
   document.getElementById('reader-mode').checked = config.prefs['reader-mode'];
   document.getElementById('faqs').checked = config.prefs['faqs'];
   document.getElementById('tts-delay').value = config.prefs['tts-delay'];
+  document.getElementById('tts-scroll').value = config.prefs['tts-scroll'];
   document.getElementById('cache-highlights').checked = config.prefs['cache-highlights'];
   document.getElementById('highlights-count').value = config.prefs['highlights-count'];
   document.getElementById('context-open-in-reader-view').checked = config.prefs['context-open-in-reader-view'];

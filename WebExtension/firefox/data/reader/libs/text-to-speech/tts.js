@@ -1,4 +1,4 @@
-/* globals tokenizer */
+/* global tokenizer */
 'use strict';
 
 {
@@ -30,7 +30,8 @@
       separator: '\n!\n',
       delay: 300,
       maxlength: 160,
-      minlength: 60
+      minlength: 60,
+      scroll: 'center'
     }) {
       super();
       this.doc = doc;
@@ -175,6 +176,9 @@
       if (this.audio) {
         this.audio.pause();
       }
+    }
+    record() {
+
     }
     [TEXT](offset = this.offset) {
       if (this.local) {
@@ -490,7 +494,7 @@
         word.classList.remove('hidden');
         if (visible(es[0]) === false) {
           es[0].scrollIntoView({
-            block: 'center',
+            block: options.scroll,
             inline: 'nearest'
           });
         }
@@ -713,6 +717,12 @@
       .pause svg:first-child {
         display: none;
       }
+      .record {
+        display: none;
+      }
+      .record[data-active=true] {
+        fill: red;
+      }
     </style>
   </head>
   <body>
@@ -721,25 +731,30 @@
         <select></select>
       </label>
       <button disabled="true" class="previous">
-        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 512 512">
           <path class="st0" d="M75.7,96h8.1c6.7,0,12.2,5,12.2,11.7v113.5L283.1,98.7c2.5-1.7,5.1-2.3,8.1-2.3c8.3,0,15.4,7,15.4,17v63.1  l118.5-78.2c2.5-1.7,5-2.3,8.1-2.3c8.3,0,14.9,7.4,14.9,17.4v286c0,10-6.7,16.5-15,16.5c-3.1,0-5.4-1.2-8.2-2.9l-118.3-77.6v64  c0,10-7.2,16.5-15.5,16.5c-3.1,0-5.5-1.2-8.2-2.9L96,290.8v113c0,6.7-5.4,12.2-12.2,12.2h-8.1c-6.7,0-11.7-5.5-11.7-12.2V107.7  C64,101,68.9,96,75.7,96z"/>
         </svg>
       </button>
       <button disabled="true" class="play">
-        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 512 512">
           <path d="M405.2,232.9L126.8,67.2c-3.4-2-6.9-3.2-10.9-3.2c-10.9,0-19.8,9-19.8,20H96v344h0.1c0,11,8.9,20,19.8,20  c4.1,0,7.5-1.4,11.2-3.4l278.1-165.5c6.6-5.5,10.8-13.8,10.8-23.1C416,246.7,411.8,238.5,405.2,232.9z"/>
         </svg>
-        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 512 512">
           <rect height="320" width="79" x="128" y="96"/><rect height="320" width="79" x="305" y="96"/>
         </svg>
       </button>
       <button disabled="true" class="next">
-        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 512 512">
           <path class="st0" d="M436.3,96h-8.1c-6.7,0-12.2,5-12.2,11.7v113.5L228.9,98.7c-2.5-1.7-5.1-2.3-8.1-2.3c-8.3,0-15.4,7-15.4,17v63.1  L86.9,98.3c-2.5-1.7-5.1-2.3-8.1-2.3c-8.3,0-14.9,7.4-14.9,17.4v286c0,10,6.7,16.5,15,16.5c3.1,0,5.4-1.2,8.2-2.9l118.3-77.6v64  c0,10,7.2,16.5,15.5,16.5c3.1,0,5.5-1.2,8.2-2.9L416,290.8v113c0,6.7,5.4,12.2,12.2,12.2h8.1c6.7,0,11.7-5.5,11.7-12.2V107.7  C448,101,443.1,96,436.3,96z"/>
         </svg>
       </button>
+      <button disabled="true" class="record">
+        <svg viewBox="0 0 512 512">
+            <circle cx="256" cy="256" r="220"/>
+        </svg>
+      </button>
       <button disabled="true" class="stop">
-        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 512 512">
           <path d="M437.4,64H74.6C68.7,64,64,68.7,64,74.6v362.8c0,5.9,4.7,10.6,10.6,10.6h362.8c5.8,0,10.6-4.7,10.6-10.6V74.6  C448,68.7,443.2,64,437.4,64z"/>
         </svg>
       </button>
@@ -825,6 +840,10 @@
         this.stop();
         this.emit('idle');
       });
+      const record = div.querySelector('.record');
+      record.addEventListener('click', () => {
+        //
+      });
 
       this.ready().then(() => {
         play.disabled = false;
@@ -881,7 +900,7 @@
         }
       };
       this.on('end', () => {
-        stop.disabled = true;
+        record.disabled = stop.disabled = true;
         next.disabled = true;
         previous.disabled = true;
       });
@@ -889,7 +908,7 @@
         if (s === 'stop' || s === 'pause') {
           play.classList.remove('pause');
           play.classList.add('play');
-          stop.disabled = s === 'stop' ? true : false;
+          record.disabled = stop.disabled = s === 'stop' ? true : false;
           next.disabled = true;
           previous.disabled = true;
         }
@@ -897,18 +916,18 @@
           play.disabled = true;
           next.disabled = true;
           previous.disabled = true;
-          stop.disabled = false;
+          record.disabled = stop.disabled = false;
         }
         else if (s === 'error') {
           play.disabled = false;
           next.disabled = true;
           previous.disabled = true;
-          stop.disabled = true;
+          record.disabled = stop.disabled = true;
         }
         else { // play
           play.classList.add('pause');
           play.classList.remove('play');
-          stop.disabled = false;
+          record.disabled = stop.disabled = false;
           play.disabled = false;
           calc();
         }

@@ -238,7 +238,11 @@ shortcuts.render = () => {
   span.id = 'design-mode-button';
   span.title = `Toggle design mode (command)
 
-When active, you can edit the document or delete elements like MS word`;
+When active, you can edit the document or delete elements like MS word
+
+Ctrl/Command + B: Toggles bold on/off for the selection or at the insertion point.
+Ctrl/Command + I: Toggles italics on/off for the selection or at the insertion point.
+Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion point.`;
   span.dataset.cmd = 'toggle-design-mode';
   shortcuts.push({
     id: 'design-mode',
@@ -275,7 +279,8 @@ When active, you can edit the document or delete elements like MS word`;
         separator: config.prefs['tts-separator'],
         delay: config.prefs['tts-delay'],
         maxlength: config.prefs['tts-maxlength'],
-        minlength: config.prefs['tts-minlength']
+        minlength: config.prefs['tts-minlength'],
+        scroll: config.prefs['tts-scroll']
       });
       tts.on('status', s => {
         document.querySelector('#speech [data-id=msg-speech]').textContent = s === 'buffering' ? '...' : '';
@@ -719,6 +724,7 @@ const render = () => chrome.runtime.sendMessage({
       ) {
         nav.back();
       }
+
       shortcuts.forEach(o => {
         const s = config.prefs.shortcuts[o.id];
         if (s.indexOf(e.code) === -1) {
@@ -742,6 +748,24 @@ const render = () => chrome.runtime.sendMessage({
         return false;
       });
     };
+    // editor commands issue in FF
+    iframe.contentWindow.addEventListener('keydown', e => {
+      if (iframe.contentDocument.designMode === 'on') {
+        const meta = e.metaKey || e.ctrlKey;
+        if (meta && e.code === 'KeyB') {
+          iframe.contentDocument.execCommand('bold');
+          e.preventDefault();
+        }
+        else if (meta && e.code === 'KeyI') {
+          iframe.contentDocument.execCommand('italic');
+          e.preventDefault();
+        }
+        else if (meta && e.code === 'KeyU') {
+          iframe.contentDocument.execCommand('underline');
+          e.preventDefault();
+        }
+      }
+    });
     iframe.contentWindow.addEventListener('keydown', callback);
     window.addEventListener('keydown', callback);
     iframe.contentWindow.focus();
