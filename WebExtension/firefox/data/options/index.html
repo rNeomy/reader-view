@@ -45,6 +45,16 @@
       align-items: start;
       grid-template-columns: 1fr minmax(min-content, 100px);
     }
+    #shortcuts {
+      display: grid;
+      grid-template-columns: min-content 24px 24px 100px;
+      align-items: center;
+      white-space: nowrap;
+      grid-gap: 5px;
+    }
+    #shortcuts > div {
+      display: contents;
+    }
   </style>
 </head>
 
@@ -77,6 +87,23 @@
     <label for="context-switch-to-reader-view">Show "Switch to Reader View" context-menu item (restart required)</label>
     <input type="checkbox" id="auto-fullscreen">
     <label for="auto-fullscreen">Automatically switch to the fullscreen (window mode)</label>
+  </div>
+
+  <h3>Interface Shortcuts (Ctrl/Command + Shift + Key)</h3>
+  <div class="box-3" id="shortcuts">
+    <div data-id="print"><span>Print Action</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="email"><span>Email Action</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="save"><span>Save Action</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="fullscreen"><span>Fullscreen Action</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="design-mode"><span>Design-Mode Action</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="speech"><span>Speech Action</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="speech-previous"><span>Previous (Speech)</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="speech-next"><span>Next (Speech)</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="speech-play"><span>Play/Pause (Speech)</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="images"><span>Images Action</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="highlight"><span>Highlight Action</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="next-page"><span>Previous Page (Navigation)</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
+    <div data-id="previous-page"><span>Next Page (Navigation)</span><input type="checkbox"><input type="checkbox"><input type="text"></div>
   </div>
 
   <h3><a id="ref-1" href="#">Custom styling</a> (reader view)</h3>

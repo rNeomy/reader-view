@@ -112,7 +112,22 @@ body[data-mode=light] {}
 body[data-mode=dark] {}`,
     'context-open-in-reader-view': false,
     'context-open-in-reader-view-bg': false,
-    'context-switch-to-reader-view': true
+    'context-switch-to-reader-view': true,
+    'shortcuts': {
+      'print': ['Ctrl/Command', 'KeyP'],
+      'email': ['Ctrl/Command', 'Shift', 'KeyE'],
+      'save': ['Ctrl/Command', 'KeyS'],
+      'fullscreen': ['F9'],
+      'design-mode': ['Ctrl/Command', 'Shift', 'KeyD'],
+      'speech': ['Ctrl/Command', 'Shift', 'KeyS'],
+      'speech-previous': ['Ctrl/Command', 'Shift', 'KeyZ'],
+      'speech-next': ['Ctrl/Command', 'Shift', 'KeyC'],
+      'speech-play': ['Ctrl/Command', 'Shift', 'KeyX'],
+      'images': ['Ctrl/Command', 'Shift', 'KeyI'],
+      'highlight': ['Ctrl/Command', 'Shift', 'KeyH'],
+      'next-page': ['Ctrl/Command', 'Shift', 'ArrowRight'],
+      'previous-page': ['Ctrl/Command', 'Shift', 'ArrowLeft']
+    }
   };
 
   chrome.storage.onChanged.addListener(prefs => {

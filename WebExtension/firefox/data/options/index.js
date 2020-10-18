@@ -83,6 +83,30 @@ function save() {
     }
   }
 
+  const shortcuts = {};
+  for (const div of [...document.getElementById('shortcuts').querySelectorAll('div')]) {
+    const [ctrl, shift] = [...div.querySelectorAll('input[type=checkbox]')];
+    const key = div.querySelector('input[type=text]');
+    const id = div.dataset.id;
+
+    if (key.value) {
+      shortcuts[id] = [];
+      if (ctrl.checked) {
+        shortcuts[id].push('Ctrl/Command');
+      }
+      if (shift.checked) {
+        shortcuts[id].push('Shift');
+      }
+      shortcuts[id].push(key.value.replace(/key/i, 'Key'));
+    }
+    else {
+      shortcuts[id] = config.prefs.shortcuts[id];
+    }
+    ctrl.checked = config.prefs.shortcuts[id].indexOf('Ctrl/Command') !== -1;
+    shift.checked = config.prefs.shortcuts[id].indexOf('Shift') !== -1;
+    key.value = config.prefs.shortcuts[id].filter(s => s !== 'Ctrl/Command' && s !== 'Shift')[0];
+  }
+
   chrome.storage.local.set({
     'embedded': document.getElementById('embedded').checked,
     'top-css': document.getElementById('top-style').value,
@@ -105,7 +129,9 @@ function save() {
     'images-button': document.getElementById('images-button').checked,
     'highlight-button': document.getElementById('highlight-button').checked,
     'design-mode-button': document.getElementById('design-mode-button').checked,
-    'navigate-buttons': document.getElementById('navigate-buttons').checked
+    'navigate-buttons': document.getElementById('navigate-buttons').checked,
+
+    shortcuts
   }, () => {
     const status = document.getElementById('status');
     status.textContent = 'Options saved.';
@@ -140,6 +166,15 @@ function restore() {
   document.getElementById('context-open-in-reader-view').checked = config.prefs['context-open-in-reader-view'];
   document.getElementById('context-open-in-reader-view-bg').checked = config.prefs['context-open-in-reader-view-bg'];
   document.getElementById('context-switch-to-reader-view').checked = config.prefs['context-switch-to-reader-view'];
+
+  for (const div of [...document.getElementById('shortcuts').querySelectorAll('div')]) {
+    const [ctrl, shift] = [...div.querySelectorAll('input[type=checkbox]')];
+    const key = div.querySelector('input[type=text]');
+    const id = div.dataset.id;
+    ctrl.checked = config.prefs.shortcuts[id].indexOf('Ctrl/Command') !== -1;
+    shift.checked = config.prefs.shortcuts[id].indexOf('Shift') !== -1;
+    key.value = config.prefs.shortcuts[id].filter(s => s !== 'Ctrl/Command' && s !== 'Shift')[0];
+  }
 }
 config.load(restore);
 document.getElementById('save').addEventListener('click', save);

@@ -114,25 +114,36 @@ imageUtils.addEventListener('blur', () => {
 });
 
 const shortcuts = [];
+shortcuts.render = () => {
+  for (const {span, id} of shortcuts) {
+    if (span) {
+      span.title = span.title.replace(
+        '(command)',
+        '(' + config.prefs.shortcuts[id].map(s => s.replace('Key', '')).join(' + ') + ')'
+      );
+    }
+  }
+};
 
 /* printing */
 {
   const span = document.createElement('span');
-  span.title = 'Print in the Reader View (Meta + P)';
+  span.title = 'Print in the Reader View (command)';
   span.classList.add('icon-print', 'hidden');
   span.id = 'printing-button';
 
   span.onclick = () => iframe.contentWindow.print();
   shortcuts.push({
-    condition: e => e.code === 'KeyP' && (e.metaKey || e.ctrlKey),
-    action: span.onclick
+    id: 'print',
+    action: span.onclick,
+    span
   });
   document.getElementById('toolbar').appendChild(span);
 }
 /* email */
 {
   const span = document.createElement('span');
-  span.title = 'Email Content (Meta + Shift + E)';
+  span.title = 'Email Content (command)';
   span.classList.add('icon-mail', 'hidden');
   span.id = 'mail-button';
 
@@ -154,15 +165,16 @@ const shortcuts = [];
     a.click();
   };
   shortcuts.push({
-    condition: e => e.code === 'KeyE' && (e.metaKey || e.ctrlKey) && e.shiftKey,
-    action: span.onclick
+    id: 'email',
+    action: span.onclick,
+    span
   });
   document.getElementById('toolbar').appendChild(span);
 }
 /* save as HTML*/
 {
   const span = document.createElement('span');
-  span.title = 'Save in HTML format (Meta + S)';
+  span.title = 'Save in HTML format (command)';
   span.classList.add('icon-save', 'hidden');
   span.id = 'save-button';
   span.onclick = () => {
@@ -186,7 +198,8 @@ const shortcuts = [];
     setTimeout(() => URL.revokeObjectURL(objectURL));
   };
   shortcuts.push({
-    condition: e => e.code === 'KeyS' && (e.metaKey || e.ctrlKey) && !e.shiftKey,
+    id: 'save',
+    span,
     action: span.onclick
   });
   document.getElementById('toolbar').appendChild(span);
@@ -194,7 +207,7 @@ const shortcuts = [];
 /* fullscreen */
 {
   const span = document.createElement('span');
-  span.title = 'Switch to the fullscreen reading (F9)';
+  span.title = 'Switch to the fullscreen reading (command)';
   span.classList.add('icon-fullscreen', 'hidden');
   span.id = 'fullscreen-button';
   span.onclick = () => {
@@ -212,7 +225,8 @@ const shortcuts = [];
     }
   };
   shortcuts.push({
-    condition: e => e.code === 'F9',
+    id: 'fullscreen',
+    span,
     action: span.onclick
   });
   document.getElementById('toolbar').appendChild(span);
@@ -222,12 +236,13 @@ const shortcuts = [];
   const span = document.createElement('span');
   span.classList.add('hidden', 'icon-design');
   span.id = 'design-mode-button';
-  span.title = `Toggle design mode (Meta + Shift + D)
+  span.title = `Toggle design mode (command)
 
 When active, you can edit the document or delete elements like MS word`;
   span.dataset.cmd = 'toggle-design-mode';
   shortcuts.push({
-    condition: e => e.code === 'KeyD' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    id: 'design-mode',
+    span,
     action() {
       span.click();
     }
@@ -237,7 +252,7 @@ When active, you can edit the document or delete elements like MS word`;
 /* speech */
 {
   const span = document.createElement('span');
-  span.title = 'Read this Article (Beta)\nTo start from middle, select starting word, then press this button\n(Meta + Shift + S)';
+  span.title = 'Read this Article (command)\nTo start from middle, select starting word, then press this button';
   span.classList.add('icon-speech', 'hidden');
   span.id = 'speech-button';
   span.onclick = async () => {
@@ -277,9 +292,13 @@ When active, you can edit the document or delete elements like MS word`;
       tts.feed(...iframe.contentDocument.querySelectorAll('.page p, .page h1, .page h2, .page h3, .page h4, .page li, .page td, .page th'));
       await tts.attach(document.getElementById('speech'));
       await tts.ready();
-      tts.buttons.play.title = 'Play/Pause (Meta + Shift + X)'; // eslint-disable-line require-atomic-updates
-      tts.buttons.next.title = 'Next (Meta + Shift + C)'; // eslint-disable-line require-atomic-updates
-      tts.buttons.previous.title += 'Previous (Meta + Shift + Z)'; // eslint-disable-line require-atomic-updates
+      tts.buttons.play.title =
+        `Play/Pause (${config.prefs.shortcuts['speech-play'].map(s => s.replace('Key', '')).join(' + ')})`;
+      tts.buttons.next.title =
+        `Next (${config.prefs.shortcuts['speech-next'].map(s => s.replace('Key', '')).join(' + ')})`;
+      tts.buttons.previous.title +=
+        `Previous (${config.prefs.shortcuts['speech-previous'].map(s => s.replace('Key', '')).join(' + ')})`;
+
       // auto play
       tts.buttons.play.click();
       // start from user selection
@@ -331,16 +350,17 @@ When active, you can edit the document or delete elements like MS word`;
     document.querySelector('[data-cmd="minimize-speech"]').textContent = prefs['speech-mode'] === '' ? '-' : '□';
   });
   shortcuts.push({
-    condition: e => e.code === 'KeyS' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    id: 'speech',
+    span,
     action: span.onclick
   }, {
-    condition: e => e.code === 'KeyZ' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    id: 'speech-previous',
     action: () => tts && tts.buttons.previous.click()
   }, {
-    condition: e => e.code === 'KeyC' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    id: 'speech-next',
     action: () => tts && tts.buttons.next.click()
   }, {
-    condition: e => e.code === 'KeyX' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    id: 'speech-play',
     action: () => tts && tts.buttons.play.click()
   });
   document.getElementById('toolbar').appendChild(span);
@@ -351,10 +371,11 @@ When active, you can edit the document or delete elements like MS word`;
   const span = document.createElement('span');
   span.classList.add('hidden');
   span.id = 'images-button';
-  span.title = 'Toggle images (Meta + Shift + I)';
+  span.title = 'Toggle images (command)';
   span.dataset.cmd = 'open-image-utils';
   shortcuts.push({
-    condition: e => e.code === 'KeyI' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    id: 'images',
+    span,
     action() {
       chrome.storage.local.set({
         'show-images': config.prefs['show-images'] === false
@@ -369,11 +390,12 @@ When active, you can edit the document or delete elements like MS word`;
   const span = document.createElement('span');
   span.classList.add('hidden', 'icon-highlight');
   span.id = 'highlight-button';
-  span.title = `Toggle highlight (Meta + Shift + H)`;
+  span.title = `Toggle highlight (command)`;
   span.dataset.cmd = 'toggle-highlight';
   span.dataset.disabled = true;
   shortcuts.push({
-    condition: e => e.code === 'KeyH' && (e.metaKey || e.ctrlKey) && e.shiftKey,
+    id: 'highlight',
+    span,
     action() {
       span.click();
     }
@@ -642,12 +664,15 @@ const render = () => chrome.runtime.sendMessage({
     iframe.contentWindow.addEventListener('scroll', scroll);
     scroll();
     shortcuts.push({
-      condition: e => e.shiftKey && e.key === 'ArrowRight' && (e.metaKey || e.ctrlKey),
+      id: 'next-page',
+      span: next,
       action: () => next.click()
     }, {
-      condition: e => e.shiftKey && e.key === 'ArrowLeft' && (e.metaKey || e.ctrlKey),
+      id: 'previous-page',
+      span: previous,
       action: () => previous.click()
     });
+    shortcuts.render();
 
     // scrollbar
     if (navigator.platform !== 'MacIntel') {
@@ -689,12 +714,26 @@ const render = () => chrome.runtime.sendMessage({
         nav.back();
       }
       shortcuts.forEach(o => {
-        if (o.condition(e)) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          o.action();
-          return false;
+        const s = config.prefs.shortcuts[o.id];
+        if (s.indexOf(e.code) === -1) {
+          return;
         }
+        if (s.indexOf('Ctrl/Command') !== -1 && (e.ctrlKey || e.metaKey) === false) {
+          return;
+        }
+        if (s.indexOf('Ctrl/Command') === -1 && (e.ctrlKey || e.metaKey)) {
+          return;
+        }
+        if (s.indexOf('Shift') !== -1 && e.shiftKey === false) {
+          return;
+        }
+        if (s.indexOf('Shift') === -1 && e.shiftKey) {
+          return;
+        }
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        o.action();
+        return false;
       });
     };
     iframe.contentWindow.addEventListener('keydown', callback);
