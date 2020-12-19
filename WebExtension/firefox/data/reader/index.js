@@ -432,7 +432,7 @@ Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion
 {
   config.load(() => {
     try {
-      for (const action of config.prefs['user-action']) {
+      config.prefs['user-action'].forEach((action, index) => {
         const span = document.createElement('span');
         span.classList.add('custom');
         span.title = action.title || 'User Action';
@@ -448,7 +448,16 @@ Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion
           URL.revokeObjectURL(s.src);
           s.remove();
         };
-      }
+        if (action.shortcut) {
+          const id = 'ua-' + index;
+          shortcuts.push({
+            id,
+            span,
+            action: span.onclick
+          });
+          config.prefs.shortcuts[id] = action.shortcut.split(/\s+\+\s+/);
+        }
+      });
     }
     catch (e) {
       console.warn('User Action Installation Failed', e);
