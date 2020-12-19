@@ -465,12 +465,13 @@
                   (word.offsetTop < doc.documentElement.scrollTop) ||
                   (word.offsetTop > doc.documentElement.scrollTop + doc.documentElement.clientHeight)
                 ) {
-                  doc.documentElement.dataset.smooth = false;
                   word.scrollIntoView({
                     block: options.scroll,
                     inline: 'nearest'
                   });
-                  doc.documentElement.dataset.smooth = true;
+                  if (options.scroll === 'start') {
+                    doc.documentElement.scrollTop -= 64;
+                  }
                 }
 
                 break;

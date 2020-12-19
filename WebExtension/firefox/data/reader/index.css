@@ -413,7 +413,7 @@ body[data-speech=false] #speech {
 }
 #guide {
   position: fixed;
-  left: 40px;
+  left: 48px;
   width: calc(100vw - 40px);
   background: var(--guide-color);
   pointer-events: none;
