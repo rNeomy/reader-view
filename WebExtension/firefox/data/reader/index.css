@@ -252,7 +252,7 @@ body[data-toolbar=false] #toolbar {
   display: inline;
 }
 #toolbar [data-cmd="toggle-design-mode"][data-active=true] {
-  color: blue;
+  color: #4dacff;
 }
 
 #toolbar > div::after,

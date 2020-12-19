@@ -599,6 +599,15 @@ document.addEventListener('click', e => {
     const active = iframe.contentDocument.designMode === 'on';
     e.target.dataset.active = active === false;
     iframe.contentDocument.designMode = active ? 'off' : 'on';
+
+    if (active === false) {
+      const s = document.createElement('script');
+      s.src = 'libs/design-mode/inject.js';
+      document.body.appendChild(s);
+    }
+    else {
+      [...document.querySelectorAll('.edit-toolbar')].forEach(e => e.remove());
+    }
   }
 });
 /* transition */
