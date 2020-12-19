@@ -4,58 +4,7 @@
   <title>Reader View :: Options</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta charset="utf-8">
-  <style>
-    table {
-      border-collapse: collapse;
-    }
-    textarea {
-      width: 100%;
-      font-family: monospace;
-      font-size: 12px;
-      line-height: 12px;
-      margin-top: 5px;
-    }
-    h3 {
-      background-color: rgba(0, 0, 0, 0.05);
-      padding: 10px;
-      margin: 10px 0;
-      font-size: 100%;
-    }
-    th {
-      text-align: left;
-      font-weight: 500;
-      padding: 5px;
-      background-color: rgba(0, 0, 0, 0.05);
-      white-space: nowrap;
-    }
-    input[type=number] {
-      width: 100%;
-      box-sizing: border-box;
-    }
-    textarea:disabled {
-      opacity: 0.5;
-    }
-    .box-1 {
-      display: grid;
-      align-items: center;
-      grid-template-columns: 24px 1fr;
-    }
-    .box-2 {
-      display: grid;
-      align-items: start;
-      grid-template-columns: 1fr minmax(min-content, 100px);
-    }
-    #shortcuts {
-      display: grid;
-      grid-template-columns: min-content 24px 24px 100px;
-      align-items: center;
-      white-space: nowrap;
-      grid-gap: 5px;
-    }
-    #shortcuts > div {
-      display: contents;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 
 <body>
@@ -134,7 +83,7 @@
 
   <h3 class="box-2">
     <span>Automatic Switch</span>
-    <a href="#" id="auto-permission" style="justify-self: end;">Request Access</a>
+    <a href="#" id="auto-permission" style="justify-self: end; white-space: nowrap;">Request Access</a>
   </h3>
   <textarea disabled placeholder="A comma-separated list of hostnames or regular expressions to automatically switch to the reader view if the 'request access' is granted (e.g.: google.com, r:\w+\.google\.com)" id="auto-rules" rows="4"></textarea>
 

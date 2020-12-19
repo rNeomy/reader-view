@@ -1,0 +1,80 @@
+body {
+  background-color: #fff;
+  color: #4d5156;
+}
+@supports (-moz-appearance:none) {
+  body {
+    font-size: 13px;
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    margin: 10px;
+    min-width: unset;
+  }
+  textarea {
+    padding: 5px;
+  }
+  button,
+  input[type=submit],
+  input[type=button] {
+    height: 24px;
+    color: #444;
+    background-image: linear-gradient(rgb(237, 237, 237), rgb(237, 237, 237) 38%, rgb(222, 222, 222));
+    box-shadow: rgba(0, 0, 0, 0.08) 0 1px 0, rgba(255, 255, 255, 0.75) 0 1px 2px inset;
+    text-shadow: rgb(240, 240, 240) 0 1px 0;
+    border: solid 1px rgba(0, 0, 0, 0.25);
+  }
+  input[type=button]:disabled {
+    opacity: 0.5;
+  }
+}
+
+table {
+  border-collapse: collapse;
+}
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 12px;
+  line-height: 12px;
+  margin-top: 5px;
+}
+h3 {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 100%;
+}
+th {
+  text-align: left;
+  font-weight: 500;
+  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+}
+input[type=number] {
+  width: 100%;
+  box-sizing: border-box;
+}
+textarea:disabled {
+  opacity: 0.5;
+}
+.box-1 {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 24px 1fr;
+}
+.box-2 {
+  display: grid;
+  align-items: start;
+  grid-template-columns: 1fr minmax(min-content, 100px);
+  grid-gap: 5px;
+}
+#shortcuts {
+  display: grid;
+  grid-template-columns: min-content 24px 24px 100px;
+  align-items: center;
+  white-space: nowrap;
+  grid-gap: 5px;
+}
+#shortcuts > div {
+  display: contents;
+}
