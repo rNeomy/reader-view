@@ -95,6 +95,9 @@ iframe {
   position: relative;
   box-shadow: 0 0 1px var(--border-color);
 }
+body[data-toolbar=false] #toolbar {
+  display: none;
+}
 #toolbar .active:not([data-cmd="full-width"]):not([data-cmd="no-height"]) {
   opacity: 0.5;
   transition: opacity 0.25s ease-in-out;

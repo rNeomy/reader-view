@@ -65,6 +65,7 @@ Original Page: [URL]`,
     'design-mode-button': localStorage.getItem('design-mode-button') !== 'false',
     'show-images': localStorage.getItem('show-images') !== 'false',
     'navigate-buttons': localStorage.getItem('navigate-buttons') !== 'false',
+    'toggle-toolbar': localStorage.getItem('toggle-toolbar') !== 'false',
     'top-css': localStorage.getItem('top-css') || '',
     'cache-highlights': true,
     'highlights-count': 20, // number of highlighted persistent highlighted websites
@@ -127,7 +128,8 @@ body[data-mode=dark] {}`,
       'images': ['Ctrl/Command', 'Shift', 'KeyI'],
       'highlight': ['Ctrl/Command', 'Shift', 'KeyH'],
       'next-page': ['Ctrl/Command', 'Shift', 'ArrowRight'],
-      'previous-page': ['Ctrl/Command', 'Shift', 'ArrowLeft']
+      'previous-page': ['Ctrl/Command', 'Shift', 'ArrowLeft'],
+      'toggle-toolbar': ['Ctrl/Command', 'Shift', 'KeyY']
     }
   };
 

@@ -125,6 +125,17 @@ shortcuts.render = () => {
   }
 };
 
+/* Toolbar Visibility*/
+{
+  shortcuts.push({
+    id: 'toggle-toolbar',
+    span: document.getElementById('toolbar'),
+    action: () => chrome.storage.local.set({
+      'toggle-toolbar': config.prefs['toggle-toolbar'] === false
+    })
+  });
+}
+
 /* printing */
 {
   const span = document.createElement('span');
@@ -800,11 +811,15 @@ config.onChanged.push(ps => {
   if (ps['mode']) {
     document.body.dataset.mode = config.prefs.mode;
   }
+  if (ps['toggle-toolbar']) {
+    document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
+  }
 });
 
 // load
 config.load(() => {
   document.body.dataset.mode = config.prefs.mode;
+  document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
   if (config.prefs['printing-button']) {
     document.getElementById('printing-button').classList.remove('hidden');
   }
