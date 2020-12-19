@@ -459,6 +459,20 @@
                 word.style.left = rect.x + 'px';
                 word.style.top = (doc.documentElement.scrollTop + rect.y + rect.height) + 'px';
                 word.style.width = rect.width + 'px';
+
+                // make sure the line is visible
+                if (
+                  (word.offsetTop < doc.documentElement.scrollTop) ||
+                  (word.offsetTop > doc.documentElement.scrollTop + doc.documentElement.clientHeight)
+                ) {
+                  doc.documentElement.dataset.smooth = false;
+                  word.scrollIntoView({
+                    block: options.scroll,
+                    inline: 'nearest'
+                  });
+                  doc.documentElement.dataset.smooth = true;
+                }
+
                 break;
               }
             }
@@ -492,7 +506,9 @@
         box.style.height = (Math.max(...boxes.map(r => r.bottom)) - top + 5) + 'px';
         box.classList.remove('hidden');
         word.classList.remove('hidden');
-        if (visible(es[0]) === false) {
+        // olnly scroll if word selection is not controlling scroll
+
+        if (visible(es[0]) === false && this.local === false) {
           es[0].scrollIntoView({
             block: options.scroll,
             inline: 'nearest'

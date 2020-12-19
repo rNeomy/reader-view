@@ -4,8 +4,10 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <style>
 html {
-  scroll-behavior: smooth;
   overflow: overlay;
+}
+html:not([data-smooth=false]) {
+  scroll-behavior: smooth;
 }
 body {
   -webkit-font-smoothing: antialiased;
