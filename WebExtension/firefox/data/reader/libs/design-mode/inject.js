@@ -23,6 +23,8 @@
     width: 16px;
     height: 16px;
     background-color: rgba(125, 0, 0, 0.5);
+    border: solid 1px #fff;
+    box-sizing: border-box;
     display: none;
     cursor: move;
   `;
@@ -30,12 +32,18 @@
     resize.img.width += e.movementX;
     const rect = resize.img.getBoundingClientRect();
     resize.style.left = (doc.documentElement.scrollLeft + rect.right - 16) + 'px';
-    resize.style.top = (doc.documentElement.scrollTop + rect.top) + 'px';
+    resize.style.top = (doc.documentElement.scrollTop + rect.bottom - 16) + 'px';
     e.preventDefault();
     e.stopPropagation();
   };
-  resize.onmousedown = () => doc.addEventListener('mousemove', move);
-  doc.addEventListener('mouseup', () => doc.removeEventListener('mousemove', move));
+  resize.onmousedown = () => {
+    doc.body.style['user-select'] = 'none';
+    doc.addEventListener('mousemove', move);
+  };
+  doc.addEventListener('mouseup', () => {
+    doc.body.style['user-select'] = 'initial';
+    doc.removeEventListener('mousemove', move);
+  });
   doc.body.appendChild(resize);
   const onmouseover = e => {
     if (e.target === resize) {
@@ -44,7 +52,7 @@
     if (e.target.tagName === 'IMG') {
       const rect = e.target.getBoundingClientRect();
       resize.style.left = (doc.documentElement.scrollLeft + rect.right - 16) + 'px';
-      resize.style.top = (doc.documentElement.scrollTop + rect.top) + 'px';
+      resize.style.top = (doc.documentElement.scrollTop + rect.bottom - 16) + 'px';
       resize.style.display = 'block';
       resize.img = e.target;
     }
@@ -56,12 +64,12 @@
 
   // unload
   const unload = (report = true) => {
-    window.onmessage = '';
-    chrome.runtime.onMessage.removeListener(onmessage);
     doc.removeEventListener('click', noredirect, true);
     doc.removeEventListener('mouseover', onmouseover);
     resize.remove();
     toolbar.remove();
+    chrome.runtime.onMessage.removeListener(onmessage);
+    window.onmessage = '';
     if (report) {
       if (doc.designMode === 'on') {
         top.document.getElementById('design-mode-button').click();

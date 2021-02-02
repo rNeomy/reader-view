@@ -116,7 +116,7 @@ imageUtils.addEventListener('blur', () => {
 const shortcuts = [];
 shortcuts.render = () => {
   for (const {span, id} of shortcuts) {
-    if (span) {
+    if (span && config.prefs.shortcuts[id]) {
       span.title = span.title.replace(
         '(command)',
         '(' + config.prefs.shortcuts[id].map(s => s.replace('Key', '')).join(' + ') + ')'
