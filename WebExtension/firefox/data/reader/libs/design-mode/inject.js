@@ -22,7 +22,7 @@
     position: absolute;
     width: 16px;
     height: 16px;
-    background-color: rgba(125, 125, 125, 0.5);
+    background-color: rgba(125, 0, 0, 0.5);
     display: none;
     cursor: move;
   `;
