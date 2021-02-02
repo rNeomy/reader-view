@@ -1,3 +1,4 @@
+/* global iframe */
 'use strict';
 
 [...document.querySelectorAll('.edit-toolbar')].forEach(e => e.remove());
@@ -6,10 +7,61 @@
   const toolbar = document.createElement('iframe');
   const doc = iframe.contentDocument;
 
+  // do not allow link opening
+  const noredirect = e => {
+    if (e.target.closest('a[href]')) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+  doc.addEventListener('click', noredirect, true);
+
+  // resize images
+  const resize = doc.createElement('span');
+  resize.style = `
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background-color: rgba(125, 125, 125, 0.5);
+    display: none;
+    cursor: move;
+  `;
+  const move = e => {
+    resize.img.width += e.movementX;
+    const rect = resize.img.getBoundingClientRect();
+    resize.style.left = (doc.documentElement.scrollLeft + rect.right - 16) + 'px';
+    resize.style.top = (doc.documentElement.scrollTop + rect.top) + 'px';
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  resize.onmousedown = () => doc.addEventListener('mousemove', move);
+  doc.addEventListener('mouseup', () => doc.removeEventListener('mousemove', move));
+  doc.body.appendChild(resize);
+  const onmouseover = e => {
+    if (e.target === resize) {
+      return;
+    }
+    if (e.target.tagName === 'IMG') {
+      const rect = e.target.getBoundingClientRect();
+      resize.style.left = (doc.documentElement.scrollLeft + rect.right - 16) + 'px';
+      resize.style.top = (doc.documentElement.scrollTop + rect.top) + 'px';
+      resize.style.display = 'block';
+      resize.img = e.target;
+    }
+    else {
+      resize.style.display = 'none';
+    }
+  };
+  doc.addEventListener('mouseover', onmouseover);
+
+  // unload
   const unload = (report = true) => {
     window.onmessage = '';
-    toolbar.remove();
     chrome.runtime.onMessage.removeListener(onmessage);
+    doc.removeEventListener('click', noredirect, true);
+    doc.removeEventListener('mouseover', onmouseover);
+    resize.remove();
+    toolbar.remove();
     if (report) {
       if (doc.designMode === 'on') {
         top.document.getElementById('design-mode-button').click();
@@ -102,12 +154,4 @@
     border: none;
   `;
   document.documentElement.appendChild(toolbar);
-
-  const onmessage = request => {
-    if (request.method === 'unload') {
-      unload(false);
-    }
-  };
-
-  chrome.runtime.onMessage.addListener(onmessage);
 }

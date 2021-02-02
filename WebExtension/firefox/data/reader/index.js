@@ -425,7 +425,7 @@ Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion
     href: args.get('url').split('#')[0]
   });
   window.addEventListener('beforeunload', () => {
-    if (highlight.used) {
+    if (highlight && highlight.used) {
       post();
     }
   });
@@ -599,6 +599,7 @@ document.addEventListener('click', e => {
     const active = iframe.contentDocument.designMode === 'on';
     e.target.dataset.active = active === false;
     iframe.contentDocument.designMode = active ? 'off' : 'on';
+    // iframe.contentDocument.spellcheck = active ? 'false' : 'true';
 
     if (active === false) {
       const s = document.createElement('script');
@@ -606,10 +607,14 @@ document.addEventListener('click', e => {
       document.body.appendChild(s);
     }
     else {
-      [...document.querySelectorAll('.edit-toolbar')].forEach(e => e.remove());
+      [...document.querySelectorAll('.edit-toolbar')].forEach(e => {
+        const a = e.contentDocument.querySelector('[data-command="close"]');
+        a.dispatchEvent(new Event('click', {bubbles: true}));
+      });
     }
   }
 });
+
 /* transition */
 document.getElementById('toolbar').addEventListener('transitionend', e => {
   e.target.classList.remove('active');
