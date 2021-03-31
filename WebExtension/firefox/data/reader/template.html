@@ -64,6 +64,9 @@ img {
   max-width: 100%;
   height: auto;
 }
+img:not([width])[src$=".svg"] {
+  max-width: 100px;
+}
 body[data-images=false] canvas,
 body[data-images=false] svg,
 body[data-images=false] img {
@@ -104,11 +107,19 @@ a {
   padding: 0;
   font-style: italic;
 }
+#doi,
 #reader-estimated-time {
   font-size: 0.85em;
   line-height: 1.48em;
   margin: 0 0 10px 0;
   padding: 0;
+}
+#doi-json {
+  overflow: hidden;
+}
+#doi-json code {
+  overflow: auto;
+  max-height: 400px;
 }
 #reader-credits:empty {
   display: none;
@@ -138,6 +149,9 @@ body[data-speech="false"] .tts-speaking::after {
 }
 mark.hghlght {
   background-color: #ffff81;
+}
+.hidden {
+  display: none;
 }
 </style>
   <style id="user-css">/*user-css*/</style>

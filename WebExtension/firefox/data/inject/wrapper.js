@@ -113,6 +113,24 @@ try {
   ).parse();
   article.url = article.url || location.href;
 
+  // detect doi
+  const doi = document.querySelector('[href^="https://doi.org/"]');
+  if (doi) {
+    article.doi = doi.href;
+  }
+  else {
+    const n = /doi:\s([^\s]{3,})/i.exec(document.body.innerText);
+    if (n) {
+      article.doi = 'https://doi.org/' + n[1];
+    }
+    else {
+      const m = /https:\/\/doi\.org\/[^\s]{4,}/.exec(document.body.innerText);
+      if (m) {
+        article.doi = m[0];
+      }
+    }
+  }
+
   // https://www.w3.org/International/questions/qa-scripts.en#directions
   if (article.dir === null) {
     const lang = document.documentElement.lang;
