@@ -654,6 +654,7 @@ const render = () => chrome.runtime.sendMessage({
     .replace('%byline%', article.byline || '')
     .replace('%reading-time-fast%', article.readingTimeMinsFast)
     .replace('%reading-time-slow%', article.readingTimeMinsSlow)
+    .replace('%published-time%', article['published_time'] || '')
     .replace('%href%', article.url)
     .replace('%hostname%', hostname)
     .replace('%pathname%', pathname)

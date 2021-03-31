@@ -39,7 +39,7 @@ function enable() {
           a.href = article.doi;
           a.textContent = r.DOI;
           div.appendChild(a);
-          div.appendChild(document.createTextNode(', Published on ' + (new Date(date)).toLocaleDateString() + ', '));
+          div.appendChild(document.createTextNode(', '));
           const more = document.createElement('a');
           more.href = '#';
           more.textContent = 'more';
@@ -76,7 +76,7 @@ function enable() {
           };
           div.appendChild(more);
 
-          iframe.contentDocument.getElementById('reader-estimated-time').insertAdjacentElement('afterend', div);
+          iframe.contentDocument.getElementById('published-time').insertAdjacentElement('afterend', div);
         }
       }
     }).catch(e => {

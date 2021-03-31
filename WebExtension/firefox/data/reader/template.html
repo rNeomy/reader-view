@@ -100,19 +100,20 @@ a {
   margin: 20px 0;
   padding: 0;
 }
-#reader-credits {
-  font-size: 0.9em;
-  line-height: 1.48em;
-  margin: 0 0 10px 0;
-  padding: 0;
-  font-style: italic;
-}
+#reader-credits,
 #doi,
+#published-time,
 #reader-estimated-time {
   font-size: 0.85em;
   line-height: 1.48em;
   margin: 0 0 10px 0;
   padding: 0;
+}
+#reader-credits:not(:empty)::after {
+  content: ' ⋮ ';
+}
+#published-time:not(:empty)::before {
+  content: ' ⋮ ';
 }
 #doi-json {
   overflow: hidden;
@@ -121,6 +122,7 @@ a {
   overflow: auto;
   max-height: 400px;
 }
+#published-time:empty,
 #reader-credits:empty {
   display: none;
 }
@@ -163,8 +165,9 @@ mark.hghlght {
     <span>%pathname%</span>
   </a>
   <h1 dir="auto" id="reader-title">%title%</h1>
-  <div dir="auto" id="reader-credits">%byline%</div>
-  <div dir="auto" id="reader-estimated-time">%reading-time-fast%-%reading-time-slow% minutes</div>
+  <span dir="auto" id="reader-credits">%byline%</span>
+  <span dir="auto" id="reader-estimated-time">%reading-time-fast%-%reading-time-slow% minutes</span>
+  <span dir="auto" id="published-time">%published-time%</span>
   <hr/>
   %content%
   <span></span> <!-- for IntersectionObserver -->

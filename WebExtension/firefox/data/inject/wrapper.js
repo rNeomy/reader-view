@@ -114,22 +114,47 @@ try {
   article.url = article.url || location.href;
 
   // detect doi
-  const doi = document.querySelector('[href^="https://doi.org/"]');
-  if (doi) {
-    article.doi = doi.href;
-  }
-  else {
-    const n = /doi:\s([^\s]{3,})/i.exec(document.body.innerText);
-    if (n) {
-      article.doi = 'https://doi.org/' + n[1];
+  try {
+    const doi = document.querySelector('[href^="https://doi.org/"]');
+    if (doi) {
+      article.doi = doi.href;
     }
     else {
-      const m = /https:\/\/doi\.org\/[^\s]{4,}/.exec(document.body.innerText);
-      if (m) {
-        article.doi = m[0];
+      const n = /doi:\s([^\s]{3,})/i.exec(document.body.innerText);
+      if (n) {
+        article.doi = 'https://doi.org/' + n[1];
+      }
+      else {
+        const m = /https:\/\/doi\.org\/[^\s]{4,}/.exec(document.body.innerText);
+        if (m) {
+          article.doi = m[0];
+        }
       }
     }
   }
+  catch (e) {
+    console.warn('detect doi', e);
+  }
+  // detect date
+  try {
+    const date = document.querySelector('meta[property="article:published_time"],meta[property="og:pubdate"],meta[name="citation_online_date"],meta[name="dc.Date"]');
+    if (date) {
+      article.published_time = (new Date(date.content)).toLocaleDateString();
+    }
+    else {
+      const e = document.querySelector('script[type="application/ld+json"]');
+      if (e) {
+        const j = JSON.parse(e.textContent);
+        if (j && j.datePublished) {
+          article.published_time = (new Date(j.datePublished)).toLocaleDateString();
+        }
+      }
+    }
+  }
+  catch (e) {
+    console.warn('detect date', e);
+  }
+
 
   // https://www.w3.org/International/questions/qa-scripts.en#directions
   if (article.dir === null) {
