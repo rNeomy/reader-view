@@ -137,7 +137,7 @@ try {
   }
   // detect date
   try {
-    const date = document.querySelector('meta[property="article:published_time"],meta[property="og:pubdate"],meta[name="citation_online_date"],meta[name="dc.Date"]');
+    const date = document.querySelector('meta[property="article:published_time"],meta[property="og:pubdate"],meta[property="og:publish_date"],meta[name="citation_online_date"],meta[name="dc.Date"]');
     if (date) {
       article.published_time = (new Date(date.content)).toLocaleDateString();
     }
