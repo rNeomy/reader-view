@@ -1,7 +1,7 @@
 /**
-    Reader View - .Strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability
+    Reader View - Strips away clutter
 
-    Copyright (C) 2014-2020 [@rNeomy](https://add0n.com/chrome-reader-view.html)
+    Copyright (C) 2014-2021 [@rNeomy](https://add0n.com/chrome-reader-view.html)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -18,7 +18,7 @@
     Homepage: https://add0n.com/chrome-reader-view.html
 */
 
-/* global config, TTS */
+/* global config, TTS, tips */
 'use strict';
 
 let article;
@@ -663,6 +663,23 @@ const render = () => chrome.runtime.sendMessage({
     .replace('%data-font%', config.prefs.font)
     .replace('%data-mode%', config.prefs.mode));
   iframe.contentDocument.close();
+
+  // remote image loading
+  {
+    let shown = false;
+    iframe.contentWindow.addEventListener('error', e => {
+      if (shown === false && e.target.tagName === 'IMG' && e.target.src.startsWith('http')) {
+        chrome.storage.local.get({
+          'warn-on-remote-resources': true
+        }, prefs => {
+          if (prefs['warn-on-remote-resources']) {
+            tips.show(1, false);
+          }
+          shown = true;
+        });
+      }
+    }, true);
+  }
 
   // fix relative links;
   const es = [...iframe.contentDocument.querySelectorAll('[src^="//"]')];

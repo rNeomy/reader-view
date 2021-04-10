@@ -1,7 +1,7 @@
 /**
-    Reader View - .Strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability
+    Reader View - Strips away clutter
 
-    Copyright (C) 2014-2020 [@rNeomy](https://add0n.com/chrome-reader-view.html)
+    Copyright (C) 2014-2021 [@rNeomy](https://add0n.com/chrome-reader-view.html)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
