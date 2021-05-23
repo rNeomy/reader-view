@@ -624,6 +624,8 @@ const render = () => chrome.runtime.sendMessage({
   cmd: 'read-data'
 }, async obj => {
   article = obj;
+  document.dispatchEvent(new Event('article-ready'));
+
   document.title = article.title.replace(' :: Reader View', '') + ' :: Reader View';
   if (!article) { // open this page from history for instance
     return location.replace(args.get('url'));

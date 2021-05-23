@@ -22,7 +22,8 @@
 
 'use strict';
 
-function enable() {
+const observe = () => {
+  console.log(article);
   const link = article.doi;
   if (link) {
     fetch(link, {
@@ -86,9 +87,13 @@ function enable() {
       console.warn('DOI plug-in error', e);
     });
   }
+};
+
+function enable() {
+  document.addEventListener('article-ready', observe);
 }
 function disable() {
-
+  document.removeEventListener('article-ready', observe);
 }
 
 export {
