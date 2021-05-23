@@ -269,7 +269,6 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
             };
           }
         });
-        console.log(window.caches.open);
       }
     }
     create() {
