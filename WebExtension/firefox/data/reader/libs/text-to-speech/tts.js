@@ -1,6 +1,8 @@
 /* global tokenizer */
 'use strict';
 
+const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !== 'undefined';
+
 {
   class Emitter {
     constructor() {
@@ -23,7 +25,6 @@
   const CALC = Symbol();
   const TEXT = Symbol();
   const SRC = Symbol();
-  const CACHE = Math.random().toString(36).substring(7);
 
   class SimpleTTS extends Emitter {
     constructor(doc = document, options = {
@@ -247,24 +248,61 @@
   class PreLoadTTS extends SimpleTTS {
     constructor(...args) {
       super(...args);
-      this.CACHE = CACHE;
+      this.CACHE = Math.random().toString(36).substring(7);
+
+      if (isFirefox) {
+        const rs = {};
+        window.caches.open = new Proxy(window.caches.open, {
+          apply() {
+            return {
+              match(src) {
+                return Promise.resolve(rs[src]);
+              },
+              async add(src) {
+                const blob = await fetch(src).then(r => r.blob());
+                rs[src] = {
+                  blob() {
+                    return blob;
+                  }
+                };
+              }
+            };
+          }
+        });
+        console.log(window.caches.open);
+      }
     }
     create() {
       super.create();
       this.audio.addEventListener('canplaythrough', async () => {
-        const next = this[TEXT](this.offset + 1);
-        if (next && typeof caches !== 'undefined') {
-          const src = await super[SRC](next);
-          const c = await caches.open(CACHE);
+        const c = await caches.open(this.CACHE);
+        // store next (part 1)
+        const p1 = this[TEXT](this.offset + 1);
+        if (p1 && typeof caches !== 'undefined') {
+          const src = await super[SRC](p1);
           // only add src if it is not available
-          (await c.match(src)) || c.add(src);
+          (await c.match(src)) || await c.add(src);
+        }
+        // store current
+        const current = this[TEXT]();
+        if (current && typeof caches !== 'undefined') {
+          const src = await super[SRC](current);
+          // only add src if it is not available
+          (await c.match(src)) || await c.add(src);
+        }
+        // store next (part 2)
+        const p2 = this[TEXT](this.offset + 2);
+        if (p2 && typeof caches !== 'undefined') {
+          const src = await super[SRC](p2);
+          // only add src if it is not available
+          (await c.match(src)) || await c.add(src);
         }
       });
     }
     async [SRC](text) {
       const src = await super[SRC](text);
       try {
-        const c = await caches.open(CACHE);
+        const c = await caches.open(this.CACHE);
         const r = await c.match(src);
         if (r) {
           const b = await r.blob();
