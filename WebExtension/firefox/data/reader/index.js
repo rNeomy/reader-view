@@ -689,13 +689,17 @@ const render = () => chrome.runtime.sendMessage({
     e.src = article.url.split(':')[0] + ':' + e.getAttribute('src');
   }
 
-  document.head.appendChild(Object.assign(
-    document.querySelector(`link[rel*='icon']`) || document.createElement('link'), {
-      type: 'image/x-icon',
-      rel: 'shortcut icon',
-      href: 'chrome://favicon/' + article.url
-    }
-  ));
+  const props = {
+    type: 'image/x-icon',
+    rel: 'shortcut icon',
+    href: article.icon && article.icon.startsWith('data:') ? article.icon : 'chrome://favicon/' + article.url
+  };
+  if (config.prefs['show-icon'] === false) {
+    props.href = '/data/icons/32.png';
+  }
+  const link = Object.assign(document.querySelector(`link[rel*='icon']`) || document.createElement('link'), props);
+  document.head.appendChild(link);
+
   // navigation
   {
     const next = document.getElementById('navigate-next');

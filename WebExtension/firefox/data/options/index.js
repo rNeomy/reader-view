@@ -131,6 +131,7 @@ function save() {
     'highlight-button': document.getElementById('highlight-button').checked,
     'design-mode-button': document.getElementById('design-mode-button').checked,
     'navigate-buttons': document.getElementById('navigate-buttons').checked,
+    'show-icon': document.getElementById('show-icon').checked,
 
     shortcuts
   }, () => {
@@ -158,6 +159,7 @@ function restore() {
   document.getElementById('highlight-button').checked = config.prefs['highlight-button'];
   document.getElementById('design-mode-button').checked = config.prefs['design-mode-button'];
   document.getElementById('navigate-buttons').checked = config.prefs['navigate-buttons'];
+  document.getElementById('show-icon').checked = config.prefs['show-icon'];
 
   document.getElementById('reader-mode').checked = config.prefs['reader-mode'];
   document.getElementById('faqs').checked = config.prefs['faqs'];

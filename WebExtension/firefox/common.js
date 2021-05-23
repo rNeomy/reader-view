@@ -195,6 +195,7 @@ const onMessage = (request, sender, response) => {
   const id = sender.tab ? sender.tab.id : '';
   const url = sender.tab ? sender.tab.url : '';
   if (request.cmd === 'open-reader' && request.article) {
+    request.article.icon = sender.tab.favIconUrl;
     cache[sender.tab.id] = request.article;
     chrome.tabs.update(id, {
       url: chrome.runtime.getURL('data/reader/index.html?id=' + id + '&url=' + encodeURIComponent(url))

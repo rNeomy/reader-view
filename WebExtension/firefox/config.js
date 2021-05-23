@@ -39,6 +39,7 @@ if (typeof config === 'undefined') {
     'width': 600,
     'line-height': 0,
     'reader-mode': false,
+    'show-icon': true,
     'tts-delay': 300,
     'tts-maxlength': 160,
     'tts-minlength': 60,
@@ -78,7 +79,7 @@ Original Page: [URL]`,
 a:visited {
   color: #d33bf0;
 }
-a:link, a:link:hover, a:link:active {
+a:link, a:link:hover, a:link:active, a:link * {
   color: #0095dd;
 }
 a:link {
