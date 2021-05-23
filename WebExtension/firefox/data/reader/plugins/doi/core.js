@@ -23,7 +23,6 @@
 'use strict';
 
 const observe = () => {
-  console.log(article);
   const link = article.doi;
   if (link) {
     fetch(link, {
@@ -90,6 +89,9 @@ const observe = () => {
 };
 
 function enable() {
+  if (article) {
+    observe();
+  }
   document.addEventListener('article-ready', observe);
 }
 function disable() {

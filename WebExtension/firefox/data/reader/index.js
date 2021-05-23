@@ -294,7 +294,7 @@ Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion
         scroll: config.prefs['tts-scroll']
       });
       tts.on('status', s => {
-        document.querySelector('#speech [data-id=msg-speech]').textContent = s === 'buffering' ? '...' : '';
+        document.querySelector('#speech [data-id=msg-speech]').textContent = s === 'buffering' ? 'Please Wait...' : '';
       });
       tts.on('error', e => chrome.runtime.sendMessage({
         cmd: 'notify',
