@@ -626,7 +626,9 @@ const render = () => chrome.runtime.sendMessage({
   article = obj;
   document.dispatchEvent(new Event('article-ready'));
 
-  document.title = article.title.replace(' :: Reader View', '') + ' :: Reader View';
+  document.title = config.prefs.title.replace('[ORIGINAL]', article.title.replace(' :: Reader View', ''))
+    .replace('[BRAND]', 'Reader View');
+
   if (!article) { // open this page from history for instance
     return location.replace(args.get('url'));
   }
@@ -690,7 +692,6 @@ const render = () => chrome.runtime.sendMessage({
   }
 
   const props = {
-    type: 'image/x-icon',
     rel: 'shortcut icon',
     href: article.icon && article.icon.startsWith('data:') ? article.icon : 'chrome://favicon/' + article.url
   };
@@ -757,12 +758,14 @@ const render = () => chrome.runtime.sendMessage({
 
   iframe.contentDocument.documentElement.appendChild(styles.internals);
   iframe.addEventListener('load', () => {
-    // apply transition after initial changes
-    document.body.dataset.loaded = iframe.contentDocument.body.dataset.loaded = true;
+    if (document.body.dataset.loaded !== 'true') {
+      // apply transition after initial changes
+      document.body.dataset.loaded = iframe.contentDocument.body.dataset.loaded = true;
 
-    highlight = new iframe.contentWindow.Highlight();
-    if (article.highlights) {
-      highlight.import(article.highlights);
+      highlight = new iframe.contentWindow.Highlight();
+      if (article.highlights) {
+        highlight.import(article.highlights);
+      }
     }
   });
   // highlight

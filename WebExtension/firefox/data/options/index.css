@@ -75,6 +75,13 @@ textarea:disabled {
   grid-template-columns: 1fr minmax(min-content, 100px);
   grid-gap: 5px;
 }
+.box-3 {
+  display: grid;
+  grid-gap: 10px;
+  white-space: nowrap;
+  grid-template-columns: min-content 1fr;
+  align-items: center;
+}
 #shortcuts {
   display: grid;
   grid-template-columns: min-content 24px 24px 100px;

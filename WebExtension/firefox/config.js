@@ -40,6 +40,7 @@ if (typeof config === 'undefined') {
     'line-height': 0,
     'reader-mode': false,
     'show-icon': true,
+    'title': '[ORIGINAL] :: [BRAND]',
     'tts-delay': 300,
     'tts-maxlength': 160,
     'tts-minlength': 60,

@@ -62,7 +62,9 @@ const observe = () => {
 
               more.expanded = true;
               more.textContent = 'Hide';
-              more.onclick = () => {
+              more.onclick = e => {
+                e.preventDefault();
+                e.stopPropagation();
                 if (more.expanded) {
                   more.expanded = false;
                   more.textContent = 'Show';
