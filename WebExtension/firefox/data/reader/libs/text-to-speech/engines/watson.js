@@ -1,6 +1,8 @@
 // overwrites to support custom voices
 {
   function build(text) {
+    // const r = new RegExp(this.SEPARATOR.replace(/\//g, '//'), 'g');
+    // text = text.replace(text, `<break strength="strong"/>`);
     return 'https://text-to-speech-demo.ng.bluemix.net/api/v3/synthesize?text=' + encodeURIComponent(text) +
       '&voice=' + encodeURIComponent(this.lang + '_' + this.key + 'Voice') +
       '&download=true&accept=' + encodeURIComponent('audio/ogg;codec=opus');

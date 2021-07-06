@@ -127,7 +127,16 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
           instance.onend();
         }
       });
-      this.audio.addEventListener('ended', () => {
+      this.audio.addEventListener('ended', async () => {
+        const {srcs} = this.audio;
+        if (Array.isArray(srcs)) {
+          const src = srcs.shift();
+          if (src) {
+            this.audio.src = await this.convert(src);
+            this.audio.play();
+            return;
+          }
+        }
         instance.onend();
       });
       this.audio.addEventListener('canplay', () => {
@@ -202,15 +211,24 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       this.speak();
     }
     async [SRC](text) {
-      const r = new RegExp(this.SEPARATOR.replace(/\//g, '//'), 'g');
-      return this._voice.build(text.replace(r, `<break strength="strong"/>`));
+      return this._voice.build(text);
+    }
+    async convert(src) {
+      return Promise.resolve(src);
     }
     async speak() {
       this.state = 'play';
       if (this._voice) {
         const src = await this[SRC](this.instance.text);
+        this.audio.srcs = src;
         this.emit('status', 'buffering');
-        this.audio.src = src;
+        if (Array.isArray(src)) {
+          const s = src.shift();
+          this.audio.src = await this.convert(s);
+        }
+        else {
+          this.audio.src = await this.convert(src);
+        }
         this.audio.play();
       }
       else {
@@ -278,28 +296,33 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
         // store next (part 1)
         const p1 = this[TEXT](this.offset + 1);
         if (p1 && typeof caches !== 'undefined') {
-          const src = await super[SRC](p1);
+          const srcs = [await super[SRC](p1)].flat();
           // only add src if it is not available
-          (await c.match(src)) || await c.add(src);
+          for (const src of srcs) {
+            (await c.match(src)) || await c.add(src);
+          }
         }
         // store current
         const current = this[TEXT]();
         if (current && typeof caches !== 'undefined') {
-          const src = await super[SRC](current);
+          const srcs = [await super[SRC](current)].flat();
           // only add src if it is not available
-          (await c.match(src)) || await c.add(src);
+          for (const src of srcs) {
+            (await c.match(src)) || await c.add(src);
+          }
         }
         // store next (part 2)
         const p2 = this[TEXT](this.offset + 2);
         if (p2 && typeof caches !== 'undefined') {
-          const src = await super[SRC](p2);
+          const srcs = [await super[SRC](p2)].flat();
           // only add src if it is not available
-          (await c.match(src)) || await c.add(src);
+          for (const src of srcs) {
+            (await c.match(src)) || await c.add(src);
+          }
         }
       });
     }
-    async [SRC](text) {
-      const src = await super[SRC](text);
+    async convert(src) {
       try {
         const c = await caches.open(this.CACHE);
         const r = await c.match(src);

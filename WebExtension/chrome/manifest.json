@@ -10,7 +10,8 @@
     "notifications",
     "declarativeContent",
     "chrome://favicon/",
-    "https://text-to-speech-demo.ng.bluemix.net/api/*"
+    "https://text-to-speech-demo.ng.bluemix.net/api/*",
+    "https://translate.google.com/"
   ],
   "optional_permissions": [
     "*://*/*",

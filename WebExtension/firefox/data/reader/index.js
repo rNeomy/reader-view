@@ -284,6 +284,7 @@ Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion
       document.body.dataset.speech = true;
       iframe.contentDocument.body.dataset.speech = true;
       await add('libs/text-to-speech/engines/watson.js');
+      await add('libs/text-to-speech/engines/translate.js');
       await add('libs/text-to-speech/tts.js');
       await add('libs/text-to-speech/vendors/sentence-boundary-detection/sbd.js');
       tts = new TTS(iframe.contentDocument, {
