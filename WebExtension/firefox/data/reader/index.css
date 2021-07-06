@@ -140,7 +140,7 @@ body[data-toolbar=false] #toolbar {
   height: 60px;
   color: #333;
   font-size: 20px;
-  border: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 }
 #image-utils td,
 #font-utils td {
@@ -222,6 +222,16 @@ body[data-toolbar=false] #toolbar {
 }
 #font-details div span[data-id] {
   color: initial;
+}
+#font-utils p[data-id=help] {
+  padding: 5px 10px;
+  text-align: end;
+  margin: 0;
+  color: var(--color-mode-sepia-color);
+  background-color: var(--color-mode-sepia-bg);
+}
+#font-utils p[data-id=help] a {
+  text-decoration: none;
 }
 
 #toolbar [data-id="no-height"] input,
@@ -327,6 +337,10 @@ body:not([data-tips=true]) #tips {
   outline: none;
   color: #a87109;
 }
+#tips a {
+  color: #2e9edc;
+  text-decoration: none;
+}
 
 #speech {
   position: fixed;
@@ -375,12 +389,21 @@ body[data-speech=false] #speech {
 #speech [data-cmd=minimize-speech] {
   right: 20px;
 }
+#speech [data-href] {
+  position: absolute;
+  font-size: 10px;
+  top: 3px;
+  right: 32px;
+  text-decoration: none;
+  color: #0095dd;
+}
 
 #speech [data-id=msg-speech] {
   position: absolute;
-  bottom: 0;
+  bottom: 3px;
   right: 5px;
-  font-size: 14px;
+  font-size: 10px;
+  color: #4d5156;
 }
 #speech [data-id=msg-speech]:empty {
   display: none;

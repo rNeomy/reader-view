@@ -23,3 +23,5 @@ document.getElementById('move').onmousedown = () => {
 document.onmouseup = () => {
   document.onmousemove = '';
 };
+
+top.links(document);

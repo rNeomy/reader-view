@@ -189,6 +189,10 @@ document.getElementById('support').addEventListener('click', () => chrome.tabs.c
   url: chrome.runtime.getManifest().homepage_url + '?rd=donate'
 }));
 
+document.getElementById('bug').addEventListener('click', () => chrome.tabs.create({
+  url: chrome.runtime.getManifest().homepage_url + '#reviews'
+}));
+
 document.getElementById('reload').addEventListener('click', () => chrome.runtime.reload());
 
 document.getElementById('reset').addEventListener('click', e => {

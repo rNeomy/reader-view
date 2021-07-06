@@ -1,10 +1,9 @@
 body {
   margin: 0;
   user-select: none;
+  background-color: #fafafa;
 }
 #toolbar {
-  background-color: #fafafa;
-  border: solid 1px #c4c4c4;
   display: flex;
   padding: 3px 5px;
   align-items: center;
@@ -43,4 +42,13 @@ select {
 }
 #move * {
   pointer-events: none;
+}
+
+#help {
+  text-align: end;
+  margin: 0 8px;
+  padding: 3px;
+}
+#help a {
+  text-decoration: none;
 }

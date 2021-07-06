@@ -104,8 +104,10 @@ const iframe = document.querySelector('iframe');
 
 const fontUtils = document.querySelector('#font-utils');
 fontUtils.addEventListener('blur', () => {
-  fontUtils.classList.add('hidden');
-  iframe.contentWindow.focus();
+  setTimeout(() => {
+    fontUtils.classList.add('hidden');
+    iframe.contentWindow.focus();
+  }, 100);
 });
 const imageUtils = document.querySelector('#image-utils');
 imageUtils.addEventListener('blur', () => {
@@ -898,3 +900,13 @@ config.load(() => {
 
   render();
 });
+
+// convert data HREFs
+const links = window.links = (d = document) => {
+  for (const a of [...d.querySelectorAll('[data-href]')]) {
+    if (a.hasAttribute('href') === false) {
+      a.href = chrome.runtime.getManifest().homepage_url + '#' + a.dataset.href;
+    }
+  }
+};
+document.addEventListener('DOMContentLoaded', () => links());

@@ -1,14 +1,15 @@
 {
   "name": "Reader View",
   "description": "strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "manifest_version": 2,
   "permissions": [
     "storage",
     "activeTab",
     "contextMenus",
     "notifications",
-    "https://text-to-speech-demo.ng.bluemix.net/api/v3/*"
+    "https://text-to-speech-demo.ng.bluemix.net/api/v3/*",
+    "https://translate.google.com/"
   ],
   "optional_permissions": [
     "*://*/*",

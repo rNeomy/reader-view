@@ -18,10 +18,12 @@
     Homepage: https://add0n.com/chrome-reader-view.html
 */
 
+/* global links */
+
 'use strict';
 
 const tips = [{
-  message: 'By selecting the actual content or part of it before switching to the reader view, you can prevent unwanted content from cluttering your view. This is also useful if the automatic selection module fails to detect the correct content.'
+  message: 'By <a data-href="faq23" target=_blank>selecting the actual content or part of it</a> before switching to the reader view, you can prevent unwanted content from cluttering your view. This is also useful if the automatic selection module fails to detect the correct content.'
 }, {
   message: 'This page contains remote images that the extension cannot fetch with the current permission set. If you need the extension to load these images, grant the extension to access remote content by enabling the "Open links in the reader view mode" from the options page.',
   hidden: true
@@ -35,8 +37,12 @@ tips.show = (i, forced = false) => {
     if (prefs['tip.' + i] !== 's' || forced) {
       const t = document.querySelector('#tips template');
       const clone = document.importNode(t.content, true);
-      clone.querySelector('span').textContent = tips[i].message;
 
+      const p = new DOMParser();
+      const d = p.parseFromString(tips[i].message, 'text/html');
+      for (const c of [...d.body.childNodes]) {
+        clone.querySelector('span').appendChild(c);
+      }
 
       clone.querySelector('input').addEventListener('click', e => {
         e.target.closest('div').remove();
@@ -51,6 +57,7 @@ tips.show = (i, forced = false) => {
       chrome.storage.local.set({
         ['tip.' + i]: 's'
       });
+      links();
     }
   });
 };

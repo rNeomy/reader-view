@@ -858,7 +858,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
             </div>
           </td>
         </tr>
-        <tr title="Represents the pitch value. It can range between 0 (lowest) and 2 (highest), with 1 being the default pitch for the current platform or voice.">
+        <tr style="display: none" title="Represents the pitch value. It can range between 0 (lowest) and 2 (highest), with 1 being the default pitch for the current platform or voice.">
           <td>Pitch</td>
           <td>
             <div>

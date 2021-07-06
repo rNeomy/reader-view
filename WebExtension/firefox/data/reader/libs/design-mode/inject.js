@@ -158,8 +158,8 @@
     top: 10px;
     right: 10px;
     width: 476px;
-    height: 38px;
-    border: none;
+    height: 60px;
+    border: solid 1px #c4c4c4;
   `;
   document.documentElement.appendChild(toolbar);
 }
