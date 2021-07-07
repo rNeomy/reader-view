@@ -153,7 +153,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       });
       this.audio.addEventListener('error', e => {
         console.warn('TTS Error', e);
-        this.emit('error', e.message || 'tts.js: Cannot decode this audio');
+        this.emit('error', e.message || 'tts.js: Cannot decode this audio. Please use another voice.');
         this.emit('status', 'error');
       });
     }
@@ -293,32 +293,37 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       super.create();
       this.audio.addEventListener('canplaythrough', async () => {
         const c = await caches.open(this.CACHE);
+        const add = async srcs => {
+          for (const src of srcs) {
+            try {
+              (await c.match(src)) || await c.add(src);
+            }
+            catch (e) {
+              console.warn('Failed to cache a request', e);
+            }
+          }
+        };
+
         // store next (part 1)
         const p1 = this[TEXT](this.offset + 1);
         if (p1 && typeof caches !== 'undefined') {
-          const srcs = [await super[SRC](p1)].flat();
           // only add src if it is not available
-          for (const src of srcs) {
-            (await c.match(src)) || await c.add(src);
-          }
+          const srcs = [await super[SRC](p1)].flat();
+          await add(srcs);
         }
         // store current
         const current = this[TEXT]();
         if (current && typeof caches !== 'undefined') {
-          const srcs = [await super[SRC](current)].flat();
           // only add src if it is not available
-          for (const src of srcs) {
-            (await c.match(src)) || await c.add(src);
-          }
+          const srcs = [await super[SRC](current)].flat();
+          await add(srcs);
         }
         // store next (part 2)
         const p2 = this[TEXT](this.offset + 2);
         if (p2 && typeof caches !== 'undefined') {
-          const srcs = [await super[SRC](p2)].flat();
           // only add src if it is not available
-          for (const src of srcs) {
-            (await c.match(src)) || await c.add(src);
-          }
+          const srcs = [await super[SRC](p2)].flat();
+          await add(srcs);
         }
       });
     }
@@ -883,15 +888,44 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       // voice
       const select = div.querySelector('select');
       const label = div.querySelector('label');
-      select.addEventListener('change', () => {
+      select.addEventListener('change', e => {
         const parts = select.value.split('/');
         [label.dataset.value, label.title] = parts;
-        localStorage.setItem('tts-selected', select.value);
-        if (this.instance) {
-          this.voice(select.selectedOptions[0].voice);
-          if ((speechSynthesis.speaking && speechSynthesis.paused === false) || this.audio) {
-            this.navigate(undefined, this.offset);
+
+        const next = () => {
+          localStorage.setItem('tts-selected', select.value);
+          if (this.instance) {
+            this.voice(select.selectedOptions[0].voice);
+            if ((speechSynthesis.speaking && speechSynthesis.paused === false) || this.audio) {
+              this.navigate(undefined, this.offset);
+            }
           }
+        };
+        const voice = select.selectedOptions[0].voice;
+        if (voice.permission && e.isTrusted) {
+          chrome.permissions.request({
+            origins: [voice.permission]
+          }, granted => {
+            if (granted) {
+              next();
+            }
+            else {
+              const alt = [...select.selectedOptions[0].parentElement.children]
+                .filter(e => e.voice && e.voice.localService).shift();
+              if (alt) {
+                alt.selected = true;
+                this.voice(alt.voice);
+                select.dispatchEvent(new Event('change'));
+                return;
+              }
+              else {
+                next();
+              }
+            }
+          });
+        }
+        else {
+          next();
         }
       });
       // controls
@@ -932,6 +966,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
           langs[lang] = langs[lang] || [];
           langs[lang].push(o);
         }
+
         for (const [lang, os] of Object.entries(langs).sort()) {
           const optgroup = document.createElement('optgroup');
           optgroup.label = lang;

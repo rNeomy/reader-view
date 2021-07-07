@@ -39,7 +39,7 @@
       args.delete('q');
       args.set('q', text);
 
-      return `https://translate.google.com/translate_tts?` + args.toString();
+      return this.permission + '?' + args.toString();
     });
   };
   const getVoices = speechSynthesis.getVoices;
@@ -103,7 +103,8 @@
         default: false,
         localService: false,
         voiceURI: 'custom',
-        build
+        build,
+        permission: 'https://translate.google.com/translate_tts'
       }))];
     }
     else {

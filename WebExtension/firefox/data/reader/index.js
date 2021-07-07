@@ -605,11 +605,13 @@ document.addEventListener('click', e => {
     // iframe.contentDocument.spellcheck = active ? 'false' : 'true';
 
     if (active === false) {
+      document.title = '[Design Mode]';
       const s = document.createElement('script');
       s.src = 'libs/design-mode/inject.js';
       document.body.appendChild(s);
     }
     else {
+      document.title = document.oTitle;
       [...document.querySelectorAll('.edit-toolbar')].forEach(e => {
         const a = e.contentDocument.querySelector('[data-command="close"]');
         a.dispatchEvent(new Event('click', {bubbles: true}));
@@ -629,7 +631,7 @@ const render = () => chrome.runtime.sendMessage({
   article = obj;
   document.dispatchEvent(new Event('article-ready'));
 
-  document.title = config.prefs.title.replace('[ORIGINAL]', article.title.replace(' :: Reader View', ''))
+  document.title = document.oTitle = config.prefs.title.replace('[ORIGINAL]', article.title.replace(' :: Reader View', ''))
     .replace('[BRAND]', 'Reader View');
 
   if (!article) { // open this page from history for instance

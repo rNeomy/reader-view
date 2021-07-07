@@ -1,7 +1,8 @@
 {
   "name": "Reader View",
-  "description": "Strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability",
-  "version": "0.4.9",
+  "description": "__MSG_description__",
+  "default_locale": "en",
+  "version": "0.5.0",
   "manifest_version": 2,
   "permissions": [
     "storage",
@@ -10,12 +11,12 @@
     "notifications",
     "declarativeContent",
     "chrome://favicon/",
-    "https://text-to-speech-demo.ng.bluemix.net/api/*",
-    "https://translate.google.com/"
+    "https://text-to-speech-demo.ng.bluemix.net/api/*"
   ],
   "optional_permissions": [
     "*://*/*",
-    "webNavigation"
+    "webNavigation",
+    "https://translate.google.com/"
   ],
   "background": {
     "persistent": false,

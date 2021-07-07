@@ -34,10 +34,10 @@ if (typeof config === 'undefined') {
   window.config = config;
   config.prefs = {
     'embedded': false,
-    'font-size': 13,
+    'font-size': 15,
     'font': 'sans-serif',
     'width': 600,
-    'line-height': 0,
+    'line-height': 32,
     'reader-mode': false,
     'show-icon': true,
     'title': '[ORIGINAL] :: [BRAND]',
