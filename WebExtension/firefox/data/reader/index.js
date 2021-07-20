@@ -404,12 +404,32 @@ Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion
   document.getElementById('toolbar').appendChild(span);
 }
 
+/* note */
+{
+  const span = document.createElement('span');
+  span.title = 'Add a new persistent sticky note (command)';
+  span.classList.add('icon-note', 'hidden');
+  span.id = 'note-button';
+
+  span.onclick = () => {
+    document.dispatchEvent(new Event('add-note'));
+  };
+  shortcuts.push({
+    id: 'note',
+    action: span.onclick,
+    span
+  });
+  document.getElementById('toolbar').appendChild(span);
+}
+
 /* highlight */
 {
   const span = document.createElement('span');
   span.classList.add('hidden', 'icon-highlight');
   span.id = 'highlight-button';
-  span.title = `Toggle highlight (command)`;
+  span.title = `Toggle highlight (command)
+
+These highlights are persistent until the browser restart`;
   span.dataset.cmd = 'toggle-highlight';
   span.dataset.disabled = true;
   shortcuts.push({
@@ -628,6 +648,11 @@ document.getElementById('toolbar').addEventListener('transitionend', e => {
 const render = () => chrome.runtime.sendMessage({
   cmd: 'read-data'
 }, async obj => {
+  if (obj === false) {
+    alert('Reader view is not available any more. Please try again');
+    document.querySelector('[data-cmd=close]').click();
+  }
+
   article = obj;
   document.dispatchEvent(new Event('article-ready'));
 
@@ -728,8 +753,8 @@ const render = () => chrome.runtime.sendMessage({
       if (config.prefs.guide) {
         guide.classList.remove('hidden');
       }
-      window.clearTimeout(guide.timeout);
-      guide.timeout = window.setTimeout(() => guide.classList.add('hidden'), config.prefs['guide-timeout']);
+      clearTimeout(guide.timeout);
+      guide.timeout = setTimeout(() => guide.classList.add('hidden'), config.prefs['guide-timeout']);
     };
     const scroll = () => {
       const {scrollHeight, clientHeight, scrollTop} = iframe.contentDocument.documentElement;
@@ -868,6 +893,9 @@ config.load(() => {
   document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
   if (config.prefs['printing-button']) {
     document.getElementById('printing-button').classList.remove('hidden');
+  }
+  if (config.prefs['note-button']) {
+    document.getElementById('note-button').classList.remove('hidden');
   }
   if (config.prefs['mail-button']) {
     document.getElementById('mail-button').classList.remove('hidden');

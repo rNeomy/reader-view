@@ -187,8 +187,7 @@ const onUpdated = (tabId, info, tab) => {
 };
 onUpdated.cache = {};
 const cache = {};
-const highlights = {};
-window.highlights = highlights;
+
 chrome.tabs.onRemoved.addListener(tabId => delete cache[tabId]);
 
 const onMessage = (request, sender, response) => {
@@ -208,16 +207,26 @@ const onMessage = (request, sender, response) => {
     notify(request.msg);
   }
   else if (request.cmd === 'read-data') {
-    cache[id].highlights = highlights[cache[id].url];
-    response(cache[id]);
-    chrome.pageAction.show(id, () => chrome.pageAction.setIcon({
-      tabId: id,
-      path: {
-        16: 'data/icons/blue/16.png',
-        32: 'data/icons/blue/32.png',
-        48: 'data/icons/blue/48.png'
+    chrome.storage.local.get({
+      'highlights-objects': {}
+    }, prefs => {
+      try {
+        cache[id].highlights = prefs['highlights-objects'][cache[id].url.split('#')[0]];
+        response(cache[id]);
       }
-    }));
+      catch (e) {
+        response(false);
+      }
+      chrome.pageAction.show(id, () => chrome.pageAction.setIcon({
+        tabId: id,
+        path: {
+          16: 'data/icons/blue/16.png',
+          32: 'data/icons/blue/32.png',
+          48: 'data/icons/blue/48.png'
+        }
+      }));
+    });
+    return true;
   }
   else if (request.cmd === 'open') {
     if (request.current) {
@@ -247,6 +256,7 @@ const onMessage = (request, sender, response) => {
   }
   else if (request.cmd === 'highlights') {
     config.load(() => {
+      const highlights = config.prefs['highlights-objects'];
       if (request.value.length && config.prefs['cache-highlights']) {
         highlights[request.href] = request.value;
         config.prefs['highlights-keys'].unshift(request.href);
@@ -279,19 +289,10 @@ const onMessage = (request, sender, response) => {
 window.onMessage = onMessage;
 chrome.runtime.onMessage.addListener(onMessage);
 
-// restore highlights
-{
-  const startup = () => config.load(() => Object.assign(highlights, config.prefs['highlights-objects']));
-  chrome.runtime.onStartup.addListener(startup);
-}
-
 // on change
 config.onChanged.push(prefs => {
   if (prefs['cache-highlights']) {
     if (prefs['cache-highlights'].newValue === false) {
-      for (const key of Object.keys(highlights)) {
-        delete highlights[key];
-      }
       chrome.storage.local.set({
         'highlights-keys': [],
         'highlights-objects': {}

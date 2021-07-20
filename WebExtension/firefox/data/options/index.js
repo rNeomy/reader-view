@@ -123,6 +123,7 @@ function save() {
     'context-switch-to-reader-view': document.getElementById('context-switch-to-reader-view').checked,
 
     'printing-button': document.getElementById('printing-button').checked,
+    'note-button': document.getElementById('note-button').checked,
     'mail-button': document.getElementById('mail-button').checked,
     'save-button': document.getElementById('save-button').checked,
     'fullscreen-button': document.getElementById('fullscreen-button').checked,
@@ -152,6 +153,7 @@ function restore() {
   document.getElementById('user-action').value = JSON.stringify(config.prefs['user-action'], null, '  ');
 
   document.getElementById('printing-button').checked = config.prefs['printing-button'];
+  document.getElementById('note-button').checked = config.prefs['note-button'];
   document.getElementById('mail-button').checked = config.prefs['mail-button'];
   document.getElementById('save-button').checked = config.prefs['save-button'];
   document.getElementById('fullscreen-button').checked = config.prefs['fullscreen-button'];
@@ -289,6 +291,59 @@ document.getElementById('import-highlights').addEventListener('click', () => {
               highlights: json[href]
             });
           }
+        });
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+  };
+  input.click();
+});
+
+document.getElementById('export-notes').addEventListener('click', () => {
+  const cache = {};
+  chrome.storage.local.get(null, prefs => {
+    for (const [key, value] of Object.entries(prefs)) {
+      if (key.startsWith('notes:')) {
+        cache[key] = value;
+      }
+    }
+    const blob = new Blob([
+      JSON.stringify(cache, null, '  ')
+    ], {type: 'application/json'});
+    const href = URL.createObjectURL(blob);
+    Object.assign(document.createElement('a'), {
+      href,
+      type: 'application/json',
+      download: 'reader-view-notes.json'
+    }).dispatchEvent(new MouseEvent('click'));
+    setTimeout(() => URL.revokeObjectURL(href));
+  });
+});
+document.getElementById('import-notes').addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.style.display = 'none';
+  input.type = 'file';
+  input.accept = '.json';
+  input.acceptCharset = 'utf-8';
+
+  document.body.appendChild(input);
+  input.initialValue = input.value;
+  input.onchange = () => {
+    if (input.value !== input.initialValue) {
+      const file = input.files[0];
+      if (file.size > 100e6) {
+        console.warn('100MB backup? I don\'t believe you.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = event => {
+        input.remove();
+        const json = JSON.parse(event.target.result);
+        chrome.storage.local.get(null, prefs => {
+          for (const [key, value] of Object.entries(json)) {
+            prefs[key] = Object.assign(prefs[key] || {}, value);
+          }
+          chrome.storage.local.set(prefs);
         });
       };
       reader.readAsText(file, 'utf-8');
