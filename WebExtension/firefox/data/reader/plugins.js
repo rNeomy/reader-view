@@ -2,7 +2,8 @@
 chrome.storage.local.get({
   './plugins/tip/core.js': true,
   './plugins/doi/core.js': true,
-  './plugins/note/core.js': true
+  './plugins/note/core.js': true,
+  './plugins/notify/core.js': true
 }, prefs => {
   if (prefs['./plugins/tip/core.js']) {
     import('./plugins/tip/core.js').then(o => o.enable());
@@ -12,6 +13,10 @@ chrome.storage.local.get({
   }
   if (prefs['./plugins/note/core.js']) {
     import('./plugins/note/core.js').then(o => o.enable());
+  }
+  if (prefs['./plugins/notify/core.js']) {
+    console.log(11);
+    import('./plugins/notify/core.js').then(o => o.enable());
   }
 });
 chrome.storage.onChanged.addListener(ps => {
@@ -23,7 +28,9 @@ chrome.storage.onChanged.addListener(ps => {
     import('./plugins/doi/core.js').then(o => o[ps['./plugins/doi/core.js'].newValue ? 'enable' : 'disable']());
   }
   if ('./plugins/note/core.js' in ps) {
-    console.log(11);
     import('./plugins/note/core.js').then(o => o[ps['./plugins/note/core.js'].newValue ? 'enable' : 'disable']());
+  }
+  if ('./plugins/note/notify.js' in ps) {
+    import('./plugins/note/notify.js').then(o => o[ps['./plugins/note/notify.js'].newValue ? 'enable' : 'disable']());
   }
 });

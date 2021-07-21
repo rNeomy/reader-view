@@ -46,7 +46,13 @@ const hash = link => {
 window.hash = hash;
 
 const nav = {
-  back() {
+  back(forced = false) {
+    const now = Date.now();
+    if (forced === false && (!nav.timeout || (now - nav.timeout > 2000))) {
+      nav.timeout = now;
+      return window.notify('Press ESC again to exit', undefined, 2000);
+    }
+
     chrome.runtime.sendMessage({
       'cmd': 'go-back'
     });
@@ -569,7 +575,7 @@ document.addEventListener('click', e => {
     });
   }
   else if (cmd === 'close') {
-    nav.back();
+    nav.back(true);
   }
   else if (cmd === 'close-speech') {
     document.body.dataset.speech = false;
