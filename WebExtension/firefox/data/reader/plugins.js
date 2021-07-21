@@ -15,7 +15,6 @@ chrome.storage.local.get({
     import('./plugins/note/core.js').then(o => o.enable());
   }
   if (prefs['./plugins/notify/core.js']) {
-    console.log(11);
     import('./plugins/notify/core.js').then(o => o.enable());
   }
 });

@@ -236,10 +236,14 @@ document.getElementById('ref-3').onclick = () => chrome.tabs.create({
 });
 
 document.getElementById('export-highlights').addEventListener('click', () => {
-  chrome.runtime.getBackgroundPage(bg => {
+  chrome.storage.local.get({
+    'highlights-objects': {}
+  }, prefs => {
     const blob = new Blob([
-      JSON.stringify(bg.highlights, null, '  ')
-    ], {type: 'application/json'});
+      JSON.stringify(prefs['highlights-objects'], null, '  ')
+    ], {
+      type: 'application/json'
+    });
     const href = URL.createObjectURL(blob);
     Object.assign(document.createElement('a'), {
       href,
@@ -278,19 +282,25 @@ document.getElementById('import-highlights').addEventListener('click', () => {
       reader.onloadend = event => {
         input.remove();
         const json = JSON.parse(event.target.result);
-        chrome.runtime.getBackgroundPage(bg => {
+        chrome.storage.local.get({
+          'highlights-objects': {},
+          'highlights-keys': []
+        }, prefs => {
           for (const href of Object.keys(json)) {
-            bg.onMessage({
-              cmd: 'highlights',
-              value: [...(bg.highlights[href] || []), ...json[href]],
-              href
-            }, {tab: {}});
+            prefs['highlights-keys'].push(href);
+            prefs['highlights-objects'][href] = prefs['highlights-objects'][href] || [];
+            prefs['highlights-objects'][href].push(...json[href]);
+
             chrome.runtime.sendMessage({
               cmd: 'append-highlights',
               href,
               highlights: json[href]
             });
           }
+          prefs['highlights-keys'] = prefs['highlights-keys'].filter((s, i, l) => {
+            return s && l.indexOf(s) === i;
+          });
+          chrome.storage.local.set(prefs);
         });
       };
       reader.readAsText(file, 'utf-8');
@@ -309,7 +319,9 @@ document.getElementById('export-notes').addEventListener('click', () => {
     }
     const blob = new Blob([
       JSON.stringify(cache, null, '  ')
-    ], {type: 'application/json'});
+    ], {
+      type: 'application/json'
+    });
     const href = URL.createObjectURL(blob);
     Object.assign(document.createElement('a'), {
       href,

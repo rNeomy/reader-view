@@ -24,9 +24,9 @@ function enable() {
   container = document.createElement('div');
   container.classList.add('notify');
   document.body.appendChild(container);
-  window.notify = (message, type = 'info', delay = 3000) => {
+  window.notify = (e, type = 'info', delay = 3000) => {
     const div = document.createElement('div');
-    div.textContent = message;
+    div.textContent = e.message || e;
     div.classList.add(type);
     container.appendChild(div);
     setTimeout(() => div.remove(), delay);

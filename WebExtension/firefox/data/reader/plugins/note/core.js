@@ -31,13 +31,15 @@ const BG = [
 ];
 
 const add = (id, {content, style, box}, active = false) => {
+  const doc = iframe.contentDocument;
+
   style = style || {
     color: '#2c2c2d',
     background: BG[Math.floor(BG.length * Math.random())]
   };
   box = box || {
     left: Math.round(400 + (Math.random() - 0.5) * 300),
-    top: Math.round(400 + (Math.random() - 0.5) * 300),
+    top: doc.documentElement.scrollTop + Math.round(400 + (Math.random() - 0.5) * 300),
     width: 300,
     height: 300
   };
@@ -70,15 +72,14 @@ const add = (id, {content, style, box}, active = false) => {
   };
   tick.active = true;
 
-  const doc = iframe.contentDocument;
   const textarea = doc.createElement('textarea');
+  textarea.classList.add('note');
   textarea.title = textarea.placeholder = `Instruction:
 
 
 Delete: Press "ESC" when note is focused
 Color: Press "Alt + Number" or "Option + Number"
 `;
-  textarea.classList.add('note');
   textarea.style = `
     color: ${style.color};
     background-color: ${style.background};

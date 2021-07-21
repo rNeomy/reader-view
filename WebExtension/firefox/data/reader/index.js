@@ -203,7 +203,9 @@ shortcuts.render = () => {
       // remove transition
       .replace(/transition:.*/, '')
       // add title
-      .replace('<head>', '<head><title>' + document.title + '</title>');
+      .replace('<head>', '<head><title>' + document.title + '</title>')
+      // remove sticky notes
+      .replace(/textarea class="note"/g, 'textarea class="hidden note"');
     const blob = new Blob([content], {
       type: 'text/html'
     });
@@ -231,7 +233,7 @@ shortcuts.render = () => {
   span.id = 'fullscreen-button';
   span.onclick = () => {
     if (iframe.requestFullscreen) {
-      iframe.requestFullscreen();
+      iframe.requestFullscreen().catch(e => window.notify(e));
     }
     else if (iframe.mozRequestFullScreen) {
       iframe.mozRequestFullScreen();
@@ -808,6 +810,13 @@ const render = () => chrome.runtime.sendMessage({
   iframe.contentDocument.addEventListener('selectionchange', () => {
     const s = iframe.contentDocument.getSelection();
     const active = s.toString().trim() !== '';
+    try {
+      if (iframe.contentDocument.activeElement.classList.contains('note')) {
+        document.getElementById('highlight-button').dataset.disabled = true;
+        return;
+      }
+    }
+    catch (e) {}
     document.getElementById('highlight-button').dataset.disabled = active === false;
   });
   // close on escape
@@ -819,7 +828,14 @@ const render = () => chrome.runtime.sendMessage({
         document.webkitFullscreenElement ||
         document.msFullscreenElement)
       ) {
-        nav.back();
+        return nav.back();
+      }
+      if (e.code === 'KeyJ' && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+        iframe.contentDocument.body.focus();
+        iframe.contentDocument.body.click();
+
+        e.preventDefault();
+        return;
       }
 
       shortcuts.forEach(o => {
