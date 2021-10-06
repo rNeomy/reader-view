@@ -147,7 +147,7 @@ shortcuts.render = () => {
 /* printing */
 {
   const span = document.createElement('span');
-  span.title = 'Print in the Reader View (command)';
+  span.title = chrome.i18n.getMessage('rd_printing');
   span.classList.add('icon-print', 'hidden');
   span.id = 'printing-button';
 
@@ -159,10 +159,39 @@ shortcuts.render = () => {
   });
   document.getElementById('toolbar').appendChild(span);
 }
+
+/* screenshot */
+{
+  const span = document.createElement('span');
+  span.title = chrome.i18n.getMessage('rd_screenshot');
+  span.classList.add('icon-screenshot', 'hidden');
+  span.id = 'screenshot-button';
+
+  span.onclick = () => {
+    chrome.tabs.captureVisibleTab(href => {
+      const lastError = chrome.runtime.lastError;
+      if (href) {
+        const a = document.createElement('a');
+        a.href = href;
+        a.download = document.oTitle;
+        a.click();
+      }
+      else {
+        alert('Cannot capture the view: ' + lastError?.message);
+      }
+    });
+  };
+  shortcuts.push({
+    id: 'screenshot',
+    action: span.onclick,
+    span
+  });
+  document.getElementById('toolbar').appendChild(span);
+}
 /* email */
 {
   const span = document.createElement('span');
-  span.title = 'Email Content (command)';
+  span.title = chrome.i18n.getMessage('rd_email');
   span.classList.add('icon-mail', 'hidden');
   span.id = 'mail-button';
 
@@ -193,7 +222,7 @@ shortcuts.render = () => {
 /* save as HTML*/
 {
   const span = document.createElement('span');
-  span.title = 'Save in HTML format (command)';
+  span.title = chrome.i18n.getMessage('rd_save');
   span.classList.add('icon-save', 'hidden');
   span.id = 'save-button';
   span.onclick = () => {
@@ -228,7 +257,7 @@ shortcuts.render = () => {
 /* fullscreen */
 {
   const span = document.createElement('span');
-  span.title = 'Switch to the fullscreen reading (command)';
+  span.title = chrome.i18n.getMessage('rd_fullscreen');
   span.classList.add('icon-fullscreen', 'hidden');
   span.id = 'fullscreen-button';
   span.onclick = () => {
@@ -257,13 +286,7 @@ shortcuts.render = () => {
   const span = document.createElement('span');
   span.classList.add('hidden', 'icon-design');
   span.id = 'design-mode-button';
-  span.title = `Toggle design mode (command)
-
-When active, you can edit the document or delete elements like MS word
-
-Ctrl/Command + B: Toggles bold on/off for the selection or at the insertion point.
-Ctrl/Command + I: Toggles italics on/off for the selection or at the insertion point.
-Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion point.`;
+  span.title = chrome.i18n.getMessage('rd_design');
   span.dataset.cmd = 'toggle-design-mode';
   shortcuts.push({
     id: 'design-mode',
@@ -277,7 +300,7 @@ Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion
 /* speech */
 {
   const span = document.createElement('span');
-  span.title = 'Read this Article (command)\nTo start from middle, select starting word, then press this button';
+  span.title = chrome.i18n.getMessage('rd_speech');
   span.classList.add('icon-speech', 'hidden');
   span.id = 'speech-button';
   span.onclick = async () => {
@@ -398,7 +421,7 @@ Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion
   const span = document.createElement('span');
   span.classList.add('hidden');
   span.id = 'images-button';
-  span.title = 'Toggle images (command)';
+  span.title = chrome.i18n.getMessage('rd_images');
   span.dataset.cmd = 'open-image-utils';
   shortcuts.push({
     id: 'images',
@@ -415,7 +438,7 @@ Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion
 /* note */
 {
   const span = document.createElement('span');
-  span.title = 'Add a new persistent sticky note (command)';
+  span.title = chrome.i18n.getMessage('rd_note');
   span.classList.add('icon-note', 'hidden');
   span.id = 'note-button';
 
@@ -435,9 +458,7 @@ Ctrl/Command + U: Toggles underline on/off for the selection or at the insertion
   const span = document.createElement('span');
   span.classList.add('hidden', 'icon-highlight');
   span.id = 'highlight-button';
-  span.title = `Toggle highlight (command)
-
-These highlights are persistent until the browser restart`;
+  span.title = chrome.i18n.getMessage('rd_highlight');
   span.dataset.cmd = 'toggle-highlight';
   span.dataset.disabled = true;
   shortcuts.push({
@@ -657,7 +678,7 @@ const render = () => chrome.runtime.sendMessage({
   cmd: 'read-data'
 }, async obj => {
   if (obj === false) {
-    alert('Reader view is not available any more. Please try again');
+    alert(chrome.i18n.getMessage('rd_warning_1'));
     document.querySelector('[data-cmd=close]').click();
   }
 
@@ -915,6 +936,9 @@ config.load(() => {
   document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
   if (config.prefs['printing-button']) {
     document.getElementById('printing-button').classList.remove('hidden');
+  }
+  if (config.prefs['screenshot-button']) {
+    document.getElementById('screenshot-button').classList.remove('hidden');
   }
   if (config.prefs['note-button']) {
     document.getElementById('note-button').classList.remove('hidden');

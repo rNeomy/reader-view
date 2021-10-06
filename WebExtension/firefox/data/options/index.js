@@ -123,6 +123,7 @@ function save() {
     'context-switch-to-reader-view': document.getElementById('context-switch-to-reader-view').checked,
 
     'printing-button': document.getElementById('printing-button').checked,
+    'screenshot-button': document.getElementById('screenshot-button').checked,
     'note-button': document.getElementById('note-button').checked,
     'mail-button': document.getElementById('mail-button').checked,
     'save-button': document.getElementById('save-button').checked,
@@ -153,6 +154,7 @@ function restore() {
   document.getElementById('user-action').value = JSON.stringify(config.prefs['user-action'], null, '  ');
 
   document.getElementById('printing-button').checked = config.prefs['printing-button'];
+  document.getElementById('screenshot-button').checked = config.prefs['screenshot-button'];
   document.getElementById('note-button').checked = config.prefs['note-button'];
   document.getElementById('mail-button').checked = config.prefs['mail-button'];
   document.getElementById('save-button').checked = config.prefs['save-button'];

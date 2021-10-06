@@ -1,5 +1,53 @@
 {
   "description": {
     "message": "Strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability"
+  },
+  "rd_printing": {
+    "message": "Print in the Reader View (command)"
+  },
+  "rd_screenshot": {
+    "message": "Take a screenshot from the current view (command)"
+  },
+  "rd_email": {
+    "message": "Email the content (command)"
+  },
+  "rd_save": {
+    "message": "Save a copy in HTML format (command)"
+  },
+  "rd_fullscreen": {
+    "message": "Switch to the fullscreen reading (command)"
+  },
+  "rd_design": {
+    "message": "Toggle design mode (command)\n\nWhen active, you can edit the document or delete elements like MS word\n\nCtrl/Command + B: Toggles bold on/off for the selection or at the insertion point.\nCtrl/Command + I: Toggles italics on/off for the selection or at the insertion point.\nCtrl/Command + U: Toggles underline on/off for the selection or at the insertion point."
+  },
+  "rd_speech": {
+    "message": "Read this Article (command)\nTo start from middle, select starting word, then press this button"
+  },
+  "rd_images": {
+    "message": "Toggle images (command)"
+  },
+  "rd_note": {
+    "message": "Add a new persistent sticky note (command)"
+  },
+  "rd_highlight": {
+    "message": "Toggle highlight (command)\n\nThese highlights are persistent until the browser restart"
+  },
+  "rd_warning_1": {
+    "message": "Reader view is not available anymore. Go back to the original page and switch to the reader view one more time!"
+  },
+  "bg_simple_mode": {
+    "message": "Open in Simple Mode"
+  },
+  "bg_reader_view": {
+    "message": "Open in Reader View"
+  },
+  "bg_inactive_reader_view": {
+    "message": "Open in background Reader View"
+  },
+  "bg_switch_reader": {
+    "message": "Switch to Reader View"
+  },
+  "bg_warning_1": {
+    "message": "Sorry, this page cannot be converted!"
   }
 }

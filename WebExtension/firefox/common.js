@@ -92,13 +92,13 @@ chrome.pageAction.onClicked.addListener(onClicked);
 const menus = () => config.load(() => {
   chrome.contextMenus.create({
     id: 'open-in-embedded-reader-view',
-    title: 'Open in Simple Mode',
+    title: chrome.i18n.getMessage('bg_simple_mode'),
     contexts: ['page_action']
   }, () => chrome.runtime.lastError);
   if (config.prefs['context-open-in-reader-view']) {
     chrome.contextMenus.create({
       id: 'open-in-reader-view',
-      title: 'Open in Reader View',
+      title: chrome.i18n.getMessage('bg_reader_view'),
       contexts: ['link']
     }, () => chrome.runtime.lastError);
   }
@@ -108,7 +108,7 @@ const menus = () => config.load(() => {
   if (config.prefs['context-open-in-reader-view-bg']) {
     chrome.contextMenus.create({
       id: 'open-in-reader-view-bg',
-      title: 'Open in background Reader View',
+      title: chrome.i18n.getMessage('bg_inactive_reader_view'),
       contexts: ['link']
     }, () => chrome.runtime.lastError);
   }
@@ -118,7 +118,7 @@ const menus = () => config.load(() => {
   if (config.prefs['context-switch-to-reader-view']) {
     chrome.contextMenus.create({
       id: 'switch-to-reader-view',
-      title: 'Switch to Reader View',
+      title: chrome.i18n.getMessage('bg_switch_reader'),
       contexts: ['page'],
       documentUrlPatterns: ['*://*/*']
     }, () => chrome.runtime.lastError);
@@ -201,7 +201,7 @@ const onMessage = (request, sender, response) => {
     });
   }
   else if (request.cmd === 'open-reader') {
-    notify('Sorry, this page cannot be converted!');
+    notify(chrome.i18n.getMessage('bg_warning_1'));
   }
   else if (request.cmd === 'notify') {
     notify(request.msg);
