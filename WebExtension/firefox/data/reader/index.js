@@ -72,10 +72,12 @@ const update = {
     if (prefs['line-height']) {
       lh = (prefs['font-size'] * (prefs['line-height'] === 32 ? 1.5 : 1.2)).toFixed(1) + 'px';
     }
+    console.log(prefs);
     styles.internals.textContent = `body {
       font-size:  ${prefs['font-size']}px;
       font-family: ${getFont(prefs.font)};
       width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
+      text-align: ${prefs['text-align'] ? 'justify' : 'initial'}
     }
     .page {
       line-height: ${lh};
@@ -587,6 +589,11 @@ document.addEventListener('click', e => {
       'line-height': cmd === 'line-height-type-1' ? 28.8 : 32
     });
   }
+  else if (cmd === 'text-align-true' || cmd === 'text-align-false') {
+    chrome.storage.local.set({
+      'text-align': cmd === 'text-align-true'
+    });
+  }
   else if (cmd === 'no-height') {
     chrome.storage.local.set({
       'line-height': e.target.parentElement.querySelector('input').checked ? 28.8 : 0
@@ -916,7 +923,7 @@ config.onChanged.push(ps => {
   if (ps['top-css']) {
     styles.top.textContent = config.prefs['top-css'];
   }
-  if (ps['font-size'] || ps['font'] || ps['line-height'] || ps['width']) {
+  if (ps['font-size'] || ps['font'] || ps['line-height'] || ps['width'] || ps['text-align']) {
     update.async();
   }
   if (ps['show-images']) {

@@ -38,6 +38,7 @@ if (typeof config === 'undefined') {
     'font': 'sans-serif',
     'width': 600,
     'line-height': 32,
+    'text-align': true,
     'reader-mode': false,
     'show-icon': true,
     'title': '[ORIGINAL] :: [BRAND]',

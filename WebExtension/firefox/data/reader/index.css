@@ -242,10 +242,14 @@ body[data-toolbar=false] #toolbar {
 #toolbar [data-id="full-width"] input {
   display: none;
 }
+#toolbar [data-id="text-align"] label,
 #toolbar [data-id="no-height"] label,
 #toolbar [data-id="full-width"] label {
   pointer-events: none;
   font-size: 14px;
+}
+#toolbar [data-cmd="text-align"] {
+  cursor: default !important;
 }
 #toolbar [data-id="no-height"] input:checked ~ label,
 #toolbar [data-id="full-width"] input:checked ~ label {
