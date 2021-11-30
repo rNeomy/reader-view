@@ -72,7 +72,6 @@ const update = {
     if (prefs['line-height']) {
       lh = (prefs['font-size'] * (prefs['line-height'] === 32 ? 1.5 : 1.2)).toFixed(1) + 'px';
     }
-    console.log(prefs);
     styles.internals.textContent = `body {
       font-size:  ${prefs['font-size']}px;
       font-family: ${getFont(prefs.font)};
@@ -506,12 +505,19 @@ shortcuts.render = () => {
         span.appendChild(img);
         document.getElementById('toolbar').appendChild(span);
         span.onclick = () => {
-          const s = document.createElement('script');
-          const b = new Blob([action.code]);
-          s.src = URL.createObjectURL(b);
-          iframe.contentDocument.body.appendChild(s);
-          URL.revokeObjectURL(s.src);
-          s.remove();
+          if (/Firefox/.test(navigator.userAgent)) {
+            chrome.tabs.executeScript({
+              code: action.code
+            });
+          }
+          else {
+            const s = document.createElement('script');
+            const b = new Blob([action.code]);
+            s.src = URL.createObjectURL(b);
+            iframe.contentDocument.body.appendChild(s);
+            URL.revokeObjectURL(s.src);
+            s.remove();
+          }
         };
         if (action.shortcut) {
           const id = 'ua-' + index;
@@ -867,7 +873,7 @@ const render = () => chrome.runtime.sendMessage({
       }
 
       shortcuts.forEach(o => {
-        const s = config.prefs.shortcuts[o.id];
+        const s = config.prefs.shortcuts[o.id] || '';
         if (s.indexOf(e.code) === -1) {
           return;
         }
