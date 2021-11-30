@@ -199,7 +199,7 @@ try {
           .replace('%solarized-light-bg%', '#fdf6e3')
           .replace('%groove-dark-color%', '#cec4ac')
           .replace('%groove-dark-bg%', '#282828')
-          .replace('%solarized-dark-color%', '#93a1a1')
+          .replace('%solarized-dark-color%', '#839496')
           .replace('%solarized-dark-bg%', '#002b36')
           .replace('%content%', article.content)
           .replace('%title%', article.title || 'Unknown Title')
