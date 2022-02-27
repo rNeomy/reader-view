@@ -12,7 +12,7 @@
     "message": "Email the content (command)"
   },
   "rd_save": {
-    "message": "Save a copy in HTML format (command)"
+    "message": "Save a copy in HTML format (command)\nUse Alt key to exclude notes"
   },
   "rd_fullscreen": {
     "message": "Switch to the fullscreen reading (command)"

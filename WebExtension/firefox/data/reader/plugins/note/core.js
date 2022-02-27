@@ -122,14 +122,18 @@ Color: Press "Alt + Number" or "Option + Number"
     }
   };
 
-  textarea.onmousedown = e => {
-    if ((box.width - e.layerX < 10) && (box.height - e.layerY < 10)) {
+  textarea.onmousedown = ed => {
+    if ((box.width - ed.layerX < 10) && (box.height - ed.layerY < 10)) {
       return; // resize
     }
+    const dx = ed.clientX - box.left;
+    const dy = ed.clientY - box.top;
+
+    const padding = doc.body.getBoundingClientRect().left;
 
     const move = e => {
-      box.left = Math.max(0, box.left + e.movementX);
-      box.top = Math.max(0, box.top + e.movementY);
+      box.left = Math.min(Math.max(-padding, e.clientX - dx), doc.body.offsetWidth - box.width + padding);
+      box.top = Math.max(0, e.clientY - dy);
       textarea.style.left = box.left + 'px';
       textarea.style.top = box.top + 'px';
       tick();
@@ -160,19 +164,27 @@ const observe = () => {
   }, true);
 };
 
-function enable() {
-  iframe.addEventListener('load', () => {
-    chrome.storage.local.get({
-      [key]: {}
-    }, prefs => {
-      for (const [id, note] of Object.entries(prefs[key])) {
-        add(id, note);
-      }
-    });
+const next = () => {
+  chrome.storage.local.get({
+    [key]: {}
+  }, prefs => {
+    for (const [id, note] of Object.entries(prefs[key])) {
+      add(id, note);
+    }
   });
-  document.addEventListener('add-note', observe);
+};
 
+function enable() {
+  document.addEventListener('add-note', observe);
   const s = document.createElement('script');
+  s.onload = () => {
+    if (iframe.contentDocument) {
+      next();
+    }
+    else {
+      iframe.addEventListener('load', next);
+    }
+  };
   s.src = '/data/reader/plugins/note/behave.js';
   document.body.appendChild(s);
 }

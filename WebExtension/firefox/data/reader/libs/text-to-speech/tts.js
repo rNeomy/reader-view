@@ -470,91 +470,56 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       box.classList.add('tts-box', 'hidden');
       doc.body.appendChild(box);
 
-      const range = new Range();
-      const word = document.createElement('div');
-      word.classList.add('tts-word', 'hidden');
-      doc.body.appendChild(word);
-
-      const extract = es => {
-        let n;
-        const a = [];
-        for (const e of es) {
-          const walk = document.createTreeWalker(e, NodeFilter.SHOW_TEXT, null, false);
-          while (n = walk.nextNode()) {
-            a.push(n);
-          }
+      const find = (word, offset, target) => {
+        const range = new Range();
+        range.setStart(target.firstChild, 0);
+        range.setEnd(target.firstChild, 0);
+        const s = this.doc.defaultView.getSelection();
+        s.removeAllRanges();
+        s.addRange(range);
+        for (let n = 0; n < offset; n += 1) {
+          s.modify('move', 'forward', 'character');
         }
-        return a;
+        for (let n = 0; n < word.length; n += 1) {
+          s.modify('extend', 'forward', 'character');
+        }
       };
       {
         let offset = 0;
-        let padding = 0;
         this.on('instance-boundary', e => {
           if (e.name === 'word') {
-            const search = e.target.text.substr(e.charIndex, e.charLength);
-            if (search.length < 2) { // to prevent SEPARATOR search
+            const word = e.target.text.slice(e.charIndex, e.charIndex + e.charLength);
+            if (word === this.SEPARATOR.trim()) {
               return;
             }
             const section = this.sections[this.offset];
             const target = section.target || section;
             const targets = section.targets || [target];
-            const nodes = extract(targets);
-            const r = new Range();
-            r.setStart(nodes[0], 0);
-            for (let index = offset; index < nodes.length; index += 1) {
-              const node = nodes[index];
-              r.setEnd(node, node.nodeValue.length);
-              if (section.offset && section.offset > r.toString().length) {
-                continue;
-              }
-              let p = 0;
-              if (index === offset && padding === 0 && section.offset) {
-                p = section.offset;
-              }
-              else if (index === offset) {
-                p = padding;
-              }
-              const start = node.nodeValue.indexOf(search, p);
-              if (start !== -1) {
-                padding = start + search.length;
-                offset = index;
-                range.setStart(node, start);
-                range.setEnd(node, start + e.charLength);
-                const rect = [...range.getClientRects()].pop();
-                word.style.left = rect.x + 'px';
-                word.style.top = (doc.documentElement.scrollTop + rect.y + rect.height) + 'px';
-                word.style.width = rect.width + 'px';
 
-                // make sure the line is visible
-                if (
-                  (word.offsetTop < doc.documentElement.scrollTop) ||
-                  (word.offsetTop > doc.documentElement.scrollTop + doc.documentElement.clientHeight)
-                ) {
-                  word.scrollIntoView({
-                    block: options.scroll,
-                    inline: 'nearest'
-                  });
-                  if (options.scroll === 'start') {
-                    doc.documentElement.scrollTop -= 64;
-                  }
-                }
+            let o = 0;
+            for (const target of targets) {
+              const content = target.innerText;
 
+              const p = content.indexOf(word, offset);
+
+              if (p !== -1) {
+                offset = p + o + 1;
+
+                find(word, p, target);
                 break;
               }
+              o += content.length;
             }
           }
         });
         this.on('section', () => {
-          offset = 0;
-          padding = 0;
+          offset = this.sections[this.offset].offset;
         });
         this.on('instance-start', () => {
           offset = 0;
-          padding = 0;
         });
         this.on('instance-resume', () => {
           offset = 0;
-          padding = 0;
         });
       }
 
@@ -563,18 +528,19 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
         return rect.top >= 0 &&
                rect.bottom <= (this.doc.defaultView.innerHeight || this.doc.documentElement.clientHeight);
       };
+
       this.on('section', n => {
         const section = this.sections[n];
         const es = section.targets ? section.targets : [section.target || section];
         const boxes = es.map(e => e.getBoundingClientRect());
         const top = Math.min(...boxes.map(r => r.top)) - 5;
-        box.style.top = (doc.documentElement.scrollTop + top) + 'px';
+
+        const vr = doc.body.getBoundingClientRect();
+
+        box.style.top = (top - vr.top) + 'px';
         box.style.height = (Math.max(...boxes.map(r => r.bottom)) - top + 5) + 'px';
         box.classList.remove('hidden');
-        word.classList.remove('hidden');
-        // olnly scroll if word selection is not controlling scroll
-
-        if (visible(es[0]) === false && this.local === false) {
+        if (visible(es[0]) === false) {
           es[0].scrollIntoView({
             block: options.scroll,
             inline: 'nearest'
@@ -587,13 +553,6 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       this.on('end', () => this.emit('status', 'stop'));
       this.on('end', () => {
         box.classList.add('hidden');
-        word.classList.add('hidden');
-      });
-      this.on('instance-start', () => {
-        word.classList[this.local ? 'remove' : 'add']('hidden');
-      });
-      this.on('instance-resume', () => {
-        word.classList[this.local ? 'remove' : 'add']('hidden');
       });
     }
   }

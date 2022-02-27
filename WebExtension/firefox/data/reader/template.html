@@ -12,6 +12,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 30px auto 0 auto;
   padding: 10px;
+  position: relative;
 }
 body[data-mode="light"] {
   color: %light-color%;
@@ -139,20 +140,16 @@ a {
 body[data-speech="true"] .tts-box {
   position: absolute;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 32px;
   z-index: 1;
   pointer-events: none;
   box-shadow: 0 0 0 1000vw rgba(128, 128, 128, 0.2);
 }
-body[data-speech="true"] .tts-word {
-  position: absolute;
-  z-index: 1;
-  pointer-events: none;
-  background-color: red;
-  height: 2px;
+body[data-speech="true"] ::selection {
+  background-color: #fff740;
+  color: #000;
 }
-.tts-word.hidden,
 .tts-box.hidden {
   display: none;
 }

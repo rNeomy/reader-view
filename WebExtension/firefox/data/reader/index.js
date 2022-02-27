@@ -236,16 +236,31 @@ shortcuts.render = () => {
   span.title = chrome.i18n.getMessage('rd_save');
   span.classList.add('icon-save', 'hidden');
   span.id = 'save-button';
-  span.onclick = () => {
-    const content = iframe.contentDocument.documentElement.outerHTML
-      // remove all script tags
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+  span.onclick = e => {
+    const dom = iframe.contentDocument.documentElement.cloneNode(true);
+
+    // remove script tags
+    for (const s of [...dom.querySelectorAll('script')]) {
+      s.remove();
+    }
+    // add title
+    const t = document.createElement('title');
+    t.textContent = document.title;
+    dom.querySelector('head').appendChild(t);
+    // convert notes
+    for (const note of [...dom.querySelectorAll('.note')]) {
+      if (note.value && e.altKey === false) {
+        note.textContent = note.value;
+        note.disabled = true;
+      }
+      else {
+        note.remove();
+      }
+    }
+
+    const content = '<!DOCTYPE html>\n' + dom.outerHTML
       // remove transition
-      .replace(/transition:.*/, '')
-      // add title
-      .replace('<head>', '<head><title>' + document.title + '</title>')
-      // remove sticky notes
-      .replace(/textarea class="note"/g, 'textarea class="hidden note"');
+      .replace(/transition:.*/, '');
     const blob = new Blob([content], {
       type: 'text/html'
     });
@@ -713,36 +728,36 @@ const render = () => chrome.runtime.sendMessage({
   const {pathname, hostname} = (new URL(article.url));
   const gcs = window.getComputedStyle(document.documentElement);
   iframe.contentDocument.write((await template())
-    .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
-    .replace('%light-color%', gcs.getPropertyValue('--color-mode-light-color'))
-    .replace('%light-bg%', gcs.getPropertyValue('--color-mode-light-bg'))
-    .replace('%dark-color%', gcs.getPropertyValue('--color-mode-dark-color'))
-    .replace('%dark-bg%', gcs.getPropertyValue('--color-mode-dark-bg'))
-    .replace('%sepia-color%', gcs.getPropertyValue('--color-mode-sepia-color'))
-    .replace('%sepia-bg%', gcs.getPropertyValue('--color-mode-sepia-bg'))
-    .replace('%solarized-light-color%', gcs.getPropertyValue('--color-mode-solarized-light-color'))
-    .replace('%solarized-light-bg%', gcs.getPropertyValue('--color-mode-solarized-light-bg'))
-    .replace('%nord-light-color%', gcs.getPropertyValue('--color-mode-nord-light-color'))
-    .replace('%nord-light-bg%', gcs.getPropertyValue('--color-mode-nord-light-bg'))
-    .replace('%groove-dark-color%', gcs.getPropertyValue('--color-mode-groove-dark-color'))
-    .replace('%groove-dark-bg%', gcs.getPropertyValue('--color-mode-groove-dark-bg'))
-    .replace('%solarized-dark-color%', gcs.getPropertyValue('--color-mode-solarized-dark-color'))
-    .replace('%solarized-dark-bg%', gcs.getPropertyValue('--color-mode-solarized-dark-bg'))
-    .replace('%nord-dark-color%', gcs.getPropertyValue('--color-mode-nord-dark-color'))
-    .replace('%nord-dark-bg%', gcs.getPropertyValue('--color-mode-nord-dark-bg'))
-    .replace('%content%', article.content)
-    .replace('%title%', article.title || 'Unknown Title')
-    .replace('%byline%', article.byline || '')
-    .replace('%reading-time-fast%', article.readingTimeMinsFast)
-    .replace('%reading-time-slow%', article.readingTimeMinsSlow)
-    .replace('%published-time%', article['published_time'] || '')
-    .replace('%href%', article.url)
-    .replace('%hostname%', hostname)
-    .replace('%pathname%', pathname)
-    .replace('/*user-css*/', config.prefs['user-css'])
-    .replace('%data-images%', config.prefs['show-images'])
-    .replace('%data-font%', config.prefs.font)
-    .replace('%data-mode%', config.prefs.mode));
+    .replaceAll('%dir%', article.dir ? ' dir=' + article.dir : '')
+    .replaceAll('%light-color%', gcs.getPropertyValue('--color-mode-light-color'))
+    .replaceAll('%light-bg%', gcs.getPropertyValue('--color-mode-light-bg'))
+    .replaceAll('%dark-color%', gcs.getPropertyValue('--color-mode-dark-color'))
+    .replaceAll('%dark-bg%', gcs.getPropertyValue('--color-mode-dark-bg'))
+    .replaceAll('%sepia-color%', gcs.getPropertyValue('--color-mode-sepia-color'))
+    .replaceAll('%sepia-bg%', gcs.getPropertyValue('--color-mode-sepia-bg'))
+    .replaceAll('%solarized-light-color%', gcs.getPropertyValue('--color-mode-solarized-light-color'))
+    .replaceAll('%solarized-light-bg%', gcs.getPropertyValue('--color-mode-solarized-light-bg'))
+    .replaceAll('%nord-light-color%', gcs.getPropertyValue('--color-mode-nord-light-color'))
+    .replaceAll('%nord-light-bg%', gcs.getPropertyValue('--color-mode-nord-light-bg'))
+    .replaceAll('%groove-dark-color%', gcs.getPropertyValue('--color-mode-groove-dark-color'))
+    .replaceAll('%groove-dark-bg%', gcs.getPropertyValue('--color-mode-groove-dark-bg'))
+    .replaceAll('%solarized-dark-color%', gcs.getPropertyValue('--color-mode-solarized-dark-color'))
+    .replaceAll('%solarized-dark-bg%', gcs.getPropertyValue('--color-mode-solarized-dark-bg'))
+    .replaceAll('%nord-dark-color%', gcs.getPropertyValue('--color-mode-nord-dark-color'))
+    .replaceAll('%nord-dark-bg%', gcs.getPropertyValue('--color-mode-nord-dark-bg'))
+    .replaceAll('%content%', article.content)
+    .replaceAll('%title%', article.title || 'Unknown Title')
+    .replaceAll('%byline%', article.byline || '')
+    .replaceAll('%reading-time-fast%', article.readingTimeMinsFast)
+    .replaceAll('%reading-time-slow%', article.readingTimeMinsSlow)
+    .replaceAll('%published-time%', article['published_time'] || '')
+    .replaceAll('%href%', article.url)
+    .replaceAll('%hostname%', hostname)
+    .replaceAll('%pathname%', pathname)
+    .replaceAll('/*user-css*/', config.prefs['user-css'])
+    .replaceAll('%data-images%', config.prefs['show-images'])
+    .replaceAll('%data-font%', config.prefs.font)
+    .replaceAll('%data-mode%', config.prefs.mode));
   iframe.contentDocument.close();
 
   // remote image loading
@@ -896,7 +911,7 @@ const render = () => chrome.runtime.sendMessage({
         }
         e.preventDefault();
         e.stopImmediatePropagation();
-        o.action();
+        o.action(e);
         return false;
       });
     };
