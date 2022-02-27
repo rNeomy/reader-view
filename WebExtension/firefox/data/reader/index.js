@@ -65,6 +65,15 @@ const template = async () => {
   return await r.text();
 };
 
+const download = (href, type) => {
+  const link = Object.assign(document.createElement('a'), {
+    href,
+    type,
+    download: article.title.replace( /[<>:"/\\|?*]+/g, '' ) + '.' + type.split('/')[1]
+  });
+  link.dispatchEvent(new MouseEvent('click'));
+};
+
 const update = {
   async: () => {
     const prefs = config.prefs;
@@ -169,18 +178,19 @@ shortcuts.render = () => {
   span.id = 'screenshot-button';
 
   span.onclick = () => {
-    chrome.tabs.captureVisibleTab(href => {
-      const lastError = chrome.runtime.lastError;
-      if (href) {
-        const a = document.createElement('a');
-        a.href = href;
-        a.download = document.oTitle;
-        a.click();
-      }
-      else {
-        alert('Cannot capture the view: ' + lastError?.message);
-      }
+    const next = () => html2canvas(iframe.contentDocument.documentElement).then(canvas => {
+      const href = canvas.toDataURL();
+      download(href, 'image/png');
     });
+    if (typeof html2canvas === 'undefined') {
+      const s = document.createElement('script');
+      s.src = 'libs/html2canvas/html2canvas.js';
+      s.onload = next;
+      document.body.appendChild(s);
+    }
+    else {
+      next();
+    }
   };
   shortcuts.push({
     id: 'screenshot',
@@ -240,12 +250,7 @@ shortcuts.render = () => {
       type: 'text/html'
     });
     const objectURL = URL.createObjectURL(blob);
-    const link = Object.assign(document.createElement('a'), {
-      href: objectURL,
-      type: 'text/html',
-      download: article.title.replace( /[<>:"/\\|?*]+/g, '' ) + '.html'
-    });
-    link.dispatchEvent(new MouseEvent('click'));
+    download(objectURL, 'text/html');
     setTimeout(() => URL.revokeObjectURL(objectURL));
   };
   shortcuts.push({
@@ -569,14 +574,14 @@ document.addEventListener('click', e => {
   else if (cmd === 'font-decrease' || cmd === 'font-increase') {
     const size = config.prefs['font-size'];
     chrome.storage.local.set({
-      'font-size': cmd === 'font-decrease' ? Math.max(9, size - 1) : Math.min(33, size + 1)
+      'font-size': cmd === 'font-decrease' ? Math.max(9, size - 1) : Math.min(50, size + 1)
     });
   }
   else if (cmd === 'width-decrease' || cmd === 'width-increase') {
     const width = config.prefs.width;
     if (width) {
       chrome.storage.local.set({
-        width: cmd === 'width-decrease' ? Math.max(300, width - 50) : Math.min(1000, width + 50)
+        width: cmd === 'width-decrease' ? Math.max(300, width - 50) : Math.min(3000, width + 50)
       });
     }
     else {
