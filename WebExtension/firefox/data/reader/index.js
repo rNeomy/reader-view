@@ -707,6 +707,16 @@ document.getElementById('toolbar').addEventListener('transitionend', e => {
   e.target.classList.remove('active');
 });
 
+/* use this function to get doc */
+const ready = () => new Promise(resolve => {
+  if (ready.busy) {
+    ready.cache.push(resolve);
+  }
+  resolve(iframe.contentDocument);
+});
+ready.busy = true;
+ready.cache = [];
+
 const render = () => chrome.runtime.sendMessage({
   cmd: 'read-data'
 }, async obj => {
@@ -716,7 +726,6 @@ const render = () => chrome.runtime.sendMessage({
   }
 
   article = obj;
-  document.dispatchEvent(new Event('article-ready'));
 
   document.title = document.oTitle = config.prefs.title.replace('[ORIGINAL]', article.title.replace(' :: Reader View', ''))
     .replace('[BRAND]', 'Reader View');
@@ -759,6 +768,11 @@ const render = () => chrome.runtime.sendMessage({
     .replaceAll('%data-font%', config.prefs.font)
     .replaceAll('%data-mode%', config.prefs.mode));
   iframe.contentDocument.close();
+  ready.busy = false;
+  for (const resolve of ready.cache) {
+    resolve(iframe.contentDocument);
+  }
+  ready.cache.length = 0;
 
   // remote image loading
   {

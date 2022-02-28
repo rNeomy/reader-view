@@ -18,7 +18,7 @@
     Homepage: https://add0n.com/chrome-reader-view.html
 */
 
-/* global article, iframe, Prism */
+/* global article, iframe, Prism, ready */
 
 'use strict';
 
@@ -91,14 +91,9 @@ const observe = () => {
 };
 
 function enable() {
-  if (article) {
-    observe();
-  }
-  document.addEventListener('article-ready', observe);
+  ready().then(observe);
 }
-function disable() {
-  document.removeEventListener('article-ready', observe);
-}
+function disable() {}
 
 export {
   enable,

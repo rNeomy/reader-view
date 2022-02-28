@@ -18,7 +18,7 @@
     Homepage: https://add0n.com/chrome-reader-view.html
 */
 
-/* global iframe, args, Behave */
+/* global iframe, args, Behave, ready */
 
 const notes = {};
 const key = 'notes:' + args.get('url').split('#')[0];
@@ -55,7 +55,7 @@ const add = (id, {content, style, box}, active = false) => {
 
     // only save notes with content
     chrome.storage.local.set({
-      [key]: Object.entries(notes).filter(([id, o]) => o.content.trim()).reduce((p, [id, o]) => {
+      [key]: Object.entries(notes).filter(([, o]) => o.content.trim()).reduce((p, [id, o]) => {
         p[id] = o;
         return p;
       }, {})
@@ -164,29 +164,23 @@ const observe = () => {
   }, true);
 };
 
-const next = () => {
-  chrome.storage.local.get({
-    [key]: {}
-  }, prefs => {
-    for (const [id, note] of Object.entries(prefs[key])) {
-      add(id, note);
-    }
-  });
-};
-
 function enable() {
   document.addEventListener('add-note', observe);
-  const s = document.createElement('script');
-  s.onload = () => {
-    if (iframe.contentDocument) {
-      next();
-    }
-    else {
-      iframe.addEventListener('load', next);
-    }
-  };
-  s.src = '/data/reader/plugins/note/behave.js';
-  document.body.appendChild(s);
+
+  ready().then(() => {
+    const s = document.createElement('script');
+    s.onload = () => {
+      chrome.storage.local.get({
+        [key]: {}
+      }, prefs => {
+        for (const [id, note] of Object.entries(prefs[key])) {
+          add(id, note);
+        }
+      });
+    };
+    s.src = '/data/reader/plugins/note/behave.js';
+    document.body.appendChild(s);
+  });
 }
 function disable() {
   document.removeEventListener('add-note', observe);

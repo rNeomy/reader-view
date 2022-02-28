@@ -1,4 +1,6 @@
+/* global article */
 /* plug-in system */
+
 chrome.storage.local.get({
   './plugins/tip/core.js': true,
   './plugins/doi/core.js': true,
