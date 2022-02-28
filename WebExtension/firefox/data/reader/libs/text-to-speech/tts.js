@@ -207,6 +207,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       }
       // initiate
       this.instance.text = this[TEXT]();
+
       this.dead = false;
       this.speak();
     }
@@ -344,6 +345,9 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
     feed(...parents) {
       let nodes = [];
       const texts = node => {
+        if (!node) {
+          return;
+        }
         if (node.nodeType === Node.TEXT_NODE) {
           nodes.unshift(node);
         }
@@ -471,17 +475,43 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       doc.body.appendChild(box);
 
       const find = (word, offset, target) => {
+        let node;
+        let no = 0; // current node offset
+        const walk = document.createTreeWalker(target, NodeFilter.SHOW_TEXT, null, false);
+        node = walk.nextNode();
+
         const range = new Range();
-        range.setStart(target.firstChild, 0);
-        range.setEnd(target.firstChild, 0);
-        const s = this.doc.defaultView.getSelection();
-        s.removeAllRanges();
-        s.addRange(range);
-        for (let n = 0; n < offset; n += 1) {
-          s.modify('move', 'forward', 'character');
-        }
-        for (let n = 0; n < word.length; n += 1) {
-          s.modify('extend', 'forward', 'character');
+
+        const locate = (ch, node) => {
+          const p = node.nodeValue.slice(no).indexOf(ch);
+
+          return p === -1 ? p : p + no;
+        };
+
+        for (let x = 0; x < offset + word.length; x += 1) {
+          const ch = target.innerText[x];
+
+          while (node) {
+            const index = locate(ch, node);
+            if (index === -1) {
+              node = walk.nextNode();
+              no = 0;
+            }
+            else {
+              if (x === offset) {
+                range.setStart(node, index);
+              }
+              if (x === offset + word.length - 1) {
+                range.setEnd(node, index + 1);
+
+                const s = this.doc.defaultView.getSelection();
+                s.removeAllRanges();
+                s.addRange(range);
+              }
+              no = index + 1;
+              break;
+            }
+          }
         }
       };
       {
@@ -500,7 +530,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
             for (const target of targets) {
               const content = target.innerText;
 
-              const p = content.indexOf(word, offset);
+              const p = content.indexOf(word, offset - o);
 
               if (p !== -1) {
                 offset = p + o + 1;
@@ -612,6 +642,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
         this.stop();
         this.create();
         this.offset = offset;
+
         this[LAZY](() => this.start(this.offset));
       }
       catch (e) {
@@ -1046,6 +1077,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
         input.addEventListener('input', () => {
           this.options.rate = input.value;
           span.textContent = input.value;
+
           if (this.instance) {
             this.instance.rate = input.value;
             if (this.audio) {

@@ -360,7 +360,24 @@ shortcuts.render = () => {
         cmd: 'delete-cache',
         cache: tts.CACHE
       }));
-      tts.feed(...iframe.contentDocument.querySelectorAll('.page p, .page h1, .page h2, .page h3, .page h4, .page li, .page td, .page th'));
+      const nodes = [...iframe.contentDocument.querySelectorAll(`.page p,
+        .page h1,
+        .page h2,
+        .page h3,
+        .page h4,
+        .page li,
+        .page td,
+        .page th`)];
+      if (nodes.length === 0) {
+        const article = iframe.contentDocument.querySelector('article');
+        if (article) {
+          nodes.push(article);
+        }
+      }
+      if (nodes.length === 0) {
+        return alert('Cannot find any pages!');
+      }
+      tts.feed(...nodes.filter(a => a));
       await tts.attach(document.getElementById('speech'));
       await tts.ready();
       tts.buttons.play.title =
@@ -370,9 +387,7 @@ shortcuts.render = () => {
       tts.buttons.previous.title +=
         `Previous (${config.prefs.shortcuts['speech-previous'].map(s => s.replace('Key', '')).join(' + ')})`;
 
-      // auto play
-      tts.buttons.play.click();
-      // start from user selection
+      // start from user selection or from the start point
       tts.jump = () => {
         const selection = iframe.contentWindow.getSelection();
         if (selection && selection.rangeCount && selection.toString().trim().length) {
@@ -389,27 +404,36 @@ shortcuts.render = () => {
           if (parent.nodeType !== parent.ELEMENT_NODE) {
             parent = parent.parentElement;
           }
+
           const bounded = tts.sections.filter(e => {
             for (const c of (e.targets ? e.targets : [e.target || e])) {
-              if (
-                c === parent || c.target === parent ||
-                parent.contains(c.target || c) || (c.target || c).contains(parent)
-              ) {
+              if (c === parent || c.target === parent) {
                 return true;
+              }
+              if ((c.target || c).nodeType === Node.ELEMENT_NODE) {
+                if (parent.contains(c.target || c) || (c.target || c)?.contains(parent)) {
+                  return true;
+                }
               }
             }
           });
           if (bounded.length) {
             const offset = tts.sections.indexOf(bounded[0]);
             tts.navigate(undefined, offset);
+            return true;
           }
         }
       };
-      tts.jump();
+      if (tts.jump() !== true) {
+        // auto play
+        tts.buttons.play.click();
+      }
     }
     else {
-      tts.buttons.play.click();
-      tts.jump();
+      if (tts.jump() !== true) {
+        // auto play
+        tts.buttons.play.click();
+      }
       document.body.dataset.speech = true;
       iframe.contentDocument.body.dataset.speech = true;
     }
@@ -710,7 +734,7 @@ document.getElementById('toolbar').addEventListener('transitionend', e => {
 /* use this function to get doc */
 const ready = () => new Promise(resolve => {
   if (ready.busy) {
-    ready.cache.push(resolve);
+    return ready.cache.push(resolve);
   }
   resolve(iframe.contentDocument);
 });
