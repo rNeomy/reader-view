@@ -361,6 +361,7 @@ shortcuts.render = () => {
         cache: tts.CACHE
       }));
       const nodes = [...iframe.contentDocument.querySelectorAll(`.page p,
+        .page section,
         .page h1,
         .page h2,
         .page h3,

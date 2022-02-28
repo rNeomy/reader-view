@@ -343,6 +343,13 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
   }
   class Parser extends PreLoadTTS {
     feed(...parents) {
+      // "target" attribute conflicts with the internal naming
+      for (const parent of parents) {
+        for (const a of [...parent.querySelectorAll('[target]')]) {
+          a.removeAttribute('target');
+        }
+      }
+
       let nodes = [];
       const texts = node => {
         if (!node) {
@@ -360,6 +367,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
         }
       };
       parents.forEach(page => texts(page));
+
       const sections = [];
       while (nodes.length) {
         const node = nodes.shift();
@@ -371,6 +379,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
           nodes = nodes.filter(n => e.contains(n) === false);
         }
       }
+
       // if a section is already included, remove it;
       const toBeRemoved = [];
       sections.forEach((e, i) => {
@@ -450,7 +459,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
             }
             if (pos === -1) {
               offset = 0;
-              console.warn('cannot detect part', content, section);
+              console.warn('cannot detect a part', content.slice(0, 20), section);
             }
             else {
               offset = pos;
@@ -489,7 +498,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
         };
 
         for (let x = 0; x < offset + word.length; x += 1) {
-          const ch = target.innerText[x];
+          const ch = (target.innerText || target.textContent)[x];
 
           while (node) {
             const index = locate(ch, node);
@@ -507,6 +516,12 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
                 const s = this.doc.defaultView.getSelection();
                 s.removeAllRanges();
                 s.addRange(range);
+                if (visible(range) === false) {
+                  node.parentElement.scrollIntoView({
+                    block: options.scroll,
+                    inline: 'nearest'
+                  });
+                }
               }
               no = index + 1;
               break;
@@ -528,7 +543,8 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
 
             let o = 0;
             for (const target of targets) {
-              const content = target.innerText;
+              // <text>This is a sample text</text>
+              const content = target.innerText || target.textContent;
 
               const p = content.indexOf(word, offset - o);
 
@@ -556,12 +572,13 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       const visible = e => {
         const rect = e.getBoundingClientRect();
         return rect.top >= 0 &&
-               rect.bottom <= (this.doc.defaultView.innerHeight || this.doc.documentElement.clientHeight);
+               rect.bottom <= (this.doc.defaultView.innerHeight || this.doc.documentElement.clientHeight) - 50;
       };
 
       this.on('section', n => {
         const section = this.sections[n];
         const es = section.targets ? section.targets : [section.target || section];
+
         const boxes = es.map(e => e.getBoundingClientRect());
         const top = Math.min(...boxes.map(r => r.top)) - 5;
 
@@ -570,7 +587,9 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
         box.style.top = (top - vr.top) + 'px';
         box.style.height = (Math.max(...boxes.map(r => r.bottom)) - top + 5) + 'px';
         box.classList.remove('hidden');
-        if (visible(es[0]) === false) {
+
+        // Only scroll if word selection is not controlling scroll
+        if (visible(es[0]) === false && this.local === false) {
           es[0].scrollIntoView({
             block: options.scroll,
             inline: 'nearest'
@@ -584,6 +603,14 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       this.on('end', () => {
         box.classList.add('hidden');
       });
+    }
+    start(...args) {
+      try {
+        this.doc.defaultView.getSelection().collapse(this.doc, 0);
+      }
+      catch (e) {}
+
+      return super.start(...args);
     }
   }
   class Navigate extends Styling {
