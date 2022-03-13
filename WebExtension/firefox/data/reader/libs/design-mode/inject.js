@@ -31,8 +31,10 @@
   const move = e => {
     resize.img.width += e.movementX;
     const rect = resize.img.getBoundingClientRect();
-    resize.style.left = (doc.documentElement.scrollLeft + rect.right - 16) + 'px';
-    resize.style.top = (doc.documentElement.scrollTop + rect.bottom - 16) + 'px';
+    const b = doc.body.getBoundingClientRect();
+
+    resize.style.left = (rect.right - b.left - 16) + 'px';
+    resize.style.top = (rect.bottom - b.top - 16) + 'px';
     e.preventDefault();
     e.stopPropagation();
   };
@@ -51,8 +53,10 @@
     }
     if (e.target.tagName === 'IMG') {
       const rect = e.target.getBoundingClientRect();
-      resize.style.left = (doc.documentElement.scrollLeft + rect.right - 16) + 'px';
-      resize.style.top = (doc.documentElement.scrollTop + rect.bottom - 16) + 'px';
+      const b = doc.body.getBoundingClientRect();
+
+      resize.style.left = (rect.right - b.left - 16) + 'px';
+      resize.style.top = (rect.bottom - b.top - 16) + 'px';
       resize.style.display = 'block';
       resize.img = e.target;
     }
