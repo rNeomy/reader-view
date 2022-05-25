@@ -1,0 +1,54 @@
+body {
+  margin: 0;
+  user-select: none;
+  background-color: #fafafa;
+}
+#toolbar {
+  display: flex;
+  padding: 3px 5px;
+  align-items: center;
+}
+#toolbar > * {
+  padding: 5px;
+  cursor: pointer;
+}
+#toolbar > :not(div):hover {
+  background-color: #e6e6e6;
+}
+svg {
+  width: 20px;
+  height: 20px;
+}
+svg * {
+  pointer-events: none;
+}
+select {
+  border: none;
+  width: 120px;
+  outline: none;
+}
+.separator {
+  width: 1px;
+  background-color: #c4c4c4;
+  padding: 0 !important;
+  margin: 0 5px;
+  height: 22px;
+  pointer-events: none;
+}
+#move {
+  padding: 0;
+  cursor: move;
+  display: flex;
+}
+#move * {
+  pointer-events: none;
+}
+
+#help {
+  text-align: end;
+  margin: 0 8px;
+  padding: 3px;
+}
+#help a {
+  text-decoration: none;
+}

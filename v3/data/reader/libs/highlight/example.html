@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+  <p>this is a sample text</p>
+  <p>this is a sample text</p>
+  <p>this is a sample sample    sample text</p>
+  <p>this is a sample text</p>
+
+  <input type="button" value="Highlight">
+  <script type="text/javascript" src="highlight.js"></script>
+  <script type="text/javascript">
+    document.querySelector('input').addEventListener('click', () => {
+      const h = new Highlight();
+      h.toggle();
+      console.log(h.export())
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+:root {
+  --border: rgba(0, 0, 0, 0.2);
+  --fg: #4d5156;
+}
+
+body {
+  font-size: 14px;
+  background-color: #fff;
+  color: var(--fg);
+  width: min(100% - 2rem, 70rem);
+  margin-inline: auto;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+button,
+input[type=submit],
+input[type=button] {
+  height: 24px;
+  color: #444;
+  background-image: linear-gradient(rgb(237, 237, 237), rgb(237, 237, 237) 38%, rgb(222, 222, 222));
+  box-shadow: rgba(0, 0, 0, 0.08) 0 1px 0, rgba(255, 255, 255, 0.75) 0 1px 2px inset;
+  text-shadow: rgb(240, 240, 240) 0 1px 0;
+  border: solid 1px var(--border);
+  padding: 0 5px;
+}
+input[type=number],
+input[type=text],
+textarea {
+  border: solid 1px var(--border);
+  padding: 2px 5px;
+  color: var(--fg);
+}
+input[type=button]:disabled {
+  opacity: 0.5;
+}
+select {
+  border-radius: 0;
+  border: solid 1px var(--border);
+}
+table {
+  border-collapse: collapse;
+}
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 12px;
+  line-height: 12px;
+  margin-top: 5px;
+  padding: 5px;
+}
+h3 {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 100%;
+  font-weight: normal;
+}
+th {
+  text-align: left;
+  font-weight: 500;
+  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+}
+input[type=number] {
+  width: 100%;
+  box-sizing: border-box;
+}
+textarea:disabled {
+  opacity: 0.5;
+}
+a,
+a:visited {
+  color: #0074cc;
+  text-decoration: none;
+}
+.box-1 {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 24px 1fr;
+  grid-gap: 5px;
+}
+.box-2 {
+  display: grid;
+  align-items: start;
+  grid-template-columns: 1fr minmax(min-content, 100px);
+  grid-gap: 5px;
+}
+.box-3 {
+  display: grid;
+  grid-gap: 10px;
+  white-space: nowrap;
+  grid-template-columns: min-content 1fr;
+  align-items: center;
+}
+#shortcuts {
+  display: grid;
+  grid-template-columns: min-content 24px 24px 100px;
+  align-items: center;
+  white-space: nowrap;
+  grid-gap: 5px;
+}
+#shortcuts > div {
+  display: contents;
+}

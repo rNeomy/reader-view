@@ -1,0 +1,6 @@
+1. Install a user action
+2. Check dynamic loading of google news
+3. Show favicon in reader view
+4. How to exit from auto navigate
+5. How to exit from reader view that is opened by passing a link
+6. Update dependencies

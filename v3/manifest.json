@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "minimum_chrome_version": "102",
+  "name": "Reader View",
+  "description": "__MSG_description__",
+  "default_locale": "en",
+  "version": "0.6.0",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "contextMenus",
+    "notifications",
+    "favicon"
+  ],
+  "optional_host_permissions": [
+    "*://*/*"
+  ],
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "action": {},
+  "homepage_url": "https://add0n.com/chrome-reader-view.html",
+  "icons": {
+    "16": "data/icons/16.png",
+    "32": "data/icons/32.png",
+    "48": "data/icons/48.png",
+    "64": "data/icons/64.png",
+    "128": "data/icons/128.png",
+    "256": "data/icons/256.png",
+    "512": "data/icons/512.png"
+  },
+  "options_ui": {
+    "page": "data/options/index.html",
+    "open_in_tab": true
+  },
+  "incognito": "split",
+  "commands": {
+    "_execute_action": {},
+    "toggle-reader-view": {
+      "description": "Toggle the Reader View"
+    }
+  },
+  "web_accessible_resources": [{
+    "resources": ["/data/reader/template.html"],
+    "matches": ["*://*/*"]
+  }]
+}

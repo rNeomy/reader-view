@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html%dir%>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <base target="_blank">
+  <style>
+html {
+  overflow: overlay;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 30px auto 0 auto;
+  padding: 10px;
+  position: relative;
+}
+body[data-mode="light"] {
+  color: %light-color%;
+  border-color: %light-color%;
+  background-color: %light-bg%;
+}
+body[data-mode="dark"] {
+  color: %dark-color%;
+  border-color: %dark-color%;
+  background-color: %dark-bg%;
+}
+body[data-mode="sepia"] {
+  color: %sepia-color%;
+  border-color: %sepia-color%;
+  background-color: %sepia-bg%;
+}
+body[data-mode="solarized-light"] {
+  color: %solarized-light-color%;
+  border-color: %solarized-light-color%;
+  background-color: %solarized-light-bg%;
+}
+body[data-mode="nord-light"] {
+  color: %nord-light-color%;
+  border-color: %nord-light-color%;
+  background-color: %nord-light-bg%;
+}
+body[data-mode="groove-dark"] {
+  color: %groove-dark-color%;
+  border-color: %groove-dark-color%;
+  background-color: %groove-dark-bg%;
+}
+body[data-mode="solarized-dark"] {
+  color: %solarized-dark-color%;
+  border-color: %solarized-dark-color%;
+  background-color: %solarized-dark-bg%;
+}
+body[data-mode="nord-dark"] {
+  color: %nord-dark-color%;
+  border-color: %nord-dark-color%;
+  background-color: %nord-dark-bg%;
+}
+@media print {
+  body[data-mode="light"],
+  body[data-mode="dark"],
+  body[data-mode="sepia"],
+  body[data-mode="solarized-light"],
+  body[data-mode="nord-light"],
+  body[data-mode="groove-dark"],
+  body[data-mode="solarized-dark"],
+  body[data-mode="nord-dark"] {
+    color: #000;
+    border-color: #000;
+    background-color: #fff;
+  }
+}
+body[data-loaded=true] {
+  transition: color 0.4s, background-color 0.4s;
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+img:not([width])[src$=".svg"] {
+  max-width: 100px;
+}
+body[data-images=false] canvas,
+body[data-images=false] svg,
+body[data-images=false] img {
+  display: none;
+}
+a {
+  color: #0095dd;
+  text-decoration: none;
+}
+#reader-domain {
+  font-family: Helvetica, Arial, sans-serif;
+  text-decoration: none;
+  border-bottom-color: currentcolor;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  display: inline-block;
+  direction: ltr;
+}
+#reader-domain > span:first-child {
+  font-size: 1.1em;
+}
+#reader-domain > span:last-child {
+  font-size: 0.8em;
+}
+#reader-title {
+  font-size: 1.6em;
+  line-height: 1.25em;
+  width: 100%;
+  margin: 20px 0;
+  padding: 0;
+}
+#reader-credits,
+#doi,
+#published-time,
+#reader-estimated-time {
+  font-size: 0.85em;
+  line-height: 1.48em;
+  margin: 0 0 10px 0;
+  padding: 0;
+}
+#reader-credits:not(:empty)::after {
+  content: ' ⋮ ';
+}
+#published-time:not(:empty)::before {
+  content: ' ⋮ ';
+}
+#doi-json {
+  overflow: hidden;
+}
+#doi-json code {
+  overflow: auto;
+  max-height: 400px;
+}
+#published-time:empty,
+#reader-credits:empty {
+  display: none;
+}
+body[data-speech="true"] .tts-box {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 32px;
+  z-index: 1;
+  pointer-events: none;
+  box-shadow: 0 0 0 1000vw rgba(128, 128, 128, 0.2);
+}
+body[data-speech="true"] ::selection {
+  background-color: #fff740;
+  color: #000;
+}
+.tts-box.hidden {
+  display: none;
+}
+body[data-speech="false"] .tts-speaking::after {
+  display: none;
+}
+mark.hghlght {
+  background-color: #ffff81;
+}
+.hidden {
+  display: none;
+}
+.note {
+  position: absolute;
+  z-index: 10;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 5px;
+  min-width: 32px;
+  min-height: 32px;
+}
+.note:focus {
+  z-index: 11;
+}
+</style>
+  <style id="user-css">/*user-css*/</style>
+</head>
+<body tabindex="1" data-images=%data-images% data-mode=%data-mode% data-font=%data-font%>
+  <span></span> <!-- for IntersectionObserver -->
+  <a id="reader-domain" href="%href%">
+    <span>%hostname%</span>
+    <span>%pathname%</span>
+  </a>
+  <h1 dir="auto" id="reader-title">%title%</h1>
+  <span dir="auto" id="reader-credits">%byline%</span>
+  <span dir="auto" id="reader-estimated-time">%reading-time-fast%-%reading-time-slow% minutes</span>
+  <span dir="auto" id="published-time">%published-time%</span>
+  <hr/>
+  %content%
+  <span></span> <!-- for IntersectionObserver -->
+  <script src="/config.js"></script>
+  <script src="template.js"></script>
+  <script async src="libs/highlight/highlight.js"></script>
+  <script async src="libs/mathjax/do.js"></script>
+</body>
+</html>

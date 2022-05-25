@@ -1,0 +1,108 @@
+const defaults = {
+  'embedded': false,
+  'auto-fullscreen': false,
+  'auto-rules': [],
+  'font-size': 15,
+  'font': 'sans-serif',
+  'width': 600,
+  'line-height': 32,
+  'text-align': true,
+  'reader-mode': false,
+  'show-icon': true,
+  'title': '[ORIGINAL] :: [BRAND]',
+  'tts-delay': 300,
+  'tts-maxlength': 160,
+  'tts-minlength': 60,
+  'tts-separator': '\n!\n',
+  'tts-scroll': 'center',
+  'mail-to': 'email@example.com',
+  'mail-max': 1500,
+  'mail-ending': `
+
+--
+Original Page: [URL]`,
+  'faqs': true,
+  'version': null,
+  'guide': 3, // guide height is n times font-size; zero means no guide
+  'guide-timeout': 2000, // ms
+  'mode': 'sepia',
+  'printing-button': true,
+  'screenshot-button': false,
+  'note-button': true,
+  'mail-button': true,
+  'save-button': true,
+  'fullscreen-button': true,
+  'speech-button': true,
+  'images-button': true,
+  'highlight-button': true,
+  'design-mode-button': true,
+  'show-images': true,
+  'navigate-buttons': true,
+  'toggle-toolbar': true,
+  'top-css': '',
+  'cache-highlights': true,
+  'highlights-count': 20, // number of highlighted persistent highlighted websites
+  'highlights-keys': [],
+  'highlights-objects': {},
+  'user-action': [],
+  'user-css': `body {
+  padding-bottom: 64px;
+}
+a:visited {
+  color: #d33bf0;
+}
+a:link, a:link:hover, a:link:active, a:link * {
+  color: #0095dd;
+}
+a:link {
+  text-decoration: none;
+  font-weight: normal;
+}
+pre {
+  white-space: pre-wrap;
+}
+pre code {
+  background-color: #eff0f1;
+  color: #393318;
+  font-family: monospace;
+  display: block;
+  padding: 5px 10px;
+}
+body[data-mode="dark"] pre code {
+  background-color: #585858;
+  color: #e8e8e8;
+}
+
+/* CSS for sans-serif fonts */
+body[data-font=sans-serif] {}
+/* CSS for serif fonts */
+body[data-font=serif] {}
+
+/* CSS for "sepia" theme */
+body[data-mode=sepia] {}
+/* CSS for "light" theme */
+body[data-mode=light] {}
+/* CSS for "dark" theme */
+body[data-mode=dark] {}`,
+  'context-open-in-reader-view': false,
+  'context-open-in-reader-view-bg': false,
+  'context-switch-to-reader-view': true,
+  'shortcuts': {
+    'print': ['Ctrl/Command', 'KeyP'],
+    'screenshot': ['Ctrl/Command', 'KeyO'],
+    'note': ['Ctrl/Command', 'Shift', 'KeyB'],
+    'email': ['Ctrl/Command', 'Shift', 'KeyE'],
+    'save': ['Ctrl/Command', 'KeyS'],
+    'fullscreen': ['F9'],
+    'design-mode': ['Ctrl/Command', 'Shift', 'KeyD'],
+    'speech': ['Ctrl/Command', 'Shift', 'KeyS'],
+    'speech-previous': ['Ctrl/Command', 'Shift', 'KeyZ'],
+    'speech-next': ['Ctrl/Command', 'Shift', 'KeyC'],
+    'speech-play': ['Ctrl/Command', 'Shift', 'KeyX'],
+    'images': ['Ctrl/Command', 'Shift', 'KeyI'],
+    'highlight': ['Ctrl/Command', 'Shift', 'KeyH'],
+    'next-page': ['Ctrl/Command', 'Shift', 'ArrowRight'],
+    'previous-page': ['Ctrl/Command', 'Shift', 'ArrowLeft'],
+    'toggle-toolbar': ['Ctrl/Command', 'Shift', 'KeyY']
+  }
+};
