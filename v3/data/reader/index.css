@@ -142,8 +142,8 @@ body[data-toolbar=false] #toolbar {
   font-size: 20px;
   border-bottom: 1px solid var(--border-color);
 }
-#image-utils td,
-#font-utils td {
+#image-utils [data-cmd],
+#font-utils [data-cmd] {
   cursor: pointer;
 }
 #font-utils tr:first-child td:first-child {
@@ -242,12 +242,18 @@ body[data-toolbar=false] #toolbar {
 #toolbar [data-id="full-width"] input {
   display: none;
 }
+#toolbar [data-id="column-count"] label,
 #toolbar [data-id="text-align"] label,
 #toolbar [data-id="no-height"] label,
 #toolbar [data-id="full-width"] label {
   pointer-events: none;
   font-size: 14px;
 }
+#toolbar [data-id="full-width"] + td,
+#toolbar [data-id="column-count"] + td {
+  font-size: 14px;
+}
+
 #toolbar [data-cmd="text-align"] {
   cursor: default !important;
 }

@@ -89,6 +89,7 @@ const update = {
     }
     .page {
       line-height: ${lh};
+      column-count: ${prefs['column-count']};
     }
     h1, h2, h3 {
       line-height: initial;
@@ -627,6 +628,17 @@ document.addEventListener('click', e => {
       });
     }
   }
+  else if (cmd === 'column-decrease' || cmd === 'column-increase') {
+    let n = config.prefs['column-count'];
+    n += cmd === 'column-decrease' ? -1 : 1;
+    n = Math.max(1, Math.min(4, n));
+
+    console.log(n, cmd);
+
+    chrome.storage.local.set({
+      'column-count': n
+    });
+  }
   else if (cmd === 'full-width') {
     chrome.storage.local.set({
       width: e.target.parentElement.querySelector('input').checked ? 600 : 0
@@ -821,8 +833,9 @@ const render = () => chrome.runtime.sendMessage({
 
   const props = {
     rel: 'shortcut icon',
-    href: article.icon && article.icon.startsWith('data:') ? article.icon : chrome.runtime.getURL('/_favicon/?pageUrl=') + article.url
+    href: article.icon && article.icon.startsWith('data:') ? article.icon : chrome.runtime.getURL('/_favicon/?pageUrl=') + encodeURIComponent(article.url) + '&size=32'
   };
+
   if (config.prefs['show-icon'] === false) {
     props.href = '/data/icons/32.png';
   }
@@ -988,7 +1001,12 @@ config.onChanged.push(ps => {
   if (ps['top-css']) {
     styles.top.textContent = config.prefs['top-css'];
   }
-  if (ps['font-size'] || ps['font'] || ps['line-height'] || ps['width'] || ps['text-align']) {
+  if (
+    ps['font-size'] || ps['font'] ||
+    ps['line-height'] || ps['width'] ||
+    ps['text-align'] ||
+    ps['column-count']
+  ) {
     update.async();
   }
   if (ps['show-images']) {

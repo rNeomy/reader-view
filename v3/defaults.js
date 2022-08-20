@@ -6,6 +6,7 @@ const defaults = {
   'font': 'sans-serif',
   'width': 600,
   'line-height': 32,
+  'column-count': 1,
   'text-align': true,
   'reader-mode': false,
   'show-icon': true,
