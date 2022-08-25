@@ -1,7 +1,7 @@
 /**
     Reader View - Strips away clutter
 
-    Copyright (C) 2014-2021 [@rNeomy](https://add0n.com/chrome-reader-view.html)
+    Copyright (C) 2014-2022 [@rNeomy](https://add0n.com/chrome-reader-view.html)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -18,26 +18,30 @@
     Homepage: https://add0n.com/chrome-reader-view.html
 */
 
-let container;
+/* global args */
+
+let id;
 
 function enable() {
-  container = document.createElement('div');
-  container.classList.add('notify');
-  document.body.appendChild(container);
-  window.notify = (e, type = 'info', delay = 3000) => {
-    const div = document.createElement('div');
-    div.textContent = e.message || e;
-    div.classList.add(type);
-    container.appendChild(div);
-    setTimeout(() => div.remove(), delay);
-  };
+  id = setTimeout(() => {
+    if (confirm(`Oops! Reader View is crashed. Would you like to restart the extension?
+
+The address of current page will be copied to the clipboard`)) {
+      navigator.clipboard.writeText(args.get('url')).finally(() => {
+        chrome.runtime.reload();
+      });
+    }
+  }, 2000);
+  chrome.runtime.sendMessage({
+    cmd: 'health-check'
+  }, r => {
+    if (r === true) {
+      clearTimeout(id);
+    }
+  });
 }
 function disable() {
-  try {
-    container.remove();
-  }
-  catch (e) {}
-  delete window.notify;
+  clearTimeout(id);
 }
 
 export {

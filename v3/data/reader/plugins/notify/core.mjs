@@ -18,41 +18,29 @@
     Homepage: https://add0n.com/chrome-reader-view.html
 */
 
-/* global defaults */
-'use strict';
+let container;
 
-// iframe issue
-if (window.top !== window) {
-  chrome = top.chrome;
-}
-
-// do not load config when possible
-if (typeof config === 'undefined') {
-  const config = {
-    callbacks: [], // will be called when prefs are ready,
-    onChanged: []
-  };
-  window.config = config;
-
-  config.prefs = defaults;
-
-  chrome.storage.onChanged.addListener(prefs => {
-    Object.keys(prefs).forEach(key => config.prefs[key] = prefs[key].newValue);
-    config.onChanged.forEach(c => c(prefs));
-  });
-
-  chrome.storage.local.get(config.prefs, prefs => {
-    Object.assign(config.prefs, prefs);
-    config.ready = true;
-    config.callbacks.forEach(c => c());
-  });
-  config.load = c => {
-    if (config.ready) {
-      c();
-    }
-    else {
-      config.callbacks.push(c);
-    }
+function enable() {
+  container = document.createElement('div');
+  container.classList.add('notify');
+  document.body.appendChild(container);
+  window.notify = (e, type = 'info', delay = 3000) => {
+    const div = document.createElement('div');
+    div.textContent = e.message || e;
+    div.classList.add(type);
+    container.appendChild(div);
+    setTimeout(() => div.remove(), delay);
   };
 }
+function disable() {
+  try {
+    container.remove();
+  }
+  catch (e) {}
+  delete window.notify;
+}
 
+export {
+  enable,
+  disable
+};

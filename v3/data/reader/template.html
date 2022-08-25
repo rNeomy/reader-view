@@ -4,6 +4,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <base target="_blank">
   <style>
+:root {
+  --fg: #000; /* foreground  */
+  --bg: #fff; /* background  */
+  --bd: #000; /* border  */
+  --lk: #0095dd; /* link */
+  --hg: #ffff81; /* highlight  */
+}
 html {
   overflow: overlay;
 }
@@ -13,59 +20,64 @@ body {
   margin: 30px auto 0 auto;
   padding: 10px;
   position: relative;
+
+  color: var(--fg);
+  border-color: var(--bd);
+  background-color: var(--bg);
 }
 body[data-mode="light"] {
-  color: %light-color%;
-  border-color: %light-color%;
-  background-color: %light-bg%;
+  color-scheme: light;
+  --fg: %light-color%;
+  --bd: %light-color%;
+  --bg: %light-bg%;
 }
 body[data-mode="dark"] {
-  color: %dark-color%;
-  border-color: %dark-color%;
-  background-color: %dark-bg%;
+  color-scheme: dark;
+  --fg: %dark-color%;
+  --bd: %dark-color%;
+  --bg: %dark-bg%;
 }
 body[data-mode="sepia"] {
-  color: %sepia-color%;
-  border-color: %sepia-color%;
-  background-color: %sepia-bg%;
+  color-scheme: light;
+  --fg: %sepia-color%;
+  --bd: %sepia-color%;
+  --bg: %sepia-bg%;
 }
 body[data-mode="solarized-light"] {
-  color: %solarized-light-color%;
-  border-color: %solarized-light-color%;
-  background-color: %solarized-light-bg%;
+  color-scheme: light;
+  --fg: %solarized-light-color%;
+  --bd: %solarized-light-color%;
+  --bg: %solarized-light-bg%;
 }
 body[data-mode="nord-light"] {
-  color: %nord-light-color%;
-  border-color: %nord-light-color%;
-  background-color: %nord-light-bg%;
+  color-scheme: light;
+  --fg: %nord-light-color%;
+  --bd: %nord-light-color%;
+  --bg: %nord-light-bg%;
 }
 body[data-mode="groove-dark"] {
-  color: %groove-dark-color%;
-  border-color: %groove-dark-color%;
-  background-color: %groove-dark-bg%;
+  color-scheme: dark;
+  --fg: %groove-dark-color%;
+  --bd: %groove-dark-color%;
+  --bg: %groove-dark-bg%;
 }
 body[data-mode="solarized-dark"] {
-  color: %solarized-dark-color%;
-  border-color: %solarized-dark-color%;
-  background-color: %solarized-dark-bg%;
+  color-scheme: dark;
+  --fg: %solarized-dark-color%;
+  --bd: %solarized-dark-color%;
+  --bg: %solarized-dark-bg%;
 }
 body[data-mode="nord-dark"] {
-  color: %nord-dark-color%;
-  border-color: %nord-dark-color%;
-  background-color: %nord-dark-bg%;
+  color-scheme: dark;
+  --fg: %nord-dark-color%;
+  --bd: %nord-dark-color%;
+  --bg: %nord-dark-bg%;
 }
 @media print {
-  body[data-mode="light"],
-  body[data-mode="dark"],
-  body[data-mode="sepia"],
-  body[data-mode="solarized-light"],
-  body[data-mode="nord-light"],
-  body[data-mode="groove-dark"],
-  body[data-mode="solarized-dark"],
-  body[data-mode="nord-dark"] {
-    color: #000;
-    border-color: #000;
-    background-color: #fff;
+  body {
+    --fg: #000;
+    --bd: #000;
+    --bg: #fff;
   }
 }
 body[data-loaded=true] {
@@ -84,8 +96,13 @@ body[data-images=false] img {
   display: none;
 }
 a {
-  color: #0095dd;
+  color: var(--lk);
   text-decoration: none;
+}
+hr {
+  background-color: var(--bd);
+  height: 1px;
+  border: 0;
 }
 #reader-domain {
   font-family: Helvetica, Arial, sans-serif;
@@ -157,7 +174,7 @@ body[data-speech="false"] .tts-speaking::after {
   display: none;
 }
 mark.hghlght {
-  background-color: #ffff81;
+  background-color: var(--hg);
 }
 .hidden {
   display: none;

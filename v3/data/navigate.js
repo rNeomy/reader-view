@@ -1,9 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const next = () => {
-    setTimeout(() => chrome.runtime.sendMessage({
-      cmd: 'switch-to-reader-view'
-    }), 0);
-  };
+  const next = () => setTimeout(() => chrome.runtime.sendMessage({
+    cmd: 'switch-to-reader-view',
+    type: 'auto-navigate'
+  }), 0);
+
+  // do not auto navigate if the page is loaded with back button
+  const navEntries = performance.getEntriesByType('navigation');
+  if (navEntries && navEntries[0] && navEntries[0].type === 'back_forward') {
+    return console.info('auto navigation is skipped due to back or forward navigation');
+  }
 
   chrome.storage.local.get({
     'auto-rules': []

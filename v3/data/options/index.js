@@ -1,7 +1,7 @@
 /**
     Reader View - Strips away clutter
 
-    Copyright (C) 2014-2021 [@rNeomy](https://add0n.com/chrome-reader-view.html)
+    Copyright (C) 2014-2022 [@rNeomy](https://add0n.com/chrome-reader-view.html)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -132,6 +132,12 @@ function save() {
     'show-icon': document.getElementById('show-icon').checked,
     'title': document.getElementById('title').value || '[ORIGINAL] :: [BRAND]',
 
+    './plugins/tip/core.mjs': document.getElementById('./plugins/tip/core.mjs').checked,
+    './plugins/doi/core.mjs': document.getElementById('./plugins/doi/core.mjs').checked,
+    './plugins/note/core.mjs': document.getElementById('./plugins/note/core.mjs').checked,
+    './plugins/notify/core.mjs': document.getElementById('./plugins/notify/core.mjs').checked,
+    './plugins/health/core.mjs': document.getElementById('./plugins/health/core.mjs').checked,
+
     shortcuts
   }, () => {
     const status = document.getElementById('status');
@@ -172,6 +178,12 @@ function restore() {
   document.getElementById('context-open-in-reader-view').checked = config.prefs['context-open-in-reader-view'];
   document.getElementById('context-open-in-reader-view-bg').checked = config.prefs['context-open-in-reader-view-bg'];
   document.getElementById('context-switch-to-reader-view').checked = config.prefs['context-switch-to-reader-view'];
+
+  document.getElementById('./plugins/tip/core.mjs').checked = config.prefs['./plugins/tip/core.mjs'];
+  document.getElementById('./plugins/doi/core.mjs').checked = config.prefs['./plugins/doi/core.mjs'];
+  document.getElementById('./plugins/note/core.mjs').checked = config.prefs['./plugins/note/core.mjs'];
+  document.getElementById('./plugins/notify/core.mjs').checked = config.prefs['./plugins/notify/core.mjs'];
+  document.getElementById('./plugins/health/core.mjs').checked = config.prefs['./plugins/health/core.mjs'];
 
   for (const div of [...document.getElementById('shortcuts').querySelectorAll('div')]) {
     const [ctrl, shift] = [...div.querySelectorAll('input[type=checkbox]')];

@@ -103,3 +103,10 @@ a:visited {
 #shortcuts > div {
   display: contents;
 }
+
+.note {
+  background-color: #fff6d6;
+  color: #1b2d5b;
+  text-align: center;
+  padding: 10px;
+}

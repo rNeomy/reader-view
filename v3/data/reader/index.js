@@ -1,7 +1,7 @@
 /**
     Reader View - Strips away clutter
 
-    Copyright (C) 2014-2021 [@rNeomy](https://add0n.com/chrome-reader-view.html)
+    Copyright (C) 2014-2022 [@rNeomy](https://add0n.com/chrome-reader-view.html)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -28,6 +28,19 @@ let highlight;
 
 const args = new URLSearchParams(location.search);
 
+// add script
+const add = (src, o) => new Promise((resolve, reject) => {
+  if (o && typeof o !== 'undefined') {
+    return resolve();
+  }
+
+  const s = document.createElement('script');
+  s.src = src;
+  s.onload = () => resolve();
+  s.onerror = e => reject(e);
+  document.body.appendChild(s);
+});
+
 // hash
 const hash = link => {
   const hash = link.hash.substr(1);
@@ -45,6 +58,7 @@ const hash = link => {
 };
 window.hash = hash;
 
+// exit by passing ESC, exit after link is opened in the Reader view, exit after auto reader view
 const nav = {
   back(forced = false) {
     const now = Date.now();
@@ -53,9 +67,7 @@ const nav = {
       return window.notify('Press ESC again to exit', undefined, 2000);
     }
 
-    chrome.runtime.sendMessage({
-      'cmd': 'go-back'
-    });
+    history.back(-2);
   }
 };
 window.nav = nav;
@@ -89,7 +101,7 @@ const update = {
     }
     .page {
       line-height: ${lh};
-      column-count: ${prefs['column-count']};
+      column-count: ${prefs['column-count'] === 1 ? 'unset' : prefs['column-count']};
     }
     h1, h2, h3 {
       line-height: initial;
@@ -102,6 +114,8 @@ const update = {
     document.querySelector('#font-details [data-id="font-size"]').textContent = prefs['font-size'] + 'px';
     document.querySelector('#font-details [data-id="screen-width"]').textContent = prefs['width'] || 'unset';
     document.querySelector('#font-details [data-id="line-height"]').textContent = lh;
+    document.querySelector('#font-utils [data-id="column-count"] [data-id="display"]').textContent = prefs['column-count'];
+    document.querySelector('#font-utils [data-id="fixation-point"] [data-id="display"]').textContent = prefs['fixation-point'];
   },
   images: () => {
     const bol = config.prefs['show-images'];
@@ -179,19 +193,13 @@ shortcuts.render = () => {
   span.id = 'screenshot-button';
 
   span.onclick = () => {
-    const next = () => html2canvas(iframe.contentDocument.documentElement).then(canvas => {
-      const href = canvas.toDataURL();
-      download(href, 'image/png');
+    add('libs/html2canvas/html2canvas.js', self.html2canvas).then(() => {
+      const e = iframe.contentDocument.documentElement;
+      self.html2canvas(e).then(canvas => {
+        const href = canvas.toDataURL();
+        download(href, 'image/png');
+      });
     });
-    if (typeof html2canvas === 'undefined') {
-      const s = document.createElement('script');
-      s.src = 'libs/html2canvas/html2canvas.js';
-      s.onload = next;
-      document.body.appendChild(s);
-    }
-    else {
-      next();
-    }
   };
   shortcuts.push({
     id: 'screenshot',
@@ -327,14 +335,9 @@ shortcuts.render = () => {
       document.querySelector('[data-cmd="close-speech"]').click();
     }
     else if (typeof TTS === 'undefined') {
-      const add = src => new Promise(resolve => {
-        const script = document.createElement('script');
-        script.onload = resolve;
-        script.src = src;
-        document.body.appendChild(script);
-      });
       document.body.dataset.speech = true;
       iframe.contentDocument.body.dataset.speech = true;
+
       await add('libs/text-to-speech/engines/watson.js');
       await add('libs/text-to-speech/engines/translate.js');
       await add('libs/text-to-speech/tts.js');
@@ -532,6 +535,9 @@ shortcuts.render = () => {
     else if (request.cmd === 'append-highlights' && request.href === args.get('url').split('#')[0]) {
       highlight.import(request.highlights);
     }
+    else if (request.cmd === 'close') {
+      nav.back(true);
+    }
   });
 }
 
@@ -548,19 +554,20 @@ shortcuts.render = () => {
         span.appendChild(img);
         document.getElementById('toolbar').appendChild(span);
         span.onclick = () => {
-          if (/Firefox/.test(navigator.userAgent)) {
-            chrome.tabs.executeScript({
-              code: action.code
-            });
-          }
-          else {
-            const s = document.createElement('script');
-            const b = new Blob([action.code]);
-            s.src = URL.createObjectURL(b);
-            iframe.contentDocument.body.appendChild(s);
-            URL.revokeObjectURL(s.src);
-            s.remove();
-          }
+          add('libs/sval/sval.min.js', self.Sval).then(() => {
+            try {
+              const instance = new self.Sval({
+                ecmaVer: 10,
+                sandBox: true
+              });
+              instance.import('document', iframe.contentDocument);
+              instance.run(action.code);
+            }
+            catch (e) {
+              console.warn(e);
+              alert(e.message);
+            }
+          });
         };
         if (action.shortcut) {
           const id = 'ua-' + index;
@@ -633,10 +640,21 @@ document.addEventListener('click', e => {
     n += cmd === 'column-decrease' ? -1 : 1;
     n = Math.max(1, Math.min(4, n));
 
-    console.log(n, cmd);
-
     chrome.storage.local.set({
       'column-count': n
+    });
+  }
+  else if (cmd === 'fixation-decrease' || cmd === 'fixation-increase') {
+    let n = config.prefs['fixation-point'];
+    n += cmd === 'fixation-decrease' ? -1 : 1;
+    n = Math.max(0, Math.min(5, n));
+
+    chrome.storage.local.set({
+      'fixation-point': n
+    }, () => {
+      document.querySelector('#font-utils [data-id="fixation-point"] span').textContent = 'Reloading...';
+      clearTimeout(self.fixationId);
+      self.fixationId = setTimeout(() => location.reload(), 2000);
     });
   }
   else if (cmd === 'full-width') {
@@ -722,9 +740,7 @@ document.addEventListener('click', e => {
 
     if (active === false) {
       document.title = '[Design Mode]';
-      const s = document.createElement('script');
-      s.src = 'libs/design-mode/inject.js';
-      document.body.appendChild(s);
+      add('libs/design-mode/inject.js');
     }
     else {
       document.title = document.oTitle;
@@ -770,6 +786,12 @@ const render = () => chrome.runtime.sendMessage({
   iframe.contentDocument.open();
   const {pathname, hostname} = (new URL(article.url));
   const gcs = window.getComputedStyle(document.documentElement);
+
+  const {textVide} = await import('./libs/text-vide/index.mjs');
+  const content = config.prefs['fixation-point'] ? textVide(article.content, {
+    fixationPoint: config.prefs['fixation-point']
+  }) : article.content;
+
   iframe.contentDocument.write((await template())
     .replaceAll('%dir%', article.dir ? ' dir=' + article.dir : '')
     .replaceAll('%light-color%', gcs.getPropertyValue('--color-mode-light-color'))
@@ -788,7 +810,7 @@ const render = () => chrome.runtime.sendMessage({
     .replaceAll('%solarized-dark-bg%', gcs.getPropertyValue('--color-mode-solarized-dark-bg'))
     .replaceAll('%nord-dark-color%', gcs.getPropertyValue('--color-mode-nord-dark-color'))
     .replaceAll('%nord-dark-bg%', gcs.getPropertyValue('--color-mode-nord-dark-bg'))
-    .replaceAll('%content%', article.content)
+    .replaceAll('%content%', content)
     .replaceAll('%title%', article.title || 'Unknown Title')
     .replaceAll('%byline%', article.byline || '')
     .replaceAll('%reading-time-fast%', article.readingTimeMinsFast)
@@ -1005,7 +1027,8 @@ config.onChanged.push(ps => {
     ps['font-size'] || ps['font'] ||
     ps['line-height'] || ps['width'] ||
     ps['text-align'] ||
-    ps['column-count']
+    ps['column-count'] ||
+    ps['fixation-point']
   ) {
     update.async();
   }

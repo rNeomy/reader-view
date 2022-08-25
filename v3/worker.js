@@ -1,7 +1,7 @@
 /**
     Reader View - Strips away clutter
 
-    Copyright (C) 2014-2021 [@rNeomy](https://add0n.com/chrome-reader-view.html)
+    Copyright (C) 2014-2022 [@rNeomy](https://add0n.com/chrome-reader-view.html)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -23,15 +23,6 @@ self.importScripts('defaults.js');
 self.importScripts('menus.js');
 self.importScripts('navigate.js');
 
-const goBack = ({id, url = ''}) => chrome.tabs.goBack(id, () => {
-  if (chrome.runtime.lastError) {
-    const args = new URLSearchParams(url.split('?')[1]);
-    chrome.tabs.update({
-      url: args.get('url')
-    });
-  }
-});
-
 const notify = e => chrome.notifications.create({
   title: chrome.runtime.getManifest().name,
   type: 'basic',
@@ -42,7 +33,9 @@ const notify = e => chrome.notifications.create({
 const onClicked = async (tab, embedded = false) => {
   const root = chrome.runtime.getURL('');
   if (tab.url && tab.url.startsWith(root)) {
-    goBack(tab);
+    chrome.tabs.sendMessage(tab.id, {
+      cmd: 'close'
+    });
   }
   else {
     const target = {
@@ -108,6 +101,11 @@ const lazy = id => {
 };
 lazy.cache = {};
 lazy.watch = (tabId, info, tab) => {
+  // Google News redirects to the original article
+  if (tab.url && tab.url.startsWith('https://news.google.com/articles/')) {
+    return;
+  }
+
   if (lazy.cache[tabId]) {
     onClicked(tab);
     delete lazy.cache[tabId];
@@ -192,9 +190,6 @@ const onMessage = (request, sender, response) => {
   else if (request.cmd === 'reader-on-reload') {
     lazy(sender.tab.id);
   }
-  else if (request.cmd === 'go-back') {
-    goBack(sender.tab);
-  }
   else if (request.cmd === 'highlights') {
     chrome.storage.local.get({
       'cache-highlights': defaults['cache-highlights'],
@@ -236,6 +231,9 @@ const onMessage = (request, sender, response) => {
     chrome.windows.update(sender.tab.windowId, {
       state: 'normal'
     });
+  }
+  else if (request.cmd === 'health-check') {
+    response(true);
   }
 };
 chrome.runtime.onMessage.addListener(onMessage);

@@ -8,6 +8,8 @@
 </head>
 
 <body>
+  <p class="note">Scroll down and press the "Save Options" button for the changes to apply.</p>
+
   <h3>Interface Customization</h3>
   <div class="box-1">
     <input type="checkbox" id="printing-button">
@@ -98,6 +100,20 @@
     <a href="#" id="auto-permission" style="justify-self: end; white-space: nowrap;">Request Access</a>
   </h3>
   <textarea disabled placeholder="A comma-separated list of hostnames or regular expressions to automatically switch to the reader view if the 'request access' is granted (e.g.: google.com, r:\w+\.google\.com)" id="auto-rules" rows="4"></textarea>
+
+  <h3>Plugins</h3>
+  <div class="box-1">
+    <input type="checkbox" id="./plugins/tip/core.mjs">
+    <label for="./plugins/tip/core.mjs">Enable "tip" plugin</label>
+    <input type="checkbox" id="./plugins/doi/core.mjs">
+    <label for="./plugins/doi/core.mjs">Enable "doi" plugin</label>
+    <input type="checkbox" id="./plugins/note/core.mjs">
+    <label for="./plugins/note/core.mjs">Enable "note" plugin</label>
+    <input type="checkbox" id="./plugins/notify/core.mjs">
+    <label for="./plugins/notify/core.mjs">Enable "notify" plugin</label>
+    <input type="checkbox" id="./plugins/health/core.mjs">
+    <label for="./plugins/health/core.mjs">Enable "health" plugin</label>
+  </div>
 
   <h3>Misc</h3>
   <div class="box-1">

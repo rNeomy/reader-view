@@ -1,4 +1,4 @@
-const defaults = {
+self.defaults = {
   'embedded': false,
   'auto-fullscreen': false,
   'auto-rules': [],
@@ -8,6 +8,7 @@ const defaults = {
   'line-height': 32,
   'column-count': 1,
   'text-align': true,
+  'fixation-point': 0, // 0: off, 1-5 (text-vide)
   'reader-mode': false,
   'show-icon': true,
   'title': '[ORIGINAL] :: [BRAND]',
@@ -105,5 +106,11 @@ body[data-mode=dark] {}`,
     'next-page': ['Ctrl/Command', 'Shift', 'ArrowRight'],
     'previous-page': ['Ctrl/Command', 'Shift', 'ArrowLeft'],
     'toggle-toolbar': ['Ctrl/Command', 'Shift', 'KeyY']
-  }
+  },
+  './plugins/tip/core.mjs': true,
+  './plugins/doi/core.mjs': true,
+  './plugins/note/core.mjs': true,
+  './plugins/notify/core.mjs': true,
+  './plugins/health/core.mjs': true
 };
+

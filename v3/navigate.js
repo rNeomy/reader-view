@@ -3,9 +3,7 @@
 const navigate = () => chrome.storage.local.get({
   'auto-rules': defaults['auto-rules']
 }, async prefs => {
-  await chrome.scripting.unregisterContentScripts({
-    ids: ['navigate']
-  }).catch(() => {});
+  await chrome.scripting.unregisterContentScripts();
 
   if (prefs['auto-rules'].length) {
     chrome.scripting.registerContentScripts([{

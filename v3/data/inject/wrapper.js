@@ -1,7 +1,7 @@
 /**
     Reader View - Strips away clutter
 
-    Copyright (C) 2014-2021 [@rNeomy](https://add0n.com/chrome-reader-view.html)
+    Copyright (C) 2014-2022 [@rNeomy](https://add0n.com/chrome-reader-view.html)
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -20,6 +20,22 @@
 
 /* globals Readability, config */
 'use strict';
+
+// health check
+{
+  const id = setTimeout(() => {
+    if (confirm(`Oops! Reader View is crashed. Would you like to restart the extension?`)) {
+      chrome.runtime.reload();
+    }
+  }, 3000);
+  chrome.runtime.sendMessage({
+    cmd: 'health-check'
+  }, r => {
+    if (r === true) {
+      clearTimeout(id);
+    }
+  });
+}
 
 {
   if (Readability.prototype._getReadTime === undefined) {
@@ -56,19 +72,20 @@
       ]);
       return readingSpeed.get(lang) || readingSpeed.get('en');
     };
-    const pars = Readability.prototype.parse;
-    Readability.prototype.parse = function(...args) {
-      const rtn = pars.apply(this, args);
-      if (rtn) {
-        return Object.assign(
-          rtn,
-          this._getReadTime(rtn.textContent)
-        );
+
+    Readability.prototype.parse = new Proxy(Readability.prototype.parse, {
+      apply(target, self, args) {
+        const rtn = Reflect.apply(target, self, args);
+
+        if (rtn) {
+          return Object.assign(
+            rtn,
+            self._getReadTime(rtn.textContent)
+          );
+        }
+        return rtn;
       }
-      else {
-        return pars(...args);
-      }
-    };
+    });
   }
 }
 
@@ -111,6 +128,11 @@ try {
   const article = new Readability(
     getSelectionHTML() || document.cloneNode(true)
   ).parse();
+
+  if (!article) {
+    throw Error('Cannot convert this page!');
+  }
+
   article.url = article.url || location.href;
 
   // detect doi
