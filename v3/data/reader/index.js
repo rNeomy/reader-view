@@ -854,9 +854,14 @@ const render = () => chrome.runtime.sendMessage({
   }
 
   const props = {
-    rel: 'shortcut icon',
-    href: article.icon && article.icon.startsWith('data:') ? article.icon : chrome.runtime.getURL('/_favicon/?pageUrl=') + encodeURIComponent(article.url) + '&size=32'
+    rel: 'shortcut icon'
   };
+  if (article.icon && article.icon.startsWith('data:')) {
+    props.href = article.icon;
+  }
+  else if (chrome.runtime.getManifest()['manifest_version'] === 3) {
+    props.href = chrome.runtime.getURL('/_favicon/?pageUrl=') + encodeURIComponent(article.url) + '&size=32';
+  }
 
   if (config.prefs['show-icon'] === false) {
     props.href = '/data/icons/32.png';
