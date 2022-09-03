@@ -72,6 +72,39 @@ const nav = {
 };
 window.nav = nav;
 
+// favicon
+const favicon = article => {
+  const next = (href = '/data/icons/32.png') => {
+    const link = Object.assign(document.querySelector(`link[rel*='icon']`) || document.createElement('link'), {
+      rel: 'shortcut icon',
+      href
+    });
+    document.head.appendChild(link);
+  };
+
+  if (config.prefs['show-icon'] === false) {
+    next();
+  }
+  else if (article.icon && article.icon.startsWith('data:')) {
+    next(article.icon);
+  }
+  else if (chrome.runtime.getManifest()['manifest_version'] === 3) {
+    chrome.permissions.contains({
+      permissions: ['favicon']
+    }, granted => {
+      if (granted) {
+        next(chrome.runtime.getURL('/_favicon/?pageUrl=') + encodeURIComponent(article.url) + '&size=32');
+      }
+      else {
+        next();
+      }
+    });
+  }
+  else {
+    next();
+  }
+};
+
 const template = async () => {
   const r = await await fetch('template.html');
   return await r.text();
@@ -529,7 +562,6 @@ shortcuts.render = () => {
     }
   });
   chrome.runtime.onMessage.addListener(request => {
-    console.log(request);
     if (request.cmd === 'export-highlights' && highlight.used) {
       post();
     }
@@ -778,7 +810,8 @@ const render = () => chrome.runtime.sendMessage({
 
   article = obj;
 
-  document.title = document.oTitle = config.prefs.title.replace('[ORIGINAL]', article.title.replace(' :: Reader View', ''))
+  document.title = document.oTitle = config.prefs.title
+    .replace('[ORIGINAL]', (article.title || args.get('url')).replace(' :: Reader View', ''))
     .replace('[BRAND]', 'Reader View');
 
   if (!article) { // open this page from history for instance
@@ -840,7 +873,13 @@ const render = () => chrome.runtime.sendMessage({
           'warn-on-remote-resources': true
         }, prefs => {
           if (prefs['warn-on-remote-resources']) {
-            tips.show(1, false);
+            chrome.permissions.contains({
+              origins: ['*://*/*']
+            }, granted => {
+              if (granted === false) {
+                tips.show(1, false);
+              }
+            });
           }
           shown = true;
         });
@@ -854,21 +893,8 @@ const render = () => chrome.runtime.sendMessage({
     e.src = article.url.split(':')[0] + ':' + e.getAttribute('src');
   }
 
-  const props = {
-    rel: 'shortcut icon'
-  };
-  if (article.icon && article.icon.startsWith('data:')) {
-    props.href = article.icon;
-  }
-  else if (chrome.runtime.getManifest()['manifest_version'] === 3) {
-    props.href = chrome.runtime.getURL('/_favicon/?pageUrl=') + encodeURIComponent(article.url) + '&size=32';
-  }
-
-  if (config.prefs['show-icon'] === false) {
-    props.href = '/data/icons/32.png';
-  }
-  const link = Object.assign(document.querySelector(`link[rel*='icon']`) || document.createElement('link'), props);
-  document.head.appendChild(link);
+  // favicon
+  favicon(article);
 
   // navigation
   {

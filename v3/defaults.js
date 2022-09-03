@@ -17,6 +17,7 @@ self.defaults = {
   'tts-minlength': 60,
   'tts-separator': '\n!\n',
   'tts-scroll': 'center',
+  'ask-for-favicon': true,
   'mail-to': 'email@example.com',
   'mail-max': 1500,
   'mail-ending': `
