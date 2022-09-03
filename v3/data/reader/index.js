@@ -529,6 +529,7 @@ shortcuts.render = () => {
     }
   });
   chrome.runtime.onMessage.addListener(request => {
+    console.log(request);
     if (request.cmd === 'export-highlights' && highlight.used) {
       post();
     }

@@ -115,21 +115,48 @@ lazy.watch = (tabId, info, tab) => {
   }
 };
 
+const aStorage = {
+  set(id, data, cleanup = false) {
+    return new Promise((resolve, reject) => chrome.storage.session.set({
+      [id]: data
+    }, () => {
+      const {lastError} = chrome.runtime;
+      if (lastError && lastError.message.includes('exceeded') && cleanup === false) {
+        console.log(lastError.message);
+        chrome.storage.session.clear(() => {
+          aStorage.set(id, data, true).then(resolve, reject);
+        });
+      }
+      else if (lastError) {
+        reject(lastError);
+      }
+      else {
+        resolve();
+      }
+    }));
+  },
+  get(id) {
+    return new Promise(resolve => chrome.storage.session.get({
+      [id]: false
+    }, ps => resolve(ps[id])));
+  }
+};
+// delete stored article
+chrome.tabs.onRemoved.addListener(tabId => chrome.storage.session.remove(tabId + ''));
+
 const onMessage = (request, sender, response) => {
   if (request.cmd === 'switch-to-reader-view') {
     onClicked(sender.tab);
   }
   else if (request.cmd === 'open-reader' && request.article) {
     request.article.icon = sender.tab.favIconUrl;
-    chrome.storage.session.set({
-      [sender.tab.id]: request.article
-    });
-
-    const id = sender.tab ? sender.tab.id : '';
-    const url = sender.tab ? sender.tab.url : '';
-    chrome.tabs.update(id, {
-      url: chrome.runtime.getURL('/data/reader/index.html?id=' + id + '&url=' + encodeURIComponent(url))
-    });
+    aStorage.set(sender.tab.id, request.article).then(() => {
+      const id = sender.tab ? sender.tab.id : '';
+      const url = sender.tab ? sender.tab.url : '';
+      chrome.tabs.update(id, {
+        url: chrome.runtime.getURL('/data/reader/index.html?id=' + id + '&url=' + encodeURIComponent(url))
+      });
+    }).catch(notify);
   }
   else if (request.cmd === 'open-reader') {
     notify(chrome.i18n.getMessage('bg_warning_1'));
@@ -139,15 +166,12 @@ const onMessage = (request, sender, response) => {
   }
   else if (request.cmd === 'read-data') {
     const id = sender.tab ? sender.tab.id : '';
-    chrome.storage.session.get({
-      [id]: false
-    }, cache => {
-      const article = cache[id];
+    aStorage.get(id).then(article => {
       if (article) {
         chrome.storage.local.get({
           'highlights-objects': defaults['highlights-objects']
         }, prefs => {
-          article.highlights = prefs['highlights-objects'][cache[id].url.split('#')[0]];
+          article.highlights = prefs['highlights-objects'][article.url.split('#')[0]];
           response(article);
         });
         chrome.action.setIcon({
@@ -237,9 +261,6 @@ const onMessage = (request, sender, response) => {
   }
 };
 chrome.runtime.onMessage.addListener(onMessage);
-
-// delete stored article
-chrome.tabs.onRemoved.addListener(tabId => chrome.storage.session.remove(tabId + ''));
 
 /* remove highlighting cache */
 chrome.storage.onChanged.addListener(ps => {
