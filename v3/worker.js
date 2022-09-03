@@ -122,7 +122,7 @@ const aStorage = {
     }, () => {
       const {lastError} = chrome.runtime;
       if (lastError && lastError.message.includes('exceeded') && cleanup === false) {
-        console.log(lastError.message);
+        console.log(lastError.message, 'Clean up...');
         chrome.storage.session.clear(() => {
           aStorage.set(id, data, true).then(resolve, reject);
         });
