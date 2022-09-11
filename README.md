@@ -11,6 +11,7 @@ Reader View extension brings Mozilla's open-source Readability implantation to C
 ### Links
 
   * Homepage: https://add0n.com/chrome-reader-view.html
+  * Produce Review: https://webextension.org/blog/2022/04/17/reader-view-extension.html
   * Chrome: https://chrome.google.com/webstore/detail/reader-view/ecabifbgmdmgdllomnfinbmaellmclnh
   * Firefox: https://addons.mozilla.org/en-US/firefox/addon/readability-based-reader-view/
   * Opera: https://addons.opera.com/en/extensions/details/reader-view-2/
