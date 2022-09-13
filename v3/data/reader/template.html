@@ -95,6 +95,9 @@ body[data-images=false] svg,
 body[data-images=false] img {
   display: none;
 }
+svg:not([width]):not([height]) {
+  max-width: 25vmin;
+}
 a {
   color: var(--lk);
   text-decoration: none;

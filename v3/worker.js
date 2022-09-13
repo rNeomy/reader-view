@@ -26,7 +26,7 @@ self.importScripts('navigate.js');
 const notify = e => chrome.notifications.create({
   title: chrome.runtime.getManifest().name,
   type: 'basic',
-  iconUrl: 'data/icons/48.png',
+  iconUrl: '/data/icons/48.png',
   message: e.message || e
 });
 
@@ -115,34 +115,27 @@ lazy.watch = (tabId, info, tab) => {
   }
 };
 
+// http://add0n.com/chrome-reader-view.html#IDComment1116657737
 const aStorage = {
-  set(id, data, cleanup = false) {
-    return new Promise((resolve, reject) => chrome.storage.session.set({
-      [id]: data
-    }, () => {
-      const {lastError} = chrome.runtime;
-      if (lastError && lastError.message.includes('exceeded') && cleanup === false) {
-        console.warn(lastError.message, 'Clean up...');
-        chrome.storage.session.clear(() => {
-          aStorage.set(id, data, true).then(resolve, reject);
-        });
-      }
-      else if (lastError) {
-        reject(lastError);
-      }
-      else {
-        resolve();
-      }
-    }));
+  cache: {},
+  ids: {},
+  set(id, data) {
+    aStorage.cache[id] = data;
+
+    return Promise.resolve();
   },
   get(id) {
-    return new Promise(resolve => chrome.storage.session.get({
-      [id]: false
-    }, ps => resolve(ps[id])));
+    clearTimeout(aStorage.ids[id]);
+    aStorage.ids[id] = setTimeout(() => delete aStorage.cache[id], 120 * 1000);
+    return Promise.resolve(aStorage.cache[id] || false);
   }
 };
 // delete stored article
-chrome.tabs.onRemoved.addListener(tabId => chrome.storage.session.remove(tabId + ''));
+chrome.tabs.onRemoved.addListener(id => {
+  clearTimeout(aStorage.ids[id]);
+  delete aStorage.ids[id];
+  delete aStorage.cache[id];
+});
 
 const onMessage = (request, sender, response) => {
   if (request.cmd === 'switch-to-reader-view') {
