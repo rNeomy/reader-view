@@ -1,5 +1,53 @@
 {
   "description": {
     "message": "剥离按钮、背景图像等杂物，改变页面的文字大小、对比度和布局，以提高可读性"
+  },
+  "rd_printing": {
+    "message": "打印阅读器视图 (command)"
+  },
+  "rd_screenshot": {
+    "message": "截图当前视图 (command)"
+  },
+  "rd_email": {
+    "message": "发送到邮箱 (command)"
+  },
+  "rd_save": {
+    "message": "保存HTML格式副本 (command)\n按Alt忽略便笺"
+  },
+  "rd_fullscreen": {
+    "message": "切换全屏 (command)"
+  },
+  "rd_design": {
+    "message": "设计模式 (command)\n\n启用后可像在MS Word中那样编辑和删除页面元素\n\nCtrl/Command + B: 粗体\nCtrl/Command + I: 斜体\nCtrl/Command + U: 下划线"
+  },
+  "rd_speech": {
+    "message": "播放文章 (command)\n选中开始位置的文本并点击按钮可从指定位置开始播放"
+  },
+  "rd_images": {
+    "message": "图片开关 (command)"
+  },
+  "rd_note": {
+    "message": "添加一个新的便笺 (command)"
+  },
+  "rd_highlight": {
+    "message": "高亮 (command)\n\n高亮将会在浏览器重启前一直存在"
+  },
+  "rd_warning_1": {
+    "message": "阅读器视图不可用！ 请返回到原页面并再次进入阅读器视图！"
+  },
+  "bg_simple_mode": {
+    "message": "打开简洁模式"
+  },
+  "bg_reader_view": {
+    "message": "打开阅读器视图"
+  },
+  "bg_inactive_reader_view": {
+    "message": "后台打开阅读器视图"
+  },
+  "bg_switch_reader": {
+    "message": "切换到阅读器视图"
+  },
+  "bg_warning_1": {
+    "message": "抱歉，当前页面无法转换！"
   }
 }
