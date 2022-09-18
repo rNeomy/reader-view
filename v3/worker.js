@@ -138,6 +138,8 @@ chrome.tabs.onRemoved.addListener(id => {
 });
 
 const onMessage = (request, sender, response) => {
+  console.log(request);
+
   if (request.cmd === 'switch-to-reader-view') {
     onClicked(sender.tab);
   }
@@ -201,7 +203,7 @@ const onMessage = (request, sender, response) => {
         openerTabId: id,
         index: sender.tab.index + 1,
         active: false
-      }, t => lazy(t.id));
+      }, t => request.reader && lazy(t.id));
     }
   }
   else if (request.cmd === 'reader-on-reload') {
