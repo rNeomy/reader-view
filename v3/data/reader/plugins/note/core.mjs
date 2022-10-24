@@ -102,9 +102,10 @@ Color: Press "Alt + Number" or "Option + Number"
   textarea.onkeypress = tick;
 
   textarea.onkeydown = e => {
-    if (e.code === 'Escape') {
+    if (e.key === 'Escape') {
       e.stopPropagation();
-      if (confirm('Permanently remove this note?')) {
+
+      if (textarea.value === '' || confirm('Permanently remove this note?')) {
         tick.active = false;
         delete notes[id];
         chrome.storage.local.set({
@@ -112,8 +113,9 @@ Color: Press "Alt + Number" or "Option + Number"
         }, () => textarea.remove());
       }
     }
-    else if (e.code.startsWith('Digit') && e.altKey) {
-      const n = Number(e.code.replace('Digit', ''));
+    else if ((e.keyCode >= 48 && e.keyCode <= 57) && e.altKey) {
+      const n = e.keyCode - 48;
+
       textarea.dataset.color =
       textarea.style['background-color'] =
       style.background = BG[((n - 1) % BG.length)];

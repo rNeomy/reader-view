@@ -990,7 +990,7 @@ const render = () => chrome.runtime.sendMessage({
           cmd: 'exit-fullscreen'
         });
       }
-      if (e.code === 'KeyJ' && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+      if (e.key.toUpperCase() === 'J' && e.shiftKey && (e.ctrlKey || e.metaKey)) {
         iframe.contentDocument.body.focus();
         iframe.contentDocument.body.click();
 
@@ -1000,7 +1000,7 @@ const render = () => chrome.runtime.sendMessage({
 
       shortcuts.forEach(o => {
         const s = config.prefs.shortcuts[o.id] || '';
-        if (s.indexOf(e.code) === -1) {
+        if (s.indexOf('Key' + e.key.toUpperCase()) === -1) {
           return;
         }
         if (s.indexOf('Ctrl/Command') !== -1 && (e.ctrlKey || e.metaKey) === false) {
@@ -1025,15 +1025,15 @@ const render = () => chrome.runtime.sendMessage({
     iframe.contentWindow.addEventListener('keydown', e => {
       if (iframe.contentDocument.designMode === 'on') {
         const meta = e.metaKey || e.ctrlKey;
-        if (meta && e.code === 'KeyB') {
+        if (meta && e.key.toUpperCase() === 'B') {
           iframe.contentDocument.execCommand('bold');
           e.preventDefault();
         }
-        else if (meta && e.code === 'KeyI') {
+        else if (meta && e.key.toUpperCase() === 'I') {
           iframe.contentDocument.execCommand('italic');
           e.preventDefault();
         }
-        else if (meta && e.code === 'KeyU') {
+        else if (meta && e.key.toUpperCase() === 'U') {
           iframe.contentDocument.execCommand('underline');
           e.preventDefault();
         }
