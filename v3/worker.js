@@ -138,8 +138,6 @@ chrome.tabs.onRemoved.addListener(id => {
 });
 
 const onMessage = (request, sender, response) => {
-  console.log(request);
-
   if (request.cmd === 'switch-to-reader-view') {
     onClicked(sender.tab);
   }

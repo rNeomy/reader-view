@@ -1,67 +1,134 @@
 // overwrites to support custom voices
 {
-  function build(text) {
-    // const r = new RegExp(this.SEPARATOR.replace(/\//g, '//'), 'g');
-    // text = text.replace(text, `<break strength="strong"/>`);
-    return this.permission + 'api/v3/synthesize?text=' + encodeURIComponent(text) +
-      '&voice=' + encodeURIComponent(this.lang + '_' + this.key + 'Voice') +
-      '&download=true&accept=' + encodeURIComponent('audio/ogg;codec=opus');
+  const sha256 = async text => {
+    const buffer = new TextEncoder().encode(text);
+    const hash = await crypto.subtle.digest('SHA-256', buffer);
+    const arr = Array.from(new Uint8Array(hash));
+    return arr.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
+  const m = new Map();
+
+  const guid = async text => {
+    const hash = await sha256(text);
+
+    if (m.has(hash)) {
+      return m.get(hash);
+    }
+
+    const id = [4, 2, 2, 2, 6].map(n => {
+      const ab = new Uint8Array(n);
+      crypto.getRandomValues(ab);
+
+      return ab;
+    }).map(ab => [...ab].map(byte => byte.toString(16).padStart(2, '0')).join('')).join('-');
+
+    m.set(hash, id);
+    return id;
+  };
+
+  const n = new Map();
+
+  // eslint-disable-next-line no-inner-declarations
+  async function build(text) {
+    const sessionID = await guid(text);
+
+    if (n.has(sessionID)) {
+      return n.get(sessionID);
+    }
+
+    const prosody = document.createElement('prosody');
+    prosody.setAttribute('pitch', '0%');
+    prosody.setAttribute('rate', '-0%');
+    prosody.textContent = text;
+
+    const r = await fetch('https://www.ibm.com/demos/live/tts-demo/api/tts/store', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json;charset=UTF-8'
+      },
+      body: JSON.stringify({
+        sessionID,
+        ssmlText: prosody.outerHTML
+      })
+    });
+    const j = await r.json();
+    if (j.status === 'success') {
+      const href = 'https://www.ibm.com/demos/live/tts-demo/api/tts/newSynthesize?voice=' + this.key + '&id=' + sessionID;
+
+      n.set(sessionID, href);
+      return href;
+    }
+    throw Error('Server status is ' + j.status);
   }
+
   const getVoices = speechSynthesis.getVoices;
   speechSynthesis.getVoices = function(loaded = false) {
     const s = getVoices.call(speechSynthesis, loaded);
     if (s.length || loaded) {
       return [...s, ...[
-        {key: 'Allison', name: 'Allison (female, expressive, transformable) (Watson)', lang: 'en-US'},
-        {key: 'AllisonV3', name: 'AllisonV3 (female, enhanced dnn) (Watson)', lang: 'en-US'},
-        {key: 'EmilyV3', name: 'EmilyV3 (female, enhanced dnn) (Watson)', lang: 'en-US'},
-        {key: 'HenryV3', name: 'HenryV3 (male, enhanced dnn) (Watson)', lang: 'en-US'},
-        {key: 'KevinV3', name: 'KevinV3 (male, enhanced dnn) (Watson)', lang: 'en-US'},
-        {key: 'Lisa', name: 'Lisa (female, transformable) (Watson)', lang: 'en-US'},
-        {key: 'LisaV3', name: 'LisaV3 (female, enhanced dnn) (Watson)', lang: 'en-US'},
-        {key: 'Michael', name: 'Michael (male, transformable) (Watson)', lang: 'en-US'},
-        {key: 'MichaelV3', name: 'MichaelV3 (male, enhanced dnn) (Watson)', lang: 'en-US'},
-        {key: 'OliviaV3', name: 'OliviaV3 (female, enhanced dnn) (Watson)', lang: 'en-US'},
-        {key: 'Omar', name: 'Omar (male) (Watson)', lang: 'ar-AR'},
-        {key: 'Isabela', name: 'Isabela (female) (Watson)', lang: 'pt-BR'},
-        {key: 'IsabelaV3', name: 'IsabelaV3 (female, enhanced dnn) (Watson)', lang: 'pt-BR'},
-        {key: 'CharlotteV3', name: 'CharlotteV3 (female, enhanced dnn) (Watson)', lang: 'en-GB'},
-        {key: 'JamesV3', name: 'JamesV3 (male, enhanced dnn) (Watson)', lang: 'en-GB'},
-        {key: 'Kate', name: 'Kate (female) (Watson)', lang: 'en-GB'},
-        {key: 'KateV3', name: 'KateV3 (female, enhanced dnn) (Watson)', lang: 'en-GB'},
-        {key: 'Enrique', name: 'Enrique (male) (Watson)', lang: 'es-ES'},
-        {key: 'EnriqueV3', name: 'EnriqueV3 (male, enhanced dnn) (Watson)', lang: 'es-ES'},
-        {key: 'Laura', name: 'Laura (female) (Watson)', lang: 'es-ES'},
-        {key: 'LauraV3', name: 'LauraV3 (female, enhanced dnn) (Watson)', lang: 'es-ES'},
-        {key: 'LiNa', name: 'LiNa (female) (Watson)', lang: 'zh-CN'},
-        {key: 'WangWei', name: 'WangWei (Male) (Watson)', lang: 'zh-CN'},
-        {key: 'ZhangJing', name: 'ZhangJing (female) (Watson)', lang: 'zh-CN'},
-        {key: 'Emma', name: 'Emma (female) (Watson)', lang: 'nl-NL'},
-        {key: 'Liam', name: 'Liam (male) (Watson)', lang: 'nl-NL'},
-        {key: 'NicolasV3', name: 'NicolasV3 (male, enhanced dnn) (Watson)', lang: 'fr-FR'},
-        {key: 'Renee', name: 'Renee (female) (Watson)', lang: 'fr-FR'},
-        {key: 'ReneeV3', name: 'ReneeV3 (female, enhanced dnn) (Watson)', lang: 'fr-FR'},
-        {key: 'Birgit', name: 'Birgit (female) (Watson)', lang: 'de-DE'},
-        {key: 'BirgitV3', name: 'BirgitV3 (female, enhanced dnn) (Watson)', lang: 'de-DE'},
-        {key: 'Dieter', name: 'Dieter (male) (Watson)', lang: 'de-DE'},
-        {key: 'DieterV3', name: 'DieterV3 (male, enhanced dnn) (Watson)', lang: 'de-DE'},
-        {key: 'ErikaV3', name: 'ErikaV3 (female, enhanced dnn) (Watson)', lang: 'de-DE'},
-        {key: 'Francesca', name: 'Francesca (female) (Watson)', lang: 'it-IT'},
-        {key: 'FrancescaV3', name: 'FrancescaV3 (female, enhanced dnn) (Watson)', lang: 'it-IT'},
-        {key: 'Emi', name: 'Emi (female) (Watson)', lang: 'ja-JP'},
-        {key: 'EmiV3', name: 'EmiV3 (female, enhanced dnn) (Watson)', lang: 'ja-JP'},
-        {key: 'Youngmi', name: 'Youngmi (female) (Watson)', lang: 'ko-KR'},
-        {key: 'Yuna', name: 'Yuna (female) (Watson)', lang: 'ko-KR'},
-        {key: 'Sofia', name: 'Sofia (female) (Watson)', lang: 'es-LA'},
-        {key: 'SofiaV3', name: 'SofiaV3 (female, enhanced dnn) (Watson)', lang: 'es-LA'},
-        {key: 'Sofia', name: 'Sofia (female) (Watson)', lang: 'es-US'},
-        {key: 'SofiaV3', name: 'SofiaV3 (female, enhanced dnn) (Watson)', lang: 'es-US'}
+        {key: 'ar-AR_OmarVoice', name: 'Arabic Omar (Watson)', lang: 'ar-AR'},
+
+        {key: 'zh-CN_WangWeiVoice', name: 'Chinese WangWei (Watson)', lang: 'zh-CN'},
+        {key: 'zh-CN_ZhangJingVoice', name: 'Chinese ZhangJing (Watson)', lang: 'zh-CN'},
+        {key: 'zh-CN_LiNaVoice', name: 'Chinese LiNa (Watson)', lang: 'zh-CN'},
+
+        {key: 'cs-CZ_AlenaVoice', name: 'Czech Alena (Watson)', lang: 'cs-CZ'},
+
+        {key: 'nl-BE_AdeleVoice', name: 'Dutch Adele (Watson)', lang: 'nl-BE'},
+        {key: 'nl-BE_BramVoice', name: 'Dutch Bram (Watson)', lang: 'nl-BE'},
+        {key: 'nl-NL_EmmaVoice', name: 'Dutch Emma (Watson)', lang: 'nl-NL'},
+        {key: 'nl-NL_LiamVoice', name: 'Dutch Liam (Watson)', lang: 'nl-NL'},
+
+
+        {key: 'en-US_EmmaExpressive', name: 'English Emma Expressive(Watson)', lang: 'en-US'},
+        {key: 'en-US_LisaExpressive', name: 'English Lisa Expressive(Watson)', lang: 'en-US'},
+        {key: 'en-US_MichaelExpressive', name: 'English Michael Expressive(Watson)', lang: 'en-US'},
+        {key: 'en-US_AllisonV3Voice', name: 'English Allison (Watson)', lang: 'en-US'},
+        {key: 'en-US_EmilyV3Voice', name: 'English Emily (Watson)', lang: 'en-US'},
+        {key: 'en-US_HenryV3Voice', name: 'English Henry (Watson)', lang: 'en-US'},
+        {key: 'en-US_KevinV3Voice', name: 'English Kevin (Watson)', lang: 'en-US'},
+        {key: 'en-US_OliviaV3Voice', name: 'English Olivia (Watson)', lang: 'en-US'},
+
+        {key: 'en-AU_CraigVoice', name: 'English Craig (Watson)', lang: 'en-AU'},
+        {key: 'en-AU_MadisonVoice', name: 'English Madison (Watson)', lang: 'en-AU'},
+        {key: 'en-AU_SteveVoice', name: 'English Steve (Watson)', lang: 'en-AU'},
+
+        {key: 'en-GB_KateV3Voice', name: 'English Kate (Watson)', lang: 'en-GB'},
+        {key: 'en-GB_CharlotteV3Voice', name: 'English Charlotte (Watson)', lang: 'en-GB'},
+        {key: 'en-GB_JamesV3Voice', name: 'English James (Watson)', lang: 'en-GB'},
+
+        {key: 'fr-CA_LouiseV3Voice', name: 'French Louise (Watson)', lang: 'fr-CA'},
+        {key: 'fr-FR_ReneeV3Voice', name: 'French Renee (Watson)', lang: 'fr-FR'},
+        {key: 'fr-FR_NicolasV3Voice', name: 'French Nicolas (Watson)', lang: 'fr-FR'},
+
+        {key: 'de-DE_BirgitV3Voice', name: 'German Birgit (Watson)', lang: 'de-DE'},
+        {key: 'de-DE_DieterV3Voice', name: 'German Dieter (Watson)', lang: 'de-DE'},
+        {key: 'de-DE_ErikaV3Voice', name: 'German Erika (Watson)', lang: 'de-DE'},
+
+        {key: 'it-IT_FrancescaV3Voice', name: 'Italian Francesca (Watson)', lang: 'it-IT'},
+
+        {key: 'ja-JP_EmiV3Voice', name: 'Japanese Emi (Watson)', lang: 'ja-JP'},
+
+        {key: 'ko-KR_HyunjunVoice', name: 'Korean Hyunjun (Watson)', lang: 'ko-KR'},
+        {key: 'ko-KR_SiWooVoice', name: 'Korean SiWoo (Watson)', lang: 'ko-KR'},
+        {key: 'ko-KR_YunaVoice', name: 'Korean Yuna (Watson)', lang: 'ko-KR'},
+        {key: 'ko-KR_YoungmiVoice', name: 'Korean Youngmi (Watson)', lang: 'ko-KR'},
+
+        {key: 'pt-BR_IsabelaV3Voice', name: 'Portuguese Isabela (Watson)', lang: 'pt-BR'},
+
+        {key: 'es-ES_EnriqueV3Voice', name: 'Spanish Enrique (Watson)', lang: 'es-ES'},
+        {key: 'es-ES_LauraV3Voice', name: 'Spanish Laura (Watson)', lang: 'es-ES'},
+        {key: 'es-LA_SofiaV3Voice', name: 'Spanish Sofia (Watson)', lang: 'es-LA'},
+        {key: 'es-US_SofiaV3Voice', name: 'Spanish Sofia (Watson)', lang: 'es-US'},
+
+        {key: 'sv-SE_IngridVoice', name: 'Swedish Ingrid (Watson)', lang: 'sv-SE'}
       ].map(o => Object.assign(o, {
         default: false,
         localService: false,
         voiceURI: 'custom',
         build,
-        permission: 'https://text-to-speech-demo.ng.bluemix.net/'
+        permission: 'https://www.ibm.com/demos/'
       }))];
     }
     else {

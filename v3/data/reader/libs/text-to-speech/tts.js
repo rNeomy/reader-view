@@ -211,10 +211,10 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       this.dead = false;
       this.speak();
     }
-    async [SRC](text) {
+    [SRC](text) {
       return this._voice.build(text);
     }
-    async convert(src) {
+    convert(src) {
       return Promise.resolve(src);
     }
     async speak() {
@@ -332,8 +332,10 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       try {
         const c = await caches.open(this.CACHE);
         const r = await c.match(src);
+
         if (r) {
           const b = await r.blob();
+          console.log(b);
           return URL.createObjectURL(b);
         }
       }
@@ -919,7 +921,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
           }
         };
         const voice = select.selectedOptions[0].voice;
-        if (voice.permission && e.isTrusted) {
+        if (voice.permission) {
           chrome.permissions.request({
             origins: [voice.permission]
           }, granted => {
