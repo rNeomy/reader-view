@@ -77,12 +77,16 @@
       apply(target, self, args) {
         const rtn = Reflect.apply(target, self, args);
 
-        if (rtn) {
-          return Object.assign(
-            rtn,
-            self._getReadTime(rtn.textContent)
-          );
+        try {
+          if (rtn) {
+            return Object.assign(
+              rtn,
+              self._getReadTime(rtn.textContent)
+            );
+          }
         }
+        catch (e) {}
+
         return rtn;
       }
     });

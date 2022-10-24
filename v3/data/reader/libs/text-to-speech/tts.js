@@ -159,6 +159,10 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
     }
     voice(voice) {
       this.local = voice.localService;
+
+      console.log(voice);
+      console.log(new Error().stack);
+
       delete this._voice;
       if (speechSynthesis.speaking && voice.voiceURI === 'custom') {
         speechSynthesis.cancel();
