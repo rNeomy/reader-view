@@ -336,7 +336,6 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
 
         if (r) {
           const b = await r.blob();
-          console.log(b);
           return URL.createObjectURL(b);
         }
       }

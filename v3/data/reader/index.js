@@ -804,8 +804,13 @@ const render = () => chrome.runtime.sendMessage({
   cmd: 'read-data'
 }, async obj => {
   if (obj === false) {
-    alert(chrome.i18n.getMessage('rd_warning_1'));
-    document.querySelector('[data-cmd=close]').click();
+    document.getElementById('content').dataset.msg = chrome.i18n.getMessage('rd_warning_1');
+
+    setTimeout(() => {
+      document.querySelector('[data-cmd=close]').click();
+    }, 3000);
+
+    return;
   }
 
   article = obj;

@@ -19,7 +19,7 @@
   --color-mode-nord-dark-color: #e5e9f0;
   --color-mode-nord-dark-bg: #2e3440;
   --color-font-utils-light: #a2a2a2;
-  --border-color: rgba(181, 181, 181, 0.7);
+  --border-color: rgba(181, 181, 181, 0.3);
   --guide-color: rgba(181, 181, 181, 0.2);
 }
 
@@ -320,6 +320,20 @@ body[data-toolbar=false] #toolbar {
   flex: 1;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+#content::after {
+  content: attr(data-msg);
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font-size: 120%;
+  padding: 10px;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  text-align: center;
 }
 
 #tips {

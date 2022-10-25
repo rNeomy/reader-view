@@ -33,7 +33,7 @@
     "message": "Toggle highlight (command)\n\nThese highlights are persistent until the browser restart"
   },
   "rd_warning_1": {
-    "message": "Reader view is not available anymore. Go back to the original page and switch to the reader view one more time!"
+    "message": "Reader's content is not available anymore. Switching back to the original page in a few seconds..."
   },
   "bg_simple_mode": {
     "message": "Open in Simple Mode"

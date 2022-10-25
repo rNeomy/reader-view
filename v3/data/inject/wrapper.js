@@ -93,7 +93,6 @@
           try {
             const o = self._getReadTime(rtn.textContent);
 
-            console.log(rtn, o);
             if (o) {
               return {
                 ...rtn,

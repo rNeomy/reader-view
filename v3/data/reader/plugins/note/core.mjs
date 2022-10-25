@@ -33,10 +33,10 @@ const BG = [
 const add = (id, {content, style, box}, active = false) => {
   const doc = iframe.contentDocument;
 
-  style = style || {
+  style = Object.assign({
     color: '#2c2c2d',
     background: BG[Math.floor(BG.length * Math.random())]
-  };
+  }, style);
   box = box || {
     left: Math.round(400 + (Math.random() - 0.5) * 300),
     top: doc.documentElement.scrollTop + Math.round(400 + (Math.random() - 0.5) * 300),
