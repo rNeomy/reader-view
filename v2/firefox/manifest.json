@@ -9,7 +9,7 @@
     "activeTab",
     "contextMenus",
     "notifications",
-    "https://text-to-speech-demo.ng.bluemix.net/api/v3/*"
+    "https://www.ibm.com/demos/*"
   ],
   "optional_permissions": [
     "*://*/*",
