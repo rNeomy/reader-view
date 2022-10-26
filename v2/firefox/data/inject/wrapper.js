@@ -22,6 +22,18 @@
 'use strict';
 
 {
+  // http://add0n.com/chrome-reader-view.html#IDComment1117127387
+  HTMLElement.prototype.setAttribute = new Proxy(HTMLElement.prototype.setAttribute, {
+    apply(target, self, args) {
+      try {
+        Reflect.apply(target, self, args);
+      }
+      catch (e) {
+        console.error('setAttribute', args, e);
+      }
+    }
+  });
+
   if (Readability.prototype._getReadTime === undefined) {
     Readability.prototype._getReadTime = function(textContent) {
       const lang = document.documentElement.lang || 'en';

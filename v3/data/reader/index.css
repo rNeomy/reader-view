@@ -99,6 +99,7 @@ iframe {
   align-items: center;
   position: relative;
   box-shadow: 0 0 0 1px var(--border-color);
+  z-index: 1;
 }
 body[data-toolbar=false] #toolbar {
   display: none;

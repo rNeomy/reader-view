@@ -3,7 +3,7 @@
   "name": "Reader View",
   "description": "__MSG_description__",
   "default_locale": "en",
-  "version": "0.6.4",
+  "version": "0.6.6",
   "permissions": [
     "storage",
     "activeTab",
