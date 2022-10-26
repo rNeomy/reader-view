@@ -31,7 +31,7 @@
 
   // eslint-disable-next-line no-inner-declarations
   async function build(text) {
-    const sessionID = await guid(text);
+    const sessionID = await guid(text + this.key);
 
     if (n.has(sessionID)) {
       return n.get(sessionID);
