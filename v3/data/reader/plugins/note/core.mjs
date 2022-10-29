@@ -102,7 +102,7 @@ Color: Press "Alt + Number" or "Option + Number"
   textarea.onkeypress = tick;
 
   textarea.onkeydown = e => {
-    if (e.key === 'Escape') {
+    if (e.code === 'Escape') {
       e.stopPropagation();
 
       if (textarea.value === '' || confirm('Permanently remove this note?')) {
@@ -113,8 +113,8 @@ Color: Press "Alt + Number" or "Option + Number"
         }, () => textarea.remove());
       }
     }
-    else if ((e.keyCode >= 48 && e.keyCode <= 57) && e.altKey) {
-      const n = e.keyCode - 48;
+    else if (e.code.startsWith('Digit') && e.altKey) {
+      const n = Number(e.code.replace('Digit', ''));
 
       textarea.dataset.color =
       textarea.style['background-color'] =
