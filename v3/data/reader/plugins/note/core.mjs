@@ -22,21 +22,12 @@
 
 const notes = {};
 const key = 'notes:' + args.get('url').split('#')[0];
-const BG = [
-  '#fff740',
-  '#feff9c',
-  '#ff65a3',
-  '#ff7eb9',
-  '#7afcff'
-];
 
-const add = (id, {content, style, box}, active = false) => {
+const add = (id, {content, type, box}, active = false) => {
   const doc = iframe.contentDocument;
 
-  style = Object.assign({
-    color: '#2c2c2d',
-    background: BG[Math.floor(BG.length * Math.random())]
-  }, style);
+  type = isNaN(type) ? Math.floor(5 * Math.random()) : type;
+
   box = box || {
     left: Math.round(400 + (Math.random() - 0.5) * 300),
     top: doc.documentElement.scrollTop + Math.round(400 + (Math.random() - 0.5) * 300),
@@ -49,7 +40,7 @@ const add = (id, {content, style, box}, active = false) => {
     notes[id] = {
       date: Date.now(),
       box,
-      style,
+      type,
       content: textarea.value
     };
 
@@ -81,15 +72,13 @@ Delete: Press "ESC" when note is focused
 Color: Press "Alt + Number" or "Option + Number"
 `;
   textarea.style = `
-    color: ${style.color};
-    background-color: ${style.background};
     width: ${box.width}px;
     height: ${box.height}px;
     left: ${box.left}px;
     top: ${box.top}px;
   `;
   textarea.value = content;
-  textarea.dataset.color = style.background;
+  textarea.setAttribute('type', type);
 
   const resizeObserver = new ResizeObserver(() => {
     box.width = Math.max(32, parseInt(getComputedStyle(textarea).width));
@@ -114,11 +103,9 @@ Color: Press "Alt + Number" or "Option + Number"
       }
     }
     else if (e.code.startsWith('Digit') && e.altKey) {
-      const n = Number(e.code.replace('Digit', ''));
+      type = Number(e.code.replace('Digit', '')) % 5;
 
-      textarea.dataset.color =
-      textarea.style['background-color'] =
-      style.background = BG[((n - 1) % BG.length)];
+      textarea.setAttribute('type', type);
       e.preventDefault();
       tick();
     }
@@ -167,9 +154,64 @@ const observe = () => {
 };
 
 function enable() {
+  const styles = document.createElement('style');
+  styles.id = 'note-styling';
+  styles.textContent = `
+    .note {
+      position: absolute;
+      z-index: 10;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: inherit;
+      padding: 5px;
+      min-width: 32px;
+      min-height: 32px;
+    }
+    .note:focus {
+      z-index: 11;
+    }
+    .note[type="0"] {
+      background-color: #fff740;
+      color: #2c2c2d;
+    }
+    .note[type="0"]::placeholder {
+      color: #868226;
+    }
+    .note[type="1"] {
+      background-color: #feff9c;
+      color: #2c2c2d;
+    }
+    .note[type="1"]::placeholder {
+      color: #6d6d3d;
+    }
+    .note[type="2"] {
+      background-color: #ff65a3;
+      color: #2c2c2d;
+    }
+    .note[type="2"]::placeholder {
+      color: #65263f;
+    }
+    .note[type="3"] {
+      background-color: #ff7eb9;
+      color: #2c2c2d;
+    }
+    .note[type="3"]::placeholder {
+      color: #562b3f;
+    }
+    .note[type="4"] {
+      background-color: #7afcff;
+      color: #295c5d;
+    }
+    .note[type="4"]::placeholder {
+      color: #377677;
+    }`;
+
   document.addEventListener('add-note', observe);
 
   ready().then(() => {
+    iframe.contentDocument.body.append(styles);
+
     const s = document.createElement('script');
     s.onload = () => {
       chrome.storage.local.get({
@@ -186,6 +228,7 @@ function enable() {
 }
 function disable() {
   document.removeEventListener('add-note', observe);
+  document.getElementById('note-styling').remove();
 }
 
 export {
