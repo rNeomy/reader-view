@@ -3,6 +3,8 @@
 
 [...document.querySelectorAll('.edit-toolbar')].forEach(e => e.remove());
 
+[...iframe.contentDocument.querySelectorAll('[contenteditable]')].forEach(e => e.removeAttribute('contenteditable'));
+
 {
   const toolbar = document.createElement('iframe');
   const doc = iframe.contentDocument;
