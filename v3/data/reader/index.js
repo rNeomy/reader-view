@@ -774,6 +774,7 @@ document.addEventListener('click', e => {
     if (active === false) {
       document.title = '[Design Mode]';
       add('libs/design-mode/inject.js');
+      [...iframe.contentDocument.querySelectorAll('[contenteditable]')].forEach(e => e.removeAttribute('contenteditable'))
     }
     else {
       document.title = document.oTitle;
