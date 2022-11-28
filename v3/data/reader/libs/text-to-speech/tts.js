@@ -419,7 +419,13 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
         }
         else {
           const parts = [];
+
+          // const segmenter = new Intl.Segmenter('en', {
+          //   granularity: 'sentence'
+          // });
+
           if (typeof tokenizer === 'object') {
+            // parts.push([...segmenter.segment(section.textContent)].map(o => o.segment));
             parts.push(...tokenizer.sentences(section.textContent, {}));
           }
           else {
@@ -709,6 +715,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       this.instance.rate = this.options.rate;
       this.instance.lang = this.options.lang;
       this.instance.volume = this.options.volume;
+
       if (this.audio) {
         this.audio.addEventListener('playing', () => {
           this.audio.volume = this.options.volume;
