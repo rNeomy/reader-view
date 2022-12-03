@@ -110,7 +110,15 @@ const template = async () => {
   return await r.text();
 };
 
-const download = (href, type) => {
+const download = (href, type, convert = false) => {
+  if (convert) {
+    const blob = new Blob([href], {
+      type: 'text/html'
+    });
+    href = URL.createObjectURL(blob);
+    setTimeout(() => URL.revokeObjectURL(href), 10);
+  }
+
   const link = Object.assign(document.createElement('a'), {
     href,
     type,
@@ -272,7 +280,7 @@ shortcuts.render = () => {
   });
   document.getElementById('toolbar').appendChild(span);
 }
-/* save as HTML*/
+/* save as HTML or MarkDown */
 {
   const span = document.createElement('span');
   span.title = chrome.i18n.getMessage('rd_save');
@@ -285,30 +293,41 @@ shortcuts.render = () => {
     for (const s of [...dom.querySelectorAll('script')]) {
       s.remove();
     }
-    // add title
-    const t = document.createElement('title');
-    t.textContent = document.title;
-    dom.querySelector('head').appendChild(t);
-    // convert notes
-    for (const note of [...dom.querySelectorAll('.note')]) {
-      if (note.value && e.altKey === false) {
-        note.textContent = note.value;
-        note.disabled = true;
-      }
-      else {
-        note.remove();
-      }
+    // remove style tags
+    for (const s of [...dom.querySelectorAll('style')]) {
+      s.remove();
     }
+    console.log(dom);
 
-    const content = '<!DOCTYPE html>\n' + dom.outerHTML
-      // remove transition
-      .replace(/transition:.*/, '');
-    const blob = new Blob([content], {
-      type: 'text/html'
-    });
-    const objectURL = URL.createObjectURL(blob);
-    download(objectURL, 'text/html');
-    setTimeout(() => URL.revokeObjectURL(objectURL));
+    if (e.shiftKey) {
+      add('libs/turndown/turndown.js', self.TurndownService).then(() => {
+        const turndownService = new self.TurndownService();
+        const markdown = turndownService.turndown(dom.querySelector('body'));
+
+        download(markdown, 'text/markdown', true);
+      });
+    }
+    else {
+      // add title
+      const t = document.createElement('title');
+      t.textContent = document.title;
+      dom.querySelector('head').appendChild(t);
+      // convert notes
+      for (const note of [...dom.querySelectorAll('.note')]) {
+        if (note.value && e.altKey === false) {
+          note.textContent = note.value;
+          note.disabled = true;
+        }
+        else {
+          note.remove();
+        }
+      }
+
+      const content = '<!DOCTYPE html>\n' + dom.outerHTML
+        // remove transition
+        .replace(/transition:.*/, '');
+      download(content, 'text/html', true);
+    }
   };
   shortcuts.push({
     id: 'save',
