@@ -119,10 +119,16 @@ const download = (href, type, convert = false) => {
     setTimeout(() => URL.revokeObjectURL(href), 10);
   }
 
+  const extension = ({
+    'markdown': 'md'
+  })[type.split('/')[1]] || type.split('/')[1];
+
+  // const extension = type.split('/')[1];
+
   const link = Object.assign(document.createElement('a'), {
     href,
     type,
-    download: article.title.replace( /[<>:"/\\|?*]+/g, '' ) + '.' + type.split('/')[1]
+    download: article.title.replace( /[<>:"/\\|?*]+/g, '' ) + '.' + extension
   });
   link.dispatchEvent(new MouseEvent('click'));
 };
@@ -297,7 +303,6 @@ shortcuts.render = () => {
     for (const s of [...dom.querySelectorAll('style')]) {
       s.remove();
     }
-    console.log(dom);
 
     if (e.shiftKey) {
       add('libs/turndown/turndown.js', self.TurndownService).then(() => {
