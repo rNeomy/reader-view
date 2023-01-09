@@ -67,6 +67,9 @@ const nav = {
       return window.notify('Press ESC again to exit', undefined, 2000);
     }
 
+    chrome.runtime.sendMessage({
+      cmd: 'closed'
+    });
     history.back(-2);
   }
 };

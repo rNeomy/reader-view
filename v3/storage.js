@@ -88,17 +88,23 @@ const aStorage = {
       aStorage.ids[id] = setTimeout(() => delete aStorage.cache[id], 120 * 1000);
       return aStorage.cache[id] || false;
     });
+  },
+  delete(id) {
+    storage.delete(id);
+
+    clearTimeout(aStorage.ids[id]);
+    delete aStorage.ids[id];
+    delete aStorage.cache[id];
   }
 };
 
 // delete stored article
-chrome.tabs.onRemoved.addListener(id => {
-  storage.delete(id);
-  clearTimeout(aStorage.ids[id]);
-  delete aStorage.ids[id];
-  delete aStorage.cache[id];
+chrome.tabs.onRemoved.addListener(id => aStorage.delete(id));
+chrome.runtime.onMessage.addListener((request, sender) => {
+  if (request.cmd === 'closed') {
+    aStorage.delete(sender.tab.id);
+  }
 });
 
 chrome.runtime.onStartup.addListener(storage.clean);
 chrome.runtime.onInstalled.addListener(storage.clean);
-
