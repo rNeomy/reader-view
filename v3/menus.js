@@ -1,36 +1,50 @@
 /* global onClicked, lazy, defaults */
 
-const menus = () => chrome.storage.local.get({
-  'context-open-in-reader-view': defaults['context-open-in-reader-view'],
-  'context-open-in-reader-view-bg': defaults['context-open-in-reader-view-bg'],
-  'context-switch-to-reader-view': defaults['context-switch-to-reader-view']
-}, prefs => {
+const menus = () => {
   chrome.contextMenus.create({
     id: 'open-in-embedded-reader-view',
     title: chrome.i18n.getMessage('bg_simple_mode'),
     contexts: ['action']
   }, () => chrome.runtime.lastError);
-  chrome.contextMenus.create({
-    id: 'open-in-reader-view',
-    title: chrome.i18n.getMessage('bg_reader_view'),
-    contexts: ['link'],
-    visible: prefs['context-open-in-reader-view']
-  }, () => chrome.runtime.lastError);
-  chrome.contextMenus.create({
-    id: 'open-in-reader-view-bg',
-    title: chrome.i18n.getMessage('bg_inactive_reader_view'),
-    contexts: ['link'],
-    visible: prefs['context-open-in-reader-view-bg']
-  }, () => chrome.runtime.lastError);
-  chrome.contextMenus.create({
-    id: 'switch-to-reader-view',
-    title: chrome.i18n.getMessage('bg_switch_reader'),
-    contexts: ['page'],
-    documentUrlPatterns: ['*://*/*'],
-    visible: prefs['context-switch-to-reader-view']
-  }, () => chrome.runtime.lastError);
-});
 
+  chrome.storage.local.get({
+    'context-open-in-reader-view': defaults['context-open-in-reader-view'],
+    'context-open-in-reader-view-bg': defaults['context-open-in-reader-view-bg'],
+    'context-switch-to-reader-view': defaults['context-switch-to-reader-view']
+  }, prefs => {
+    if (prefs['context-open-in-reader-view']) {
+      chrome.contextMenus.create({
+        id: 'open-in-reader-view',
+        title: chrome.i18n.getMessage('bg_reader_view'),
+        contexts: ['link']
+      }, () => chrome.runtime.lastError);
+    }
+    else {
+      chrome.contextMenus.remove('open-in-reader-view', () => chrome.runtime.lastError);
+    }
+    if (prefs['context-open-in-reader-view-bg']) {
+      chrome.contextMenus.create({
+        id: 'open-in-reader-view-bg',
+        title: chrome.i18n.getMessage('bg_inactive_reader_view'),
+        contexts: ['link']
+      }, () => chrome.runtime.lastError);
+    }
+    else {
+      chrome.contextMenus.remove('open-in-reader-view-bg', () => chrome.runtime.lastError);
+    }
+    if (prefs['context-switch-to-reader-view']) {
+      chrome.contextMenus.create({
+        id: 'switch-to-reader-view',
+        title: chrome.i18n.getMessage('bg_switch_reader'),
+        contexts: ['page'],
+        documentUrlPatterns: ['*://*/*']
+      }, () => chrome.runtime.lastError);
+    }
+    else {
+      chrome.contextMenus.remove('switch-to-reader-view', () => chrome.runtime.lastError);
+    }
+  });
+};
 chrome.runtime.onInstalled.addListener(menus);
 chrome.runtime.onStartup.addListener(menus);
 if (chrome.extension.inIncognitoContext) {

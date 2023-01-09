@@ -144,6 +144,8 @@ const update = {
       font-size:  ${prefs['font-size']}px;
       font-family: ${getFont(prefs.font)};
       width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
+    }
+    p {
       text-align: ${prefs['text-align'] ? 'justify' : 'initial'}
     }
     .page {

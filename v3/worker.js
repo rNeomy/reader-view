@@ -18,10 +18,11 @@
     Homepage: https://add0n.com/chrome-reader-view.html
 */
 
-/* global defaults */
+/* global defaults, aStorage */
 self.importScripts('defaults.js');
 self.importScripts('menus.js');
 self.importScripts('navigate.js');
+self.importScripts('storage.js');
 
 const notify = e => chrome.notifications.create({
   title: chrome.runtime.getManifest().name,
@@ -114,28 +115,6 @@ lazy.watch = (tabId, info, tab) => {
     }
   }
 };
-
-// http://add0n.com/chrome-reader-view.html#IDComment1116657737
-const aStorage = {
-  cache: {},
-  ids: {},
-  set(id, data) {
-    aStorage.cache[id] = data;
-
-    return Promise.resolve();
-  },
-  get(id) {
-    clearTimeout(aStorage.ids[id]);
-    aStorage.ids[id] = setTimeout(() => delete aStorage.cache[id], 120 * 1000);
-    return Promise.resolve(aStorage.cache[id] || false);
-  }
-};
-// delete stored article
-chrome.tabs.onRemoved.addListener(id => {
-  clearTimeout(aStorage.ids[id]);
-  delete aStorage.ids[id];
-  delete aStorage.cache[id];
-});
 
 const onMessage = (request, sender, response) => {
   if (request.cmd === 'switch-to-reader-view') {
