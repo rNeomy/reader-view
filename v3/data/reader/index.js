@@ -245,12 +245,38 @@ shortcuts.render = () => {
   span.id = 'screenshot-button';
 
   span.onclick = () => {
-    add('libs/html2canvas/html2canvas.js', self.html2canvas).then(() => {
-      const e = iframe.contentDocument.documentElement;
-      self.html2canvas(e).then(canvas => {
-        const href = canvas.toDataURL();
-        download(href, 'image/png');
-      });
+    chrome.permissions.request({
+      origins: ['<all_urls>']
+    }, granted => {
+      if (granted) {
+        const e = document.getElementById('navigate');
+        e.style.visibility = 'hidden';
+
+        chrome.tabs.captureVisibleTab().then(href => {
+          e.style.visibility = 'visible';
+
+          const {width} = document.getElementById('toolbar').getBoundingClientRect();
+
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const image = new Image();
+
+          image.onload = () => {
+            canvas.width = image.naturalWidth - width * devicePixelRatio;
+            canvas.height = image.naturalHeight;
+
+            ctx.drawImage(image,
+              width * 2, 0,
+              canvas.width, canvas.height,
+              0, 0, canvas.width, canvas.height);
+            download(canvas.toDataURL('image/png'), 'image/png');
+          };
+          image.src = href;
+        }).catch(window.notify);
+      }
+      else {
+        window.notify('Cannot take the screenshot');
+      }
     });
   };
   shortcuts.push({
