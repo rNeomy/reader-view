@@ -264,11 +264,7 @@ shortcuts.render = () => {
           image.onload = () => {
             canvas.width = image.naturalWidth - width * devicePixelRatio;
             canvas.height = image.naturalHeight;
-
-            ctx.drawImage(image,
-              width * 2, 0,
-              canvas.width, canvas.height,
-              0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, width * 2, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
             download(canvas.toDataURL('image/png'), 'image/png');
           };
           image.src = href;
