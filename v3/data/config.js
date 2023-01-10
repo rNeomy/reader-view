@@ -56,3 +56,4 @@ if (typeof config === 'undefined') {
   };
 }
 
+''

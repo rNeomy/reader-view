@@ -47,6 +47,9 @@
   "bg_switch_reader": {
     "message": "Switch to Reader View"
   },
+  "bg_options": {
+    "message": "Open Options"
+  },
   "bg_warning_1": {
     "message": "Sorry, this page cannot be converted!"
   }

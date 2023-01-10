@@ -245,30 +245,39 @@ shortcuts.render = () => {
   span.id = 'screenshot-button';
 
   span.onclick = () => {
+    console.log(1);
     chrome.permissions.request({
       origins: ['<all_urls>']
     }, granted => {
+      console.log(granted);
       if (granted) {
         const e = document.getElementById('navigate');
         e.style.visibility = 'hidden';
 
-        chrome.tabs.captureVisibleTab().then(href => {
-          e.style.visibility = 'visible';
+        chrome.tabs.captureVisibleTab(href => {
+          const lastError = chrome.runtime.lastError;
 
-          const {width} = document.getElementById('toolbar').getBoundingClientRect();
+          if (lastError) {
+            window.notify(lastError);
+          }
+          else {
+            const {width} = document.getElementById('toolbar').getBoundingClientRect();
 
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          const image = new Image();
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const image = new Image();
 
-          image.onload = () => {
-            canvas.width = image.naturalWidth - width * devicePixelRatio;
-            canvas.height = image.naturalHeight;
-            ctx.drawImage(image, width * 2, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
-            download(canvas.toDataURL('image/png'), 'image/png');
-          };
-          image.src = href;
-        }).catch(window.notify);
+            image.onload = () => {
+              canvas.width = image.naturalWidth - width * devicePixelRatio;
+              canvas.height = image.naturalHeight;
+              ctx.drawImage(image, width * 2, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+              download(canvas.toDataURL('image/png'), 'image/png');
+
+              e.style.visibility = 'visible';
+            };
+            image.src = href;
+          }
+        });
       }
       else {
         window.notify('Cannot take the screenshot');
@@ -848,8 +857,18 @@ const ready = () => new Promise(resolve => {
   }
   resolve(iframe.contentDocument);
 });
+iframe.onload = () => {
+  if (article) {
+    ready.busy = false;
+    for (const resolve of ready.cache) {
+      resolve(iframe.contentDocument);
+    }
+    ready.cache.length = 0;
+  }
+};
 ready.busy = true;
 ready.cache = [];
+
 
 const render = () => chrome.runtime.sendMessage({
   cmd: 'read-data'
@@ -873,6 +892,7 @@ const render = () => chrome.runtime.sendMessage({
   if (!article) { // open this page from history for instance
     return location.replace(args.get('url'));
   }
+
   iframe.contentDocument.open();
   const {pathname, hostname} = (new URL(article.url));
   const gcs = window.getComputedStyle(document.documentElement);
@@ -914,11 +934,6 @@ const render = () => chrome.runtime.sendMessage({
     .replaceAll('%data-font%', config.prefs.font)
     .replaceAll('%data-mode%', config.prefs.mode));
   iframe.contentDocument.close();
-  ready.busy = false;
-  for (const resolve of ready.cache) {
-    resolve(iframe.contentDocument);
-  }
-  ready.cache.length = 0;
 
   // remote image loading
   {

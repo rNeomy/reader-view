@@ -7,6 +7,14 @@ const menus = () => {
     contexts: ['action']
   }, () => chrome.runtime.lastError);
 
+  if (/Firefox/.test(navigator.userAgent)) {
+    chrome.contextMenus.create({
+      id: 'open-options',
+      title: chrome.i18n.getMessage('bg_options'),
+      contexts: ['action']
+    }, () => chrome.runtime.lastError);
+  }
+
   chrome.storage.local.get({
     'context-open-in-reader-view': defaults['context-open-in-reader-view'],
     'context-open-in-reader-view-bg': defaults['context-open-in-reader-view-bg'],
@@ -62,7 +70,10 @@ chrome.storage.onChanged.addListener(ps => {
 });
 
 const onContext = ({menuItemId, pageUrl, linkUrl}, tab) => {
-  if (menuItemId === 'switch-to-reader-view') {
+  if (menuItemId === 'open-options') {
+    chrome.runtime.openOptionsPage();
+  }
+  else if (menuItemId === 'switch-to-reader-view') {
     onClicked(tab);
   }
   else if (menuItemId === 'open-in-embedded-reader-view') {

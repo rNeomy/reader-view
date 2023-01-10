@@ -1,7 +1,7 @@
-/* global defaults */
+/* global defaults, ready */
 /* plug-in system */
 
-chrome.storage.local.get({
+ready().then(() => chrome.storage.local.get({
   './plugins/tip/core.mjs': defaults['./plugins/tip/core.mjs'],
   './plugins/doi/core.mjs': defaults['./plugins/doi/core.mjs'],
   './plugins/note/core.mjs': defaults['./plugins/note/core.mjs'],
@@ -24,7 +24,7 @@ chrome.storage.local.get({
   if (prefs['./plugins/health/core.mjs']) {
     import('./plugins/health/core.mjs').then(o => o.enable());
   }
-});
+}));
 chrome.storage.onChanged.addListener(ps => {
   // AMO does not like dynamic imports
   if ('./plugins/tip/core.mjs' in ps) {

@@ -107,7 +107,7 @@ lazy.watch = (tabId, info, tab) => {
     return;
   }
 
-  if (lazy.cache[tabId]) {
+  if (lazy.cache[tabId] && info.status === 'complete') {
     onClicked(tab);
     delete lazy.cache[tabId];
     if (Object.keys(lazy.cache).length === 0) {

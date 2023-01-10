@@ -148,6 +148,9 @@ try {
   const doc = getSelectionHTML() || document.cloneNode(true);
   const article = new Readability(doc).parse();
 
+  console.log(doc);
+  console.log(document.readyState);
+
   if (!article) {
     throw Error('Cannot convert this page!');
   }

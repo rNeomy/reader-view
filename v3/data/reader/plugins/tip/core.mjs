@@ -100,9 +100,7 @@ const permission = e => {
 function enable() {
   document.addEventListener('click', permission);
   // favicon
-  chrome.permissions.contains({
-    permissions: ['favicon']
-  }, granted => {
+  const next = granted => {
     if (config.prefs['ask-for-favicon'] && granted !== true) {
       tips[2].hidden = false;
     }
@@ -113,7 +111,15 @@ function enable() {
       }
       tips.show(i);
     }
-  });
+  };
+  if (chrome.runtime.getManifest()['manifest_version'] === 3) {
+    chrome.permissions.contains({
+      permissions: ['favicon']
+    }, next);
+  }
+  else {
+    next(true);
+  }
 }
 function disable() {
   document.removeEventListener('click', permission);
