@@ -353,6 +353,7 @@ shortcuts.render = () => {
       const t = document.createElement('title');
       t.textContent = document.title;
       dom.querySelector('head').appendChild(t);
+
       // convert notes
       for (const note of [...dom.querySelectorAll('.note')]) {
         if (note.value && e.altKey === false) {
@@ -934,6 +935,11 @@ const render = () => chrome.runtime.sendMessage({
     .replaceAll('%data-font%', config.prefs.font)
     .replaceAll('%data-mode%', config.prefs.mode));
   iframe.contentDocument.close();
+
+  // improves printing title for Firefox; https://github.com/rNeomy/reader-view/issues/157
+  const t = document.createElement('title');
+  t.textContent = document.title.split(/\s*::/)[0];
+  iframe.contentDocument.head.appendChild(t);
 
   // remote image loading
   {
