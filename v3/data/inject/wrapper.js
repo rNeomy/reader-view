@@ -18,24 +18,8 @@
     Homepage: https://add0n.com/chrome-reader-view.html
 */
 
-/* globals Readability, config */
+/* global Readability, config */
 'use strict';
-
-// health check
-{
-  const id = setTimeout(() => {
-    if (confirm(`Oops! Reader View is crashed. Would you like to restart the extension?`)) {
-      chrome.runtime.reload();
-    }
-  }, 3000);
-  chrome.runtime.sendMessage({
-    cmd: 'health-check'
-  }, r => {
-    if (r === true) {
-      clearTimeout(id);
-    }
-  });
-}
 
 {
   // http://add0n.com/chrome-reader-view.html#IDComment1117127387
@@ -145,69 +129,6 @@ function getSelectionHTML() {
 }
 
 try {
-  const doc = getSelectionHTML() || document.cloneNode(true);
-  const article = new Readability(doc).parse();
-
-  console.log(doc);
-  console.log(document.readyState);
-
-  if (!article) {
-    throw Error('Cannot convert this page!');
-  }
-
-  article.url = article.url || location.href;
-
-  // detect doi
-  try {
-    const doi = document.querySelector('[href^="https://doi.org/"]');
-    if (doi) {
-      article.doi = doi.href;
-    }
-    else {
-      const n = /doi:\s([^\s]{3,})/i.exec(document.body.innerText);
-      if (n) {
-        article.doi = 'https://doi.org/' + n[1];
-      }
-      else {
-        const m = /https:\/\/doi\.org\/[^\s]{4,}/.exec(document.body.innerText);
-        if (m) {
-          article.doi = m[0];
-        }
-      }
-    }
-  }
-  catch (e) {
-    console.warn('detect doi', e);
-  }
-  // detect date
-  try {
-    const date = document.querySelector('meta[property="article:published_time"],meta[property="og:pubdate"],meta[property="og:publish_date"],meta[name="citation_online_date"],meta[name="dc.Date"]');
-    if (date) {
-      article.published_time = (new Date(date.content)).toLocaleDateString();
-    }
-    else {
-      const e = document.querySelector('script[type="application/ld+json"]');
-      if (e) {
-        const j = JSON.parse(e.textContent);
-        if (j && j.datePublished) {
-          article.published_time = (new Date(j.datePublished)).toLocaleDateString();
-        }
-      }
-    }
-  }
-  catch (e) {
-    console.warn('detect date', e);
-  }
-
-
-  // https://www.w3.org/International/questions/qa-scripts.en#directions
-  if (article.dir === null) {
-    const lang = document.documentElement.lang;
-    if (lang && ['ar', 'fa', 'he', 'iw', 'ur', 'yi', 'ji'].some(a => lang.indexOf(a) !== -1)) {
-      article.dir = 'rtl';
-    }
-  }
-
   // if a website has an automatic redirect use this method to wait for a new page load
   if (location.href.indexOf('://news.google.') !== -1 &&
       location.href.indexOf('/articles/') !== -1) {
@@ -216,75 +137,161 @@ try {
     }));
   }
   else {
-    const convert = () => config.load(async () => {
-      const prefs = config.prefs;
-      if (prefs.embedded || window.embedded === true) {
-        const {pathname, hostname} = (new URL(article.url));
-        const title = document.title;
-        const getFont = font => {
-          switch (font) {
-          case 'serif':
-            return 'Georgia, "Times New Roman", serif';
-          case 'sans-serif':
-          default:
-            return 'Helvetica, Arial, sans-serif';
+    const convert = () => {
+      // health check
+      const id = setTimeout(() => {
+        if (confirm(`Oops! Reader View is crashed. Would you like to restart the extension?`)) {
+          chrome.runtime.reload();
+        }
+      }, 5000);
+      chrome.runtime.sendMessage({
+        cmd: 'health-check'
+      }, r => {
+        if (r === true) {
+          clearTimeout(id);
+        }
+      });
+      // prepare
+      const doc = getSelectionHTML() || document.cloneNode(true);
+      const article = new Readability(doc).parse();
+
+      if (!article) {
+        throw Error('Cannot convert this page!');
+      }
+
+      article.url = article.url || location.href;
+
+      // detect doi
+      try {
+        const doi = document.querySelector('[href^="https://doi.org/"]');
+        if (doi) {
+          article.doi = doi.href;
+        }
+        else {
+          const n = /doi:\s([^\s]{3,})/i.exec(document.body.innerText);
+          if (n) {
+            article.doi = 'https://doi.org/' + n[1];
           }
-        };
-        const resp = await fetch(chrome.runtime.getURL('/data/reader/template.html'));
-        const html = (await resp.text())
-          .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
-          .replace('%light-color%', '#222')
-          .replace('%light-bg%', 'whitesmoke')
-          .replace('%dark-color%', '#eee')
-          .replace('%dark-bg%', '#333')
-          .replace('%sepia-color%', '#5b4636')
-          .replace('%sepia-bg%', '#f4ecd8')
-          .replace('%solarized-light-color%', '#586e75')
-          .replace('%solarized-light-bg%', '#fdf6e3')
-          .replace('%groove-dark-color%', '#cec4ac')
-          .replace('%groove-dark-bg%', '#282828')
-          .replace('%solarized-dark-color%', '#839496')
-          .replace('%solarized-dark-bg%', '#002b36')
-          .replace('%content%', article.content)
-          .replace('%title%', article.title || 'Unknown Title')
-          .replace('%byline%', article.byline || '')
-          .replace('%reading-time-fast%', article.readingTimeMinsFast)
-          .replace('%reading-time-slow%', article.readingTimeMinsSlow)
-          .replace('%href%', article.url)
-          .replace('%hostname%', hostname)
-          .replace('%pathname%', pathname)
-          .replace('/*user-css*/', `
-            body {
-              font-size:  ${prefs['font-size']}px;
-              font-family: ${getFont(prefs.font)} !important;
-              width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
+          else {
+            const m = /https:\/\/doi\.org\/[^\s]{4,}/.exec(document.body.innerText);
+            if (m) {
+              article.doi = m[0];
             }
-          ` + prefs['user-css'])
-          .replace('%data-images%', prefs['show-images'])
-          .replace('%data-mode%', prefs.mode)
-          .replace('%data-font%', prefs.font)
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-
-        const dom = (new DOMParser()).parseFromString(html, `text/html`);
-        document.head.replaceWith(dom.querySelector('head'));
-        document.body.replaceWith(dom.querySelector('body'));
-        document.title = title;
+          }
+        }
       }
-      else {
-        chrome.runtime.sendMessage({
-          cmd: 'open-reader',
-          article
-        });
+      catch (e) {
+        console.warn('detect doi', e);
       }
-    });
+      // detect date
+      try {
+        const date = document.querySelector('meta[property="article:published_time"],meta[property="og:pubdate"],meta[property="og:publish_date"],meta[name="citation_online_date"],meta[name="dc.Date"]');
+        if (date) {
+          article.published_time = (new Date(date.content)).toLocaleDateString();
+        }
+        else {
+          const e = document.querySelector('script[type="application/ld+json"]');
+          if (e) {
+            const j = JSON.parse(e.textContent);
+            if (j && j.datePublished) {
+              article.published_time = (new Date(j.datePublished)).toLocaleDateString();
+            }
+          }
+        }
+      }
+      catch (e) {
+        console.warn('detect date', e);
+      }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', convert);
+
+      // https://www.w3.org/International/questions/qa-scripts.en#directions
+      if (article.dir === null) {
+        const lang = document.documentElement.lang;
+        if (lang && ['ar', 'fa', 'he', 'iw', 'ur', 'yi', 'ji'].some(a => lang.indexOf(a) !== -1)) {
+          article.dir = 'rtl';
+        }
+      }
+
+      // load
+      config.load(async () => {
+        const prefs = config.prefs;
+        if (prefs.embedded || window.embedded === true) {
+          const {pathname, hostname} = (new URL(article.url));
+          const title = document.title;
+          const getFont = font => {
+            switch (font) {
+            case 'serif':
+              return 'Georgia, "Times New Roman", serif';
+            case 'sans-serif':
+            default:
+              return 'Helvetica, Arial, sans-serif';
+            }
+          };
+          const resp = await fetch(chrome.runtime.getURL('/data/reader/template.html'));
+          const html = (await resp.text())
+            .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
+            .replace('%light-color%', '#222')
+            .replace('%light-bg%', 'whitesmoke')
+            .replace('%dark-color%', '#eee')
+            .replace('%dark-bg%', '#333')
+            .replace('%sepia-color%', '#5b4636')
+            .replace('%sepia-bg%', '#f4ecd8')
+            .replace('%solarized-light-color%', '#586e75')
+            .replace('%solarized-light-bg%', '#fdf6e3')
+            .replace('%groove-dark-color%', '#cec4ac')
+            .replace('%groove-dark-bg%', '#282828')
+            .replace('%solarized-dark-color%', '#839496')
+            .replace('%solarized-dark-bg%', '#002b36')
+            .replace('%content%', article.content)
+            .replace('%title%', article.title || 'Unknown Title')
+            .replace('%byline%', article.byline || '')
+            .replace('%reading-time-fast%', article.readingTimeMinsFast)
+            .replace('%reading-time-slow%', article.readingTimeMinsSlow)
+            .replace('%href%', article.url)
+            .replace('%hostname%', hostname)
+            .replace('%pathname%', pathname)
+            .replace('/*user-css*/', `
+              body {
+                font-size:  ${prefs['font-size']}px;
+                font-family: ${getFont(prefs.font)} !important;
+                width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
+              }
+            ` + prefs['user-css'])
+            .replace('%data-images%', prefs['show-images'])
+            .replace('%data-mode%', prefs.mode)
+            .replace('%data-font%', prefs.font)
+            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
+          const dom = (new DOMParser()).parseFromString(html, `text/html`);
+          document.head.replaceWith(dom.querySelector('head'));
+          document.body.replaceWith(dom.querySelector('body'));
+          document.title = title;
+        }
+        else {
+          chrome.runtime.sendMessage({
+            cmd: 'open-reader',
+            article
+          });
+        }
+      });
+    };
+
+    if (self.converting === true) {
+      console.log('new conversion is skipped');
     }
     else {
-      convert();
+      self.converting = true;
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', convert);
+      }
+      else {
+        convert();
+      }
     }
   }
+  chrome.runtime.sendMessage({
+    cmd: 'converting'
+  });
 }
 catch (e) {
   console.error(e);

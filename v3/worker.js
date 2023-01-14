@@ -46,6 +46,7 @@ const onClicked = async (tab, embedded = false) => {
     try {
       await chrome.scripting.executeScript({
         target,
+        injectImmediately: true,
         files: ['data/inject/Readability.js']
       });
 
@@ -61,19 +62,23 @@ const onClicked = async (tab, embedded = false) => {
 
       await chrome.scripting.executeScript({
         target,
+        injectImmediately: true,
         files: ['defaults.js']
       });
       await chrome.scripting.executeScript({
         target,
+        injectImmediately: true,
         files: ['data/config.js']
       });
       await chrome.scripting.executeScript({
         target,
+        injectImmediately: true,
         func: b => window.embedded = b,
         args: [embedded]
       });
       await chrome.scripting.executeScript({
         target,
+        injectImmediately: true,
         files: ['data/inject/wrapper.js']
       });
     }
@@ -107,7 +112,7 @@ lazy.watch = (tabId, info, tab) => {
     return;
   }
 
-  if (lazy.cache[tabId] && info.status === 'complete') {
+  if (lazy.cache[tabId]) {
     onClicked(tab);
     delete lazy.cache[tabId];
     if (Object.keys(lazy.cache).length === 0) {
@@ -230,6 +235,21 @@ const onMessage = (request, sender, response) => {
   }
   else if (request.cmd === 'health-check') {
     response(true);
+  }
+  else if (request.cmd === 'converting') {
+    chrome.action.setTitle({
+      tabId: sender.tab.id,
+      title: chrome.i18n.getMessage('bg_converting')
+    });
+    chrome.action.setIcon({
+      tabId: sender.tab.id,
+      path: {
+        '16': '/data/icons/green/16.png',
+        '32': '/data/icons/green/32.png',
+        '48': '/data/icons/green/48.png',
+        '64': '/data/icons/green/64.png'
+      }
+    });
   }
 };
 chrome.runtime.onMessage.addListener(onMessage);

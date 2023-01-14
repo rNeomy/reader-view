@@ -52,5 +52,8 @@
   },
   "bg_warning_1": {
     "message": "Sorry, this page cannot be converted!"
+  },
+  "bg_converting": {
+    "message": "Conversion starts when the page finishes loading..."
   }
 }
