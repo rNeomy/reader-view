@@ -335,12 +335,12 @@ shortcuts.render = () => {
     for (const s of [...dom.querySelectorAll('script')]) {
       s.remove();
     }
-    // remove style tags
-    for (const s of [...dom.querySelectorAll('style')]) {
-      s.remove();
-    }
 
     if (e.shiftKey) {
+      // remove style tags (on MarkDown)
+      for (const s of [...dom.querySelectorAll('style')]) {
+        s.remove();
+      }
       add('libs/turndown/turndown.js', self.TurndownService).then(() => {
         const turndownService = new self.TurndownService();
         const markdown = turndownService.turndown(dom.querySelector('body'));
