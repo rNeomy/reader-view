@@ -221,17 +221,23 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
     async speak() {
       this.state = 'play';
       if (this._voice) {
-        const src = await this[SRC](this.instance.text);
-        this.audio.srcs = src;
-        this.emit('status', 'buffering');
-        if (Array.isArray(src)) {
-          const s = src.shift();
-          this.audio.src = await this.convert(s);
+        try {
+          const src = await this[SRC](this.instance.text);
+          this.audio.srcs = src;
+          this.emit('status', 'buffering');
+          if (Array.isArray(src)) {
+            const s = src.shift();
+            this.audio.src = await this.convert(s);
+          }
+          else {
+            this.audio.src = await this.convert(src);
+          }
+          this.audio.play();
         }
-        else {
-          this.audio.src = await this.convert(src);
+        catch (e) {
+          this.emit('error', e.message || 'tts.js: Cannot play this audio. Please use another voice.');
+          this.emit('status', 'error');
         }
-        this.audio.play();
       }
       else {
         speechSynthesis.speak(this.instance);

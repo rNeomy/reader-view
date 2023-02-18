@@ -52,14 +52,17 @@
         ssmlText: prosody.outerHTML
       })
     });
-    const j = await r.json();
-    if (j.status === 'success') {
-      const href = 'https://www.ibm.com/demos/live/tts-demo/api/tts/newSynthesize?voice=' + this.key + '&id=' + sessionID;
+    if (r.ok) {
+      const j = await r.json();
+      if (j.status === 'success') {
+        const href = 'https://www.ibm.com/demos/live/tts-demo/api/tts/newSynthesize?voice=' + this.key + '&id=' + sessionID;
 
-      n.set(sessionID, href);
-      return href;
+        n.set(sessionID, href);
+        return href;
+      }
+      throw Error('Server status is ' + j.status);
     }
-    throw Error('Server status is ' + j.status);
+    throw Error('Server status code is ' + r.status + '. Please use another voice!');
   }
 
   const getVoices = speechSynthesis.getVoices;
