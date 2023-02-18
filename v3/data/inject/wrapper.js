@@ -266,6 +266,11 @@ try {
           document.head.replaceWith(dom.querySelector('head'));
           document.body.replaceWith(dom.querySelector('body'));
           document.title = title;
+
+          self.converting = false;
+          chrome.runtime.sendMessage({
+            cmd: 'converted'
+          });
         }
         else {
           chrome.runtime.sendMessage({

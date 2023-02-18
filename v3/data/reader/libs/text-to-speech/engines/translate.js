@@ -104,7 +104,9 @@
         localService: false,
         voiceURI: 'custom',
         build,
-        permission: 'https://translate.google.com/translate_tts'
+        permission: 'https://translate.google.com/translate_tts',
+        referer: 'https://translate.google.com/',
+        origin: 'https://translate.google.com'
       }))];
     }
     else {

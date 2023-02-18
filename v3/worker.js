@@ -251,6 +251,48 @@ const onMessage = (request, sender, response) => {
       }
     });
   }
+  else if (request.cmd === 'converted') {
+    chrome.action.setTitle({
+      tabId: sender.tab.id,
+      title: chrome.runtime.getManifest().name
+    });
+    chrome.action.setIcon({
+      tabId: sender.tab.id,
+      path: {
+        '16': '/data/icons/blue/16.png',
+        '32': '/data/icons/blue/32.png',
+        '48': '/data/icons/blue/48.png',
+        '64': '/data/icons/blue/64.png'
+      }
+    });
+  }
+  else if (request.cmd === 'prepare-tts-network') {
+    chrome.declarativeNetRequest.updateSessionRules({
+      removeRuleIds: [1010],
+      addRules: [{
+        'id': 1010,
+        'priority': 1,
+        'action': {
+          'type': 'modifyHeaders',
+          'requestHeaders': [{
+            'header': 'referer',
+            'operation': 'set',
+            'value': request.referer
+          }, {
+            'header': 'origin',
+            'operation': 'set',
+            'value': request.origin
+          }]
+        },
+        'condition': {
+          'urlFilter': request.origin,
+          'resourceTypes': ['xmlhttprequest'],
+          'tabIds': [sender.tab.id]
+        }
+      }]
+    }).then(() => response());
+    return true;
+  }
 };
 chrome.runtime.onMessage.addListener(onMessage);
 

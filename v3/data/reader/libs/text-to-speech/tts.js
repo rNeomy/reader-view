@@ -933,7 +933,16 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
             origins: [voice.permission]
           }, granted => {
             if (granted) {
-              next();
+              if (voice.referer && voice.origin) {
+                chrome.runtime.sendMessage({
+                  cmd: 'prepare-tts-network',
+                  referer: voice.referer,
+                  origin: voice.origin
+                }, next);
+              }
+              else {
+                next();
+              }
             }
             else {
               const alt = [...select.selectedOptions[0].parentElement.children]

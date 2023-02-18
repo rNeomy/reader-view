@@ -128,7 +128,9 @@
         localService: false,
         voiceURI: 'custom',
         build,
-        permission: 'https://www.ibm.com/demos/'
+        permission: 'https://www.ibm.com/demos/',
+        referer: 'https://www.ibm.com/demos/live/tts-demo/self-service/home',
+        origin: 'https://www.ibm.com'
       }))];
     }
     else {

@@ -9,7 +9,8 @@
     "activeTab",
     "scripting",
     "contextMenus",
-    "notifications"
+    "notifications",
+    "declarativeNetRequest"
   ],
   "optional_permissions": [
     "favicon"
