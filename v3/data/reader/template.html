@@ -184,8 +184,10 @@ body[data-speech="false"] .tts-speaking::after {
 mark.hghlght {
   background-color: var(--hg);
 }
-h1,h2,h3, h4 {
+body:not([data-columns="1"]) .page :is(h1, h2, h3, h4) {
   column-span: all;
+  background-color: rgba(125, 125, 125, 0.1);
+  padding: 10px;
 }
 .hidden {
   display: none;

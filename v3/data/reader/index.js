@@ -162,6 +162,7 @@ const update = {
     document.querySelector('[data-id=full-width] input').checked = Boolean(prefs.width) === false;
     // as a CSS selector
     document.body.dataset.font = prefs.font;
+    document.body.dataset.colums = prefs['column-count'];
     //
     document.querySelector('#font-details [data-id="font-size"]').textContent = prefs['font-size'] + 'px';
     document.querySelector('#font-details [data-id="screen-width"]').textContent = prefs['width'] || 'unset';
