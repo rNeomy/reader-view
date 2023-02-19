@@ -267,7 +267,6 @@ try {
           document.body.replaceWith(dom.querySelector('body'));
           document.title = title;
 
-          self.converting = false;
           chrome.runtime.sendMessage({
             cmd: 'converted'
           });
@@ -281,11 +280,14 @@ try {
       });
     };
 
-    if (self.converting === true) {
-      console.log('new conversion is skipped');
+    if (self.converting && Date.now() - self.converting < 1000) {
+      console.warn('new conversion is skipped');
     }
     else {
-      self.converting = true;
+      self.converting = Date.now();
+      chrome.runtime.sendMessage({
+        cmd: 'converting'
+      });
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', convert);
       }
@@ -294,9 +296,6 @@ try {
       }
     }
   }
-  chrome.runtime.sendMessage({
-    cmd: 'converting'
-  });
 }
 catch (e) {
   console.error(e);

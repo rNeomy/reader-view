@@ -25,6 +25,15 @@
 const observe = () => {
   const link = article.doi;
   if (link) {
+    const div = document.createElement('div');
+    div.id = 'doi';
+    const a = document.createElement('a');
+    a.href = link;
+    a.target = '_blank';
+    a.textContent = 'Parsing...';
+    div.append('DOI: ', a);
+    iframe.contentDocument.getElementById('published-time').insertAdjacentElement('afterend', div);
+
     fetch(link, {
       headers: {
         'Accept': 'application/vnd.citationstyles.csl+json'
@@ -33,27 +42,23 @@ const observe = () => {
       if (r.indexed) {
         const date = r.indexed.timestamp;
         if (date) {
-          const div = document.createElement('div');
-          div.id = 'doi';
-          const a = document.createElement('a');
-          a.href = article.doi;
-          a.target = '_blank';
           a.textContent = r.DOI;
-          div.appendChild(document.createTextNode('DOI: '));
-          div.appendChild(a);
-          div.appendChild(document.createTextNode(', '));
+
           const more = document.createElement('a');
           more.href = '#';
-          more.textContent = 'Show';
-          const json = document.createElement('pre');
+          more.textContent = 'Show Details';
+
+          div.append(', ', more);
+
           more.onclick = e => {
             e.preventDefault();
             import('./prism/prism.js').then(() => {
+              const json = document.createElement('pre');
               json.id = 'doi-json';
+              div.insertAdjacentElement('afterend', json);
               const code = document.createElement('code');
               code.innerHTML = Prism.highlight(JSON.stringify(r, null, '  '), Prism.languages.json, 'json');
               json.appendChild(code);
-              div.insertAdjacentElement('afterend', json);
 
               const style = document.createElement('link');
               style.href = 'plugins/doi/prism/prism.css';
@@ -61,31 +66,34 @@ const observe = () => {
               iframe.contentDocument.head.appendChild(style);
 
               more.expanded = true;
-              more.textContent = 'Hide';
+              more.textContent = 'Hide Details';
               more.onclick = e => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (more.expanded) {
                   more.expanded = false;
-                  more.textContent = 'Show';
+                  more.textContent = 'Show Details';
                   json.classList.add('hidden');
                 }
                 else {
                   more.expanded = true;
-                  more.textContent = 'Hide';
+                  more.textContent = 'Hide Details';
                   json.classList.remove('hidden');
                 }
               };
             });
           };
-          div.appendChild(more);
-          div.appendChild(document.createTextNode(' Details'));
-
-          iframe.contentDocument.getElementById('published-time').insertAdjacentElement('afterend', div);
         }
+        else {
+          throw Error('cannot parse');
+        }
+      }
+      else {
+        throw Error('cannot parse');
       }
     }).catch(e => {
       console.warn('DOI plug-in error', e);
+      a.textContent = link;
     });
   }
 };

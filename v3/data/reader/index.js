@@ -162,7 +162,6 @@ const update = {
     document.querySelector('[data-id=full-width] input').checked = Boolean(prefs.width) === false;
     // as a CSS selector
     document.body.dataset.font = prefs.font;
-    document.body.dataset.colums = prefs['column-count'];
     //
     document.querySelector('#font-details [data-id="font-size"]').textContent = prefs['font-size'] + 'px';
     document.querySelector('#font-details [data-id="screen-width"]').textContent = prefs['width'] || 'unset';
@@ -246,11 +245,9 @@ shortcuts.render = () => {
   span.id = 'screenshot-button';
 
   span.onclick = () => {
-    console.log(1);
     chrome.permissions.request({
       origins: ['<all_urls>']
     }, granted => {
-      console.log(granted);
       if (granted) {
         const e = document.getElementById('navigate');
         e.style.visibility = 'hidden';
@@ -430,6 +427,8 @@ shortcuts.render = () => {
       document.querySelector('[data-cmd="close-speech"]').click();
     }
     else if (typeof TTS === 'undefined') {
+      document.querySelector('#speech [data-id=msg-speech]').textContent = 'Loading Resources...';
+
       document.body.dataset.speech = true;
       iframe.contentDocument.body.dataset.speech = true;
 
@@ -523,7 +522,7 @@ shortcuts.render = () => {
       };
       if (tts.jump() !== true) {
         // auto play
-        tts.buttons.play.click();
+        setTimeout(() => tts.buttons.play.click(), 1000);
       }
     }
     else {
@@ -859,15 +858,6 @@ const ready = () => new Promise(resolve => {
   }
   resolve(iframe.contentDocument);
 });
-iframe.onload = () => {
-  if (article) {
-    ready.busy = false;
-    for (const resolve of ready.cache) {
-      resolve(iframe.contentDocument);
-    }
-    ready.cache.length = 0;
-  }
-};
 ready.busy = true;
 ready.cache = [];
 
@@ -934,6 +924,7 @@ const render = () => chrome.runtime.sendMessage({
     .replaceAll('/*user-css*/', config.prefs['user-css'])
     .replaceAll('%data-images%', config.prefs['show-images'])
     .replaceAll('%data-font%', config.prefs.font)
+    .replaceAll('%data-columns%', config.prefs['column-count'])
     .replaceAll('%data-mode%', config.prefs.mode));
   iframe.contentDocument.close();
 
@@ -1027,6 +1018,13 @@ const render = () => chrome.runtime.sendMessage({
       const resizeObserver = new ResizeObserver(check);
       resizeObserver.observe(html);
     }
+
+    // ready
+    ready.busy = false;
+    for (const resolve of ready.cache) {
+      resolve(iframe.contentDocument);
+    }
+    ready.cache.length = 0;
   }
 
   iframe.contentDocument.documentElement.appendChild(styles.internals);

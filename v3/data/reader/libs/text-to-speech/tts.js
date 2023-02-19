@@ -873,6 +873,24 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
         </svg>
       </button>
     </div>
+    <datalist id="steplist-volume">
+      <option>0.2</option>
+      <option>0.4</option>
+      <option>0.6</option>
+      <option>0.8</option>
+    </datalist>
+    <datalist id="steplist-rate">
+      <option>0.5</option>
+      <option>1.0</option>
+      <option>1.5</option>
+      <option>2.0</option>
+      <option>2.5</option>
+    </datalist>
+    <datalist id="steplist-pitch">
+      <option>0.5</option>
+      <option>1.0</option>
+      <option>1.5</option>
+    </datalist>
     <table width="100%">
       <colgroup>
         <col width=60px>
@@ -883,7 +901,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
           <td>Volume</td>
           <td>
             <div>
-              <input min="0.1" max="1" step="0.1" type="range" id="volume"><span>1</span>
+              <input min="0.1" max="1" step="0.1" type="range" id="volume" list="steplist-volume"><span>1</span>
             </div>
           </td>
         </tr>
@@ -891,7 +909,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
           <td>Speed</td>
           <td>
             <div>
-              <input min="0.1" max="3" step="0.1" type="range" id="rate"><span>1</span>
+              <input min="0.1" max="3" step="0.1" type="range" id="rate" list="steplist-rate"><span>1</span>
             </div>
           </td>
         </tr>
@@ -899,7 +917,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
           <td>Pitch</td>
           <td>
             <div>
-              <input min="0.1" max="2" step="0.1" type="range" id="pitch"><span>1</span>
+              <input min="0.1" max="2" step="0.1" type="range" id="pitch" list="steplist-pitch"><span>1</span>
             </div>
           </td>
         </tr>
@@ -920,7 +938,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       // voice
       const select = div.querySelector('select');
       const label = div.querySelector('label');
-      select.addEventListener('change', e => {
+      select.addEventListener('change', () => {
         const parts = select.value.split('/');
         [label.dataset.value, label.title] = parts;
 
