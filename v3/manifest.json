@@ -10,7 +10,7 @@
     "scripting",
     "contextMenus",
     "notifications",
-    "declarativeNetRequest"
+    "declarativeNetRequestWithHostAccess"
   ],
   "optional_permissions": [
     "favicon"
