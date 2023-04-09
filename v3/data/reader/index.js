@@ -890,7 +890,8 @@ const render = () => chrome.runtime.sendMessage({
   const gcs = window.getComputedStyle(document.documentElement);
 
   const {textVide} = await import('./libs/text-vide/index.mjs');
-  const content = config.prefs['fixation-point'] ? textVide(article.content, {
+  // http://add0n.com/chrome-reader-view.html#IDComment1118667428
+  const content = config.prefs['fixation-point'] ? textVide(article.content.replace(/&nbsp;/g, ' '), {
     fixationPoint: config.prefs['fixation-point']
   }) : article.content;
 
