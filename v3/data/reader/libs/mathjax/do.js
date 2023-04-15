@@ -1,7 +1,20 @@
+/* global SRE */
 'use strict';
 
 if (document.querySelector('math')) {
   const s = document.createElement('script');
-  s.src = 'libs/mathjax/tex-mml-chtml.js';
-  document.body.appendChild(s);
+  s.onload = () => {
+    for (const math of document.querySelectorAll('math')) {
+      try {
+        const text = SRE.toSpeech(math.outerHTML);
+        const p = document.createElement('p');
+        p.textContent = text;
+        math.after(p);
+      }
+      catch (e) {}
+    }
+  };
+  s.src = 'libs/mathjax/sre/sre_browser.js';
+  document.body.append(s);
 }
+

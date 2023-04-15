@@ -401,7 +401,7 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
         const index = sections.indexOf(e);
         sections.splice(index, 1);
       }
-      // marge small sections
+      // merge small sections
       for (let i = 0; i < sections.length; i += 1) {
         const a = sections[i];
         const b = sections[i + 1];
@@ -616,6 +616,8 @@ const isFirefox = /Firefox/.test(navigator.userAgent) || typeof InstallTrigger !
       this.on('end', () => this.emit('status', 'stop'));
       this.on('end', () => {
         box.classList.add('hidden');
+        const s = this.doc.defaultView.getSelection();
+        s.removeAllRanges();
       });
     }
     start(...args) {
