@@ -1,7 +1,7 @@
 /**
     Reader View - Strips away clutter
 
-    Copyright (C) 2014-2022 [@rNeomy](https://add0n.com/chrome-reader-view.html)
+    Copyright (C) 2014-2022 [@rNeomy]
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -15,7 +15,7 @@
     along with this program.  If not, see {https://www.mozilla.org/en-US/MPL/}.
 
     GitHub: https://github.com/rNeomy/reader-view/
-    Homepage: https://add0n.com/chrome-reader-view.html
+    Homepage: https://webextension.org/listing/chrome-reader-view.html
 */
 
 /* global defaults, aStorage */
@@ -223,11 +223,6 @@ const onMessage = (request, sender, response) => {
       });
     });
   }
-  else if (request.cmd === 'delete-cache') {
-    if (typeof caches !== 'undefined') {
-      caches.delete(request.cache);
-    }
-  }
   else if (request.cmd === 'exit-fullscreen') {
     chrome.windows.update(sender.tab.windowId, {
       state: 'normal'
@@ -314,6 +309,11 @@ const cleanup = () => typeof caches === 'object' && caches.keys().then(keys => {
 });
 chrome.runtime.onInstalled.addListener(cleanup);
 chrome.runtime.onStartup.addListener(cleanup);
+chrome.tabs.onRemoved.addListener(id => {
+  if (typeof caches !== 'undefined') {
+    caches.delete(id.toString());
+  }
+});
 
 /* FAQs & Feedback */
 {

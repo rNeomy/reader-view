@@ -1,8 +1,5 @@
 class Storage {
   prepare() {
-    if (this.db) {
-      return Promise.resolve(this.db);
-    }
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('content-temporary-storage', 1);
 
@@ -11,7 +8,7 @@ class Storage {
         console.warn(e);
       };
       request.onupgradeneeded = e => {
-        const db = this.db = e.target.result;
+        const db = e.target.result;
 
         const objectStore = db.createObjectStore('storage', {
           keyPath: 'id'
@@ -23,7 +20,7 @@ class Storage {
         };
       };
       request.onsuccess = e => {
-        const db = this.db = e.target.result;
+        const db = e.target.result;
 
         resolve(db);
       };

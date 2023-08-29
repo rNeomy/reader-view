@@ -112,6 +112,7 @@ body[data-mode=dark] {}`,
   './plugins/doi/core.mjs': true,
   './plugins/note/core.mjs': true,
   './plugins/notify/core.mjs': true,
-  './plugins/health/core.mjs': true
+  './plugins/health/core.mjs': true,
+  './plugins/tts/core.mjs': true
 };
 

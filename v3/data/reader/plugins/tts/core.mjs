@@ -1,0 +1,326 @@
+/**
+    Reader View - Strips away clutter
+
+    Copyright (C) 2014-2022 [@rNeomy]
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the Mozilla Public License as published by
+    the Mozilla Foundation, either version 2 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Mozilla Public License for more details.
+    You should have received a copy of the Mozilla Public License
+    along with this program.  If not, see {https://www.mozilla.org/en-US/MPL/}.
+
+    GitHub: https://github.com/rNeomy/reader-view/
+    Homepage: https://webextension.org/listing/chrome-reader-view.html
+*/
+
+/* global config, add Navigate TextToSpeech iframe splitText shortcuts */
+'use strict';
+
+const prefs = {
+  length: {
+    max: 160,
+    min: 60
+  },
+  delay: {
+    sentences: 600,
+    same: 300
+  }
+};
+
+let player;
+
+function enable() {
+  const span = document.createElement('span');
+  span.title = chrome.i18n.getMessage('rd_speech');
+  span.classList.add('icon-speech');
+  if (config.prefs['speech-button'] === false) {
+    span.classList.add('hidden');
+  }
+  span.id = 'speech-button';
+  const print = document.querySelector('#toolbar .icon-print');
+  document.getElementById('toolbar').insertBefore(span, print);
+
+  span.onclick = async () => {
+    if (typeof TextToSpeech === 'undefined') {
+      await add('libs/text-to-speech/voices/translate.js');
+      // await add('libs/text-to-speech/voices/watson.js');
+      await add('libs/text-to-speech/custom-speech-synthesis.js');
+      await add('libs/text-to-speech/text-to-speech.js');
+      await add('libs/text-to-speech/navigate.js');
+      await add('libs/text-to-speech/player.js');
+      await add('libs/text-to-speech/example/helper.js');
+    }
+
+    if (document.body.dataset.speech === 'true') {
+      return player.destroy();
+    }
+    else if (!player) {
+      // document.querySelector('#speech [data-id=msg-speech]').textContent = 'Loading Resources...';
+
+      player = document.createElement('tts-component');
+      player.shortcuts(chrome.runtime.getManifest().homepage_url + '#faq7');
+      document.body.append(player);
+
+      /* shortcuts */
+      const speechShortcuts = [{
+        id: 'speech-previous',
+        span: player.$('previous-paragraph'),
+        action: () => player && player.paragraph('backward')
+      }, {
+        id: 'speech-next',
+        span: player.$('next-paragraph'),
+        action: () => player && player.paragraph('forward')
+      }, {
+        id: 'speech-play',
+        span: player.$('play'),
+        action: () => player && player.toggle()
+      }];
+      shortcuts.push(...speechShortcuts);
+      shortcuts.render(speechShortcuts);
+
+      const nav = new class extends Navigate {
+      }(iframe.contentWindow, iframe.contentDocument.getElementById('readability-page-1'));
+      const speech = new class extends TextToSpeech {
+        content(options, direction) {
+          const {length, delay} = prefs;
+
+          if (!options.automated) {
+            speech.cache.length = 0;
+            speech.ncache = '';
+          }
+
+          return new Promise(resolve => {
+            // read from cache
+            const text = speech.cache.shift();
+
+            if (text) {
+              player.message('Preparing...');
+              resolve({
+                text,
+                'delay': delay.same,
+                'next-text': speech.cache.length ? speech.cache[0] : speech.ncache
+              });
+            }
+            else {
+              let text = '';
+              for (let n = 0; n < 10; n += 1) {
+                const r = nav[options.type || 'line'](direction);
+
+                if (r === 'START_OF_FILE') {
+                  player.message('Start of Document', 1000);
+                  return nav.relocate(true);
+                }
+                else if (r === 'END_OF_FILE') {
+                  player.message('End of Document', 1000);
+                  return nav.relocate(true);
+                }
+                text = nav.string();
+
+                if (text.trim().length) {
+                  break;
+                }
+              }
+
+              if (text.length > length.max) {
+                const texts = splitText(text, length.max, length.min);
+
+                text = texts.shift();
+                speech.cache = texts;
+              }
+
+              speech.ncache = nav['next_matched_string'];
+              if (speech.ncache?.length > length.max) {
+                speech.ncache = splitText(speech.ncache)[0];
+              }
+
+              player.message('Preparing...');
+              resolve({
+                text,
+                'delay': options.automated ? delay.sentences : 0,
+                'next-text': speech.cache.length ? speech.cache[0] : speech.ncache
+              });
+            }
+          });
+        }
+      }();
+      speech.play = new Proxy(speech.play, {
+        apply(target, self, args) {
+          return Reflect.apply(target, self, args);
+        }
+      });
+      speech.cache = [];
+      speech.ncache = '';
+      speech.error = e => {
+        if (e.target?.nodeName === 'AUDIO') {
+          player?.message('Cannot use this voice. Please choice another one!');
+        }
+      };
+      speech.boundary = () => {};
+
+      player.version('v' + speech.version);
+      speech.ready().then(() => {
+        if (speech.voices.length) {
+          player.active(true);
+          const vv = localStorage.getItem('tts-voice-volume');
+          if (vv) {
+            player.configure('volume', vv);
+          }
+          const vr = localStorage.getItem('tts-voice-rate');
+          if (vr) {
+            player.configure('rate', vv);
+          }
+          const vp = localStorage.getItem('tts-voice-pitch');
+          if (vp) {
+            player.configure('pitch', vv);
+          }
+
+          const v = localStorage.getItem('tts-voice-object');
+          if (v) {
+            const o = JSON.parse(v);
+            player.voices(speech.voices, o);
+            player.voice(o, false);
+          }
+          else {
+            player.voices(speech.voices);
+          }
+        }
+        else {
+          player.message('no TTS voice!');
+        }
+      });
+
+      /* controls */
+      player.voice = (voice, save = true) => {
+        player.message('');
+        speech.configure(voice);
+        const v = speech.voice;
+
+        if (save) {
+          localStorage.setItem('tts-voice-object', JSON.stringify(voice));
+        }
+
+        if (v.permission) {
+          chrome.permissions.request({
+            origins: [v.permission]
+          }, granted => {
+            if (granted) {
+              if (v.referer && v.origin) {
+                chrome.runtime.sendMessage({
+                  cmd: 'prepare-tts-network',
+                  referer: v.referer,
+                  origin: v.origin
+                }, () => speech.reset());
+              }
+              else {
+                speech.reset();
+              }
+            }
+            else {
+              speech.configure();
+              speech.reset();
+            }
+          });
+        }
+        else {
+          speech.reset();
+        }
+      };
+      player.play = (resume = true) => {
+        speech.play(undefined, undefined, resume);
+      };
+      player.pause = () => {
+        speech.pause();
+        // for "Google Remote" voices
+        speech.state(false);
+      };
+      player.line = direction => {
+        speech[direction === 'forward' ? 'next' : 'previous']();
+      };
+      player.paragraph = direction => {
+        speech[direction === 'forward' ? 'next' : 'previous']({
+          type: 'paragraph'
+        });
+      };
+      player.stop = () => {
+        speech.stop();
+        speech.cache.length = 0;
+        speech.ncache = '';
+        nav.relocate(true);
+        player.message('');
+      };
+      player.relocate = () => {
+        speech.stop();
+        speech.cache.length = 0;
+        speech.ncache = '';
+
+        // do not use nav.string() since it returns string from this.range;
+        nav.relocate(nav.selection.toString() ? false : true);
+        player.play(false);
+      };
+      player.volume = (value, e) => {
+        if (e?.isTrusted) {
+          localStorage.setItem('tts-voice-volume', value);
+        }
+        speech.volume(value);
+      };
+      player.rate = (value, e) => {
+        if (e?.isTrusted) {
+          localStorage.setItem('tts-voice-rate', value);
+        }
+        speech.rate(value);
+      };
+      player.pitch = (value, e) => {
+        if (e?.isTrusted) {
+          localStorage.setItem('tts-voice-pitch', value);
+        }
+        speech.pitch(value);
+      };
+      player.destroy = () => {
+        player.stop();
+        player.remove();
+        speech.destroy();
+        nav.destroy();
+        player = undefined;
+        document.body.dataset.speech = false;
+        iframe.contentDocument.body.dataset.speech = false;
+      };
+      speech.state = playing => {
+        playing = playing ?? (speechSynthesis.speaking && !speechSynthesis.paused);
+
+        if (playing) {
+          player.message('');
+        }
+        player?.state(playing);
+      };
+    }
+    document.body.dataset.speech = true;
+    iframe.contentDocument.body.dataset.speech = true;
+    player.message('Please wait...');
+    player.play();
+  };
+
+  const shortcut = {
+    id: 'speech',
+    span,
+    action: span.onclick
+  };
+  shortcuts.push(shortcut);
+  shortcuts.render([shortcut]);
+}
+function disable() {
+  try {
+    player.destroy();
+  }
+  catch (e) {}
+  document.getElementById('speech-button').remove();
+}
+
+export {
+  enable,
+  disable
+};

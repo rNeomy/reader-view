@@ -1,7 +1,7 @@
 /**
     Reader View - Strips away clutter
 
-    Copyright (C) 2014-2022 [@rNeomy](https://add0n.com/chrome-reader-view.html)
+    Copyright (C) 2014-2022 [@rNeomy]
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the Mozilla Public License as published by
@@ -15,15 +15,13 @@
     along with this program.  If not, see {https://www.mozilla.org/en-US/MPL/}.
 
     GitHub: https://github.com/rNeomy/reader-view/
-    Homepage: https://add0n.com/chrome-reader-view.html
+    Homepage: https://webextension.org/listing/chrome-reader-view.html
 */
 
-/* global config, TTS, tips */
+/* global config, tips */
 'use strict';
 
 let article;
-
-let tts;
 let highlight;
 
 const args = new URLSearchParams(location.search);
@@ -199,8 +197,8 @@ imageUtils.addEventListener('blur', () => {
 });
 
 const shortcuts = [];
-shortcuts.render = () => {
-  for (const {span, id} of shortcuts) {
+shortcuts.render = selectedShortcuts => {
+  for (const {span, id} of (selectedShortcuts || shortcuts)) {
     if (span && config.prefs.shortcuts[id]) {
       span.title = span.title.replace(
         '(command)',
@@ -413,146 +411,6 @@ shortcuts.render = () => {
     action() {
       span.click();
     }
-  });
-  document.getElementById('toolbar').appendChild(span);
-}
-/* speech */
-{
-  const span = document.createElement('span');
-  span.title = chrome.i18n.getMessage('rd_speech');
-  span.classList.add('icon-speech', 'hidden');
-  span.id = 'speech-button';
-  span.onclick = async () => {
-    if (document.body.dataset.speech === 'true') {
-      document.querySelector('[data-cmd="close-speech"]').click();
-    }
-    else if (typeof TTS === 'undefined') {
-      document.querySelector('#speech [data-id=msg-speech]').textContent = 'Loading Resources...';
-
-      document.body.dataset.speech = true;
-      iframe.contentDocument.body.dataset.speech = true;
-
-      await add('libs/text-to-speech/engines/watson.js');
-      await add('libs/text-to-speech/engines/translate.js');
-      await add('libs/text-to-speech/tts.js');
-      await add('libs/text-to-speech/vendors/sentence-boundary-detection/sbd.js');
-      tts = new TTS(iframe.contentDocument, {
-        separator: config.prefs['tts-separator'],
-        delay: config.prefs['tts-delay'],
-        maxlength: config.prefs['tts-maxlength'],
-        minlength: config.prefs['tts-minlength'],
-        scroll: config.prefs['tts-scroll']
-      });
-      tts.on('status', s => {
-        document.querySelector('#speech [data-id=msg-speech]').textContent = s === 'buffering' ? 'Please Wait...' : '';
-      });
-      tts.on('error', e => chrome.runtime.sendMessage({
-        cmd: 'notify',
-        msg: e.message || e
-      }));
-
-      window.addEventListener('beforeunload', () => chrome.runtime.sendMessage({
-        cmd: 'delete-cache',
-        cache: tts.CACHE
-      }));
-      const nodes = [...iframe.contentDocument.querySelectorAll(`.page p,
-        .page section,
-        .page h1,
-        .page h2,
-        .page h3,
-        .page h4,
-        .page li,
-        .page td,
-        .page th`)];
-      if (nodes.length === 0) {
-        const article = iframe.contentDocument.querySelector('article');
-        if (article) {
-          nodes.push(article);
-        }
-      }
-      if (nodes.length === 0) {
-        return alert('Cannot find any pages!');
-      }
-      tts.feed(...nodes.filter(a => a));
-      await tts.attach(document.getElementById('speech'));
-      await tts.ready();
-      tts.buttons.play.title =
-        `Play/Pause (${config.prefs.shortcuts['speech-play'].map(s => s.replace('Key', '')).join(' + ')})`;
-      tts.buttons.next.title =
-        `Next (${config.prefs.shortcuts['speech-next'].map(s => s.replace('Key', '')).join(' + ')})`;
-      tts.buttons.previous.title +=
-        `Previous (${config.prefs.shortcuts['speech-previous'].map(s => s.replace('Key', '')).join(' + ')})`;
-
-      // start from user selection or from the start point
-      tts.jump = () => {
-        const selection = iframe.contentWindow.getSelection();
-        if (selection && selection.rangeCount && selection.toString().trim().length) {
-          let range;
-          if (selection.getRangeAt) {
-            range = selection.getRangeAt(0);
-          }
-          else {
-            range = document.createRange();
-            range.setStart(selection.anchorNode, selection.anchorOffset);
-            range.setEnd(selection.focusNode, selection.focusOffset);
-          }
-          let parent = range.commonAncestorContainer;
-          if (parent.nodeType !== parent.ELEMENT_NODE) {
-            parent = parent.parentElement;
-          }
-
-          const bounded = tts.sections.filter(e => {
-            for (const c of (e.targets ? e.targets : [e.target || e])) {
-              if (c === parent || c.target === parent) {
-                return true;
-              }
-              if ((c.target || c).nodeType === Node.ELEMENT_NODE) {
-                if (parent.contains(c.target || c) || (c.target || c)?.contains(parent)) {
-                  return true;
-                }
-              }
-            }
-          });
-          if (bounded.length) {
-            const offset = tts.sections.indexOf(bounded[0]);
-            tts.navigate(undefined, offset);
-            return true;
-          }
-        }
-      };
-      if (tts.jump() !== true) {
-        // auto play
-        setTimeout(() => tts.buttons.play.click(), 1000);
-      }
-    }
-    else {
-      if (tts.jump() !== true) {
-        // auto play
-        tts.buttons.play.click();
-      }
-      document.body.dataset.speech = true;
-      iframe.contentDocument.body.dataset.speech = true;
-    }
-  };
-  chrome.storage.local.get({
-    'speech-mode': ''
-  }, prefs => {
-    document.getElementById('speech').dataset.mode = prefs['speech-mode'];
-    document.querySelector('[data-cmd="minimize-speech"]').textContent = prefs['speech-mode'] === '' ? '-' : '□';
-  });
-  shortcuts.push({
-    id: 'speech',
-    span,
-    action: span.onclick
-  }, {
-    id: 'speech-previous',
-    action: () => tts && tts.buttons.previous.click()
-  }, {
-    id: 'speech-next',
-    action: () => tts && tts.buttons.next.click()
-  }, {
-    id: 'speech-play',
-    action: () => tts && tts.buttons.play.click()
   });
   document.getElementById('toolbar').appendChild(span);
 }
@@ -778,26 +636,6 @@ document.addEventListener('click', e => {
   }
   else if (cmd === 'close') {
     nav.back(true);
-  }
-  else if (cmd === 'close-speech') {
-    document.body.dataset.speech = false;
-    iframe.contentDocument.body.dataset.speech = false;
-    tts.buttons.stop.click();
-  }
-  else if (cmd === 'minimize-speech') {
-    const e = document.getElementById('speech');
-    const mode = e.dataset.mode;
-    if (mode === 'collapsed') {
-      e.dataset.mode = '';
-      target.textContent = '-';
-    }
-    else {
-      e.dataset.mode = 'collapsed';
-      target.textContent = '□';
-    }
-    chrome.storage.local.set({
-      'speech-mode': e.dataset.mode
-    });
   }
   else if (cmd === 'open-font-utils') {
     fontUtils.classList.remove('hidden');
@@ -1173,9 +1011,6 @@ config.load(() => {
   }
   if (config.prefs['fullscreen-button']) {
     document.getElementById('fullscreen-button').classList.remove('hidden');
-  }
-  if (config.prefs['speech-button']) {
-    document.getElementById('speech-button').classList.remove('hidden');
   }
   if (config.prefs['images-button']) {
     document.getElementById('images-button').classList.remove('hidden');
