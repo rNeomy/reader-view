@@ -325,6 +325,7 @@ body[data-toolbar=false] #toolbar {
 }
 #content::after {
   content: attr(data-msg);
+  white-space: break-spaces;
   position: absolute;
   display: flex;
   align-items: center;

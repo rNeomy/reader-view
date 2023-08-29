@@ -315,6 +315,15 @@ chrome.tabs.onRemoved.addListener(id => {
   }
 });
 
+/* exit reader view */
+chrome.runtime.onSuspend.addListener(() => chrome.tabs.query({}, tabs => {
+  for (const tab of tabs) {
+    chrome.tabs.sendMessage(tab.id, {
+      cmd: 'close'
+    }, () => chrome.runtime.lastError);
+  }
+}));
+
 /* FAQs & Feedback */
 {
   const {management, runtime: {onInstalled, setUninstallURL, getManifest}, storage, tabs} = chrome;

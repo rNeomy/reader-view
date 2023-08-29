@@ -704,7 +704,7 @@ const render = () => chrome.runtime.sendMessage({
   cmd: 'read-data'
 }, async obj => {
   if (obj === false) {
-    document.getElementById('content').dataset.msg = chrome.i18n.getMessage('rd_warning_1');
+    document.getElementById('content').dataset.msg = chrome.i18n.getMessage('rd_warning_1') + '\n\n' + args.get('url');
 
     setTimeout(() => {
       document.querySelector('[data-cmd=close]').click();
