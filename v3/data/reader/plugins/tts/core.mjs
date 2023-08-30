@@ -71,15 +71,15 @@ function enable() {
       /* shortcuts */
       shortcuts.set(player.$('previous-paragraph'), {
         id: 'speech-previous',
-        action: () => player && player.paragraph('backward')
+        action: () => player?.paragraph('backward')
       });
       shortcuts.set(player.$('next-paragraph'), {
         id: 'speech-next',
-        action: () => player && player.paragraph('forward')
+        action: () => player?.paragraph('forward')
       });
       shortcuts.set(player.$('play'), {
         id: 'speech-play',
-        action: () => player && player.toggle()
+        action: () => player?.toggle()
       });
       shortcuts.render([
         player.$('previous-paragraph'),

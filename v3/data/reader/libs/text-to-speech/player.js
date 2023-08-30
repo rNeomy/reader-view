@@ -6,16 +6,11 @@ class ttsComponent extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host {
-          --fg: #202124;
-          --bg-one: #fff;
-          --bg-two: #f2f2f2;
-          --bg-three: #f4f4f4;
-          --link: #0095dd;
-          --scheme: #7c6d6d;
           --gap: 5px;
           --width: 400px;
           --top: 10px;
           --right: 10px;
+          --darken: 93%;
 
           position: fixed;
           top: var(--top);
@@ -23,12 +18,14 @@ class ttsComponent extends HTMLElement {
           display: block;
           overflow: hidden;
           width: var(--width);
-          accent-color: var(--scheme);
-          fill: var(--scheme);
+          color: var(--fg, #202124);
+          accent-color: var(--fg, #202124);
+          fill: var(--fg, #202124);
+          box-shadow: 0 0 0 1px var(--border-color);
           font-size: 13px;
           font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-          color: var(--fg);
         }
+
         input,
         select {
           color: inherit;
@@ -43,7 +40,8 @@ class ttsComponent extends HTMLElement {
           outline: none;
           border: none;
           cursor: pointer;
-          background-color: var(--bg-three);
+          color: var(--fg, #202124);
+          background-color: var(--bg, #f2f2f2);
         }
         button svg {
           pointer-events: none;
@@ -57,7 +55,7 @@ class ttsComponent extends HTMLElement {
           border: none;
           outline: none;
           cursor: pointer;
-          background-color: var(--bg-three);
+          background-color: var(--bg, #f2f2f2);
           height: 24px;
           padding: var(--gap);
         }
@@ -68,7 +66,7 @@ class ttsComponent extends HTMLElement {
           display: none;
         }
         #body {
-          border: solid 1px var(--bg-three);
+          border: solid 1px var(--bg, #f2f2f2);
         }
         #body.minimized #one {
           display: flex;
@@ -82,6 +80,8 @@ class ttsComponent extends HTMLElement {
         }
         #body > div {
           padding-inline: calc(2 * var(--gap));
+          transition: padding 0.1s ease-out, height 50ms ease-out;
+          background-color: var(--bg, #f2f2f2);
         }
         #tools {
           display: flex;
@@ -89,9 +89,10 @@ class ttsComponent extends HTMLElement {
         }
         #tools input {
           border: none;
+          color: var(--fg, #202124);
+          background-color: var(--bg, #f2f2f2);
         }
         #one {
-          background-color: var(--bg-two);
           display: grid;
           align-items: center;
           grid-template-columns: 7ch 1fr min-content;
@@ -107,14 +108,13 @@ class ttsComponent extends HTMLElement {
           grid-template-columns: min-content 1fr 3ch;
           grid-gap: var(--gap);
           align-items: center;
-          background-color: var(--bg-one);
           padding-block: calc(2 * var(--gap));
+          background-color: color-mix(in srgb, var(--bg, #f2f2f2) var(--darken), var(--fg)) !important;
         }
         #two span.display {
           text-align: center;
         }
         #three {
-          background-color: var(--bg-two);
           display: grid;
           grid-template-columns: min-content min-content 10fr;
           grid-gap: var(--gap);
@@ -123,6 +123,12 @@ class ttsComponent extends HTMLElement {
         }
         #three > span {
           padding: calc(var(--gap) * 2) var(--gap);
+        }
+        #body:not(:hover) .minimized {
+          height: 0 !important;
+          overflow: hidden !important;
+          padding-top: 0 !important;
+          padding-bottom: 0 !important;
         }
         #msg {
           display: block;
@@ -133,7 +139,7 @@ class ttsComponent extends HTMLElement {
         }
         #shortcuts[href] {
           text-decoration: none;
-          color: var(--link);
+          color: var(--lk, #0095dd);
         }
       </style>
       <div id="body">
@@ -204,7 +210,7 @@ class ttsComponent extends HTMLElement {
           <option>1.0</option>
           <option>1.5</option>
         </datalist>
-        <div id="two">
+        <div id="two" class="minimized">
           <span>Volume</span>
           <input min="0.1" max="1" step="0.1" type="range" id="volume" list="steplist-volume">
           <span id="volume-span" class="display">1.00</span>
@@ -215,7 +221,7 @@ class ttsComponent extends HTMLElement {
           <input min="0.1" max="2" step="0.1" type="range" id="pitch" list="steplist-pitch">
           <span id="pitch-span" class="display">1.00</span>
         </div>
-        <div id="three">
+        <div id="three" class="minimized">
           <span id="version">...</span>
           <a id="shortcuts" target=_blank>Shortcuts</a>
           <span id="msg"></span>
