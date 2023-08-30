@@ -18,7 +18,7 @@
     Homepage: https://webextension.org/listing/chrome-reader-view.html
 */
 
-/* global config, add Navigate TextToSpeech iframe splitText shortcuts */
+/* global config, add Navigate TextToSpeech iframe splitText shortcuts scrollbar */
 'use strict';
 
 const prefs = {
@@ -65,6 +65,14 @@ function enable() {
       // document.querySelector('#speech [data-id=msg-speech]').textContent = 'Loading Resources...';
 
       player = document.createElement('tts-component');
+      // reposition if there is an scrollbar
+      try {
+        if (scrollbar.has()) {
+          player.style.right = CSS.px(scrollbar.width() + 10);
+        }
+      }
+      catch (e) {}
+
       // overwrite the default toggle
       player.toggle = () => {
         if (player.dataset.mode === 'play') {

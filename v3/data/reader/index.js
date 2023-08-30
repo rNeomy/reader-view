@@ -56,6 +56,36 @@ const hash = link => {
 };
 window.hash = hash;
 
+// scrollbar
+const scrollbar = {
+  has() {
+    const rt = iframe.contentDocument.documentElement;
+    return rt.scrollWidth > rt.clientWidth;
+  },
+  width() {
+    // Creating invisible container
+    const outer = document.createElement('div');
+    outer.style.visibility = 'hidden';
+    outer.style.overflow = 'scroll'; // forcing scrollbar to appear
+    outer.style.msOverflowStyle = 'scrollbar'; // needed for WinJS apps
+    document.body.appendChild(outer);
+
+    // Creating inner element and placing it in the container
+    const inner = document.createElement('div');
+    outer.appendChild(inner);
+
+    // Calculating difference between container's full width and the child width
+    const scrollbarWidth = (outer.offsetWidth - inner.offsetWidth);
+
+    // Removing temporary elements from the DOM
+    outer.parentNode.removeChild(outer);
+
+    scrollbar.width = () => scrollbarWidth;
+
+    return scrollbarWidth;
+  }
+};
+
 // exit by passing ESC, exit after link is opened in the Reader view, exit after auto reader view
 const nav = {
   back(forced = false) {
@@ -652,7 +682,14 @@ document.addEventListener('click', e => {
 
     if (active === false) {
       document.title = '[Design Mode]';
-      add('libs/design-mode/inject.js');
+      add('libs/design-mode/inject.js').then(() => {
+        // reposition
+        if (scrollbar.has()) {
+          [...document.querySelectorAll('.edit-toolbar')].forEach(e => {
+            e.style.right = CSS.px(10 + scrollbar.width());
+          });
+        }
+      });
     }
     else {
       document.title = document.oTitle;
