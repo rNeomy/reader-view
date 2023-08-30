@@ -65,6 +65,16 @@ function enable() {
       // document.querySelector('#speech [data-id=msg-speech]').textContent = 'Loading Resources...';
 
       player = document.createElement('tts-component');
+      // overwrite the default toggle
+      player.toggle = () => {
+        if (player.dataset.mode === 'play') {
+          player.pause();
+          player.message('');
+        }
+        else {
+          player.play();
+        }
+      };
       player.shortcuts(chrome.runtime.getManifest().homepage_url + '#faq7');
       document.body.append(player);
 
@@ -160,8 +170,9 @@ function enable() {
       speech.cache = [];
       speech.ncache = '';
       speech.error = e => {
-        if (e.target?.nodeName === 'AUDIO') {
-          player?.message('Cannot use this voice. Please choice another one!');
+        if (e.target?.nodeName === 'AUDIO' && player) {
+          player.message('Cannot use this voice. Please choice another one!');
+          player.dataset.mode = 'stop';
         }
       };
       speech.boundary = () => {};
@@ -235,9 +246,11 @@ function enable() {
         }
       };
       player.play = (resume = true) => {
+        player.dataset.mode = 'play';
         speech.play(undefined, undefined, resume);
       };
       player.pause = () => {
+        player.dataset.mode = 'paused';
         speech.pause();
         // for "Google Remote" voices
         speech.state(false);
@@ -251,6 +264,7 @@ function enable() {
         });
       };
       player.stop = () => {
+        player.dataset.mode = 'stop';
         speech.stop();
         speech.cache.length = 0;
         speech.ncache = '';
@@ -285,6 +299,7 @@ function enable() {
         speech.pitch(value);
       };
       player.destroy = () => {
+        player.dataset.mode = 'stop';
         player.stop();
         player.remove();
         speech.destroy();
