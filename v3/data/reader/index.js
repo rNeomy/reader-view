@@ -196,9 +196,10 @@ imageUtils.addEventListener('blur', () => {
   iframe.contentWindow.focus();
 });
 
-const shortcuts = [];
-shortcuts.render = selectedShortcuts => {
-  for (const {span, id} of (selectedShortcuts || shortcuts)) {
+const shortcuts = new Map();
+shortcuts.render = (spans = shortcuts.keys()) => {
+  for (const span of spans) {
+    const id = shortcuts.get(span)?.id;
     if (span && config.prefs.shortcuts[id]) {
       span.title = span.title.replace(
         '(command)',
@@ -210,9 +211,8 @@ shortcuts.render = selectedShortcuts => {
 
 /* Toolbar Visibility*/
 {
-  shortcuts.push({
+  shortcuts.set(document.getElementById('toolbar'), {
     id: 'toggle-toolbar',
-    span: document.getElementById('toolbar'),
     action: () => chrome.storage.local.set({
       'toggle-toolbar': config.prefs['toggle-toolbar'] === false
     })
@@ -227,10 +227,9 @@ shortcuts.render = selectedShortcuts => {
   span.id = 'printing-button';
 
   span.onclick = () => iframe.contentWindow.print();
-  shortcuts.push({
+  shortcuts.set(span, {
     id: 'print',
-    action: span.onclick,
-    span
+    action: span.onclick
   });
   document.getElementById('toolbar').appendChild(span);
 }
@@ -280,10 +279,9 @@ shortcuts.render = selectedShortcuts => {
       }
     });
   };
-  shortcuts.push({
+  shortcuts.set(span, {
     id: 'screenshot',
-    action: span.onclick,
-    span
+    action: span.onclick
   });
   document.getElementById('toolbar').appendChild(span);
 }
@@ -311,10 +309,9 @@ shortcuts.render = selectedShortcuts => {
     a.href += encodeURIComponent(body);
     a.click();
   };
-  shortcuts.push({
+  shortcuts.set(span, {
     id: 'email',
-    action: span.onclick,
-    span
+    action: span.onclick
   });
   document.getElementById('toolbar').appendChild(span);
 }
@@ -367,9 +364,8 @@ shortcuts.render = selectedShortcuts => {
       download(content, 'text/html', true);
     }
   };
-  shortcuts.push({
+  shortcuts.set(span, {
     id: 'save',
-    span,
     action: span.onclick
   });
   document.getElementById('toolbar').appendChild(span);
@@ -391,9 +387,8 @@ shortcuts.render = selectedShortcuts => {
       iframe.requestFullscreen().catch(e => window.notify(e));
     }
   };
-  shortcuts.push({
+  shortcuts.set(span, {
     id: 'fullscreen',
-    span,
     action: span.onclick
   });
   document.getElementById('toolbar').appendChild(span);
@@ -405,9 +400,8 @@ shortcuts.render = selectedShortcuts => {
   span.id = 'design-mode-button';
   span.title = chrome.i18n.getMessage('rd_design');
   span.dataset.cmd = 'toggle-design-mode';
-  shortcuts.push({
+  shortcuts.set(span, {
     id: 'design-mode',
-    span,
     action() {
       span.click();
     }
@@ -422,9 +416,8 @@ shortcuts.render = selectedShortcuts => {
   span.id = 'images-button';
   span.title = chrome.i18n.getMessage('rd_images');
   span.dataset.cmd = 'open-image-utils';
-  shortcuts.push({
+  shortcuts.set(span, {
     id: 'images',
-    span,
     action() {
       chrome.storage.local.set({
         'show-images': config.prefs['show-images'] === false
@@ -444,10 +437,9 @@ shortcuts.render = selectedShortcuts => {
   span.onclick = () => {
     document.dispatchEvent(new Event('add-note'));
   };
-  shortcuts.push({
+  shortcuts.set(span, {
     id: 'note',
-    action: span.onclick,
-    span
+    action: span.onclick
   });
   document.getElementById('toolbar').appendChild(span);
 }
@@ -460,9 +452,8 @@ shortcuts.render = selectedShortcuts => {
   span.title = chrome.i18n.getMessage('rd_highlight');
   span.dataset.cmd = 'toggle-highlight';
   span.dataset.disabled = true;
-  shortcuts.push({
+  shortcuts.set(span, {
     id: 'highlight',
-    span,
     action() {
       span.click();
     }
@@ -523,9 +514,8 @@ shortcuts.render = selectedShortcuts => {
         };
         if (action.shortcut) {
           const id = 'ua-' + index;
-          shortcuts.push({
+          shortcuts.set(span, {
             id,
-            span,
             action: span.onclick
           });
           config.prefs.shortcuts[id] = action.shortcut.split(/\s+\+\s+/);
@@ -836,9 +826,8 @@ const render = () => chrome.runtime.sendMessage({
     };
     iframe.contentWindow.addEventListener('scroll', scroll);
     scroll();
-    shortcuts.push({
+    shortcuts.set(next, {
       id: 'next-page',
-      span: next,
       action: () => next.click()
     }, {
       id: 'previous-page',
@@ -913,28 +902,29 @@ const render = () => chrome.runtime.sendMessage({
         return;
       }
 
-      shortcuts.forEach(o => {
+      for (const o of shortcuts.values()) {
         const s = config.prefs.shortcuts[o.id] || '';
-        if (s.indexOf(e.code) === -1) {
-          return;
+        if (s.includes(e.code) === false) {
+          continue;
         }
-        if (s.indexOf('Ctrl/Command') !== -1 && (e.ctrlKey || e.metaKey) === false) {
-          return;
+        if (s.includes('Ctrl/Command') && (e.ctrlKey || e.metaKey) === false) {
+          continue;
         }
-        if (s.indexOf('Ctrl/Command') === -1 && (e.ctrlKey || e.metaKey)) {
-          return;
+        if (s.includes('Ctrl/Command') === false && (e.ctrlKey || e.metaKey)) {
+          continue;
         }
-        if (s.indexOf('Shift') !== -1 && e.shiftKey === false) {
-          return;
+        if (s.includes('Shift') && e.shiftKey === false) {
+          continue;
         }
-        if (s.indexOf('Shift') === -1 && e.shiftKey) {
-          return;
+        if (s.includes('Shift') === false && e.shiftKey) {
+          continue;
         }
         e.preventDefault();
         e.stopImmediatePropagation();
+
         o.action(e);
-        return false;
-      });
+        break;
+      }
     };
     // editor commands issue in FF
     iframe.contentWindow.addEventListener('keydown', e => {

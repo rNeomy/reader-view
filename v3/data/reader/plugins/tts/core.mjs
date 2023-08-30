@@ -48,7 +48,9 @@ function enable() {
   span.onclick = async () => {
     if (typeof TextToSpeech === 'undefined') {
       await add('libs/text-to-speech/voices/translate.js');
-      // await add('libs/text-to-speech/voices/watson.js');
+      if (localStorage.getItem('tts-v1-watson-beta') === 'true') {
+        await add('libs/text-to-speech/voices/watson.js');
+      }
       await add('libs/text-to-speech/custom-speech-synthesis.js');
       await add('libs/text-to-speech/text-to-speech.js');
       await add('libs/text-to-speech/navigate.js');
@@ -67,21 +69,23 @@ function enable() {
       document.body.append(player);
 
       /* shortcuts */
-      const speechShortcuts = [{
+      shortcuts.set(player.$('previous-paragraph'), {
         id: 'speech-previous',
-        span: player.$('previous-paragraph'),
         action: () => player && player.paragraph('backward')
-      }, {
+      });
+      shortcuts.set(player.$('next-paragraph'), {
         id: 'speech-next',
-        span: player.$('next-paragraph'),
         action: () => player && player.paragraph('forward')
-      }, {
+      });
+      shortcuts.set(player.$('play'), {
         id: 'speech-play',
-        span: player.$('play'),
         action: () => player && player.toggle()
-      }];
-      shortcuts.push(...speechShortcuts);
-      shortcuts.render(speechShortcuts);
+      });
+      shortcuts.render([
+        player.$('previous-paragraph'),
+        player.$('next-paragraph'),
+        player.$('play')
+      ]);
 
       const nav = new class extends Navigate {
       }(iframe.contentWindow, iframe.contentDocument.getElementById('readability-page-1'));
@@ -166,20 +170,20 @@ function enable() {
       speech.ready().then(() => {
         if (speech.voices.length) {
           player.active(true);
-          const vv = localStorage.getItem('tts-voice-volume');
+          const vv = localStorage.getItem('tts-v1-volume');
           if (vv) {
             player.configure('volume', vv);
           }
-          const vr = localStorage.getItem('tts-voice-rate');
+          const vr = localStorage.getItem('tts-v1-rate');
           if (vr) {
             player.configure('rate', vv);
           }
-          const vp = localStorage.getItem('tts-voice-pitch');
+          const vp = localStorage.getItem('tts-v1-pitch');
           if (vp) {
             player.configure('pitch', vv);
           }
 
-          const v = localStorage.getItem('tts-voice-object');
+          const v = localStorage.getItem('tts-v1-object');
           if (v) {
             const o = JSON.parse(v);
             player.voices(speech.voices, o);
@@ -201,7 +205,7 @@ function enable() {
         const v = speech.voice;
 
         if (save) {
-          localStorage.setItem('tts-voice-object', JSON.stringify(voice));
+          localStorage.setItem('tts-v1-object', JSON.stringify(voice));
         }
 
         if (v.permission) {
@@ -264,19 +268,19 @@ function enable() {
       };
       player.volume = (value, e) => {
         if (e?.isTrusted) {
-          localStorage.setItem('tts-voice-volume', value);
+          localStorage.setItem('tts-v1-volume', value);
         }
         speech.volume(value);
       };
       player.rate = (value, e) => {
         if (e?.isTrusted) {
-          localStorage.setItem('tts-voice-rate', value);
+          localStorage.setItem('tts-v1-rate', value);
         }
         speech.rate(value);
       };
       player.pitch = (value, e) => {
         if (e?.isTrusted) {
-          localStorage.setItem('tts-voice-pitch', value);
+          localStorage.setItem('tts-v1-pitch', value);
         }
         speech.pitch(value);
       };
@@ -304,13 +308,11 @@ function enable() {
     player.play();
   };
 
-  const shortcut = {
+  shortcuts.set(span, {
     id: 'speech',
-    span,
     action: span.onclick
-  };
-  shortcuts.push(shortcut);
-  shortcuts.render([shortcut]);
+  });
+  shortcuts.render([span]);
 }
 function disable() {
   try {
