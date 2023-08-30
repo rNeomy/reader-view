@@ -207,5 +207,5 @@
       }
     }
   }
-  window.Highlight = Stats;
+  window.TextHighlight = Stats;
 }

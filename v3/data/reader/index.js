@@ -460,22 +460,8 @@ shortcuts.render = (spans = shortcuts.keys()) => {
   });
   document.getElementById('toolbar').appendChild(span);
 
-  // post highlights to bg if this feature is used
-  const post = () => chrome.runtime.sendMessage({
-    cmd: 'highlights',
-    value: highlight.export(),
-    href: args.get('url').split('#')[0]
-  });
-  window.addEventListener('beforeunload', () => {
-    if (highlight && highlight.used) {
-      post();
-    }
-  });
   chrome.runtime.onMessage.addListener(request => {
-    if (request.cmd === 'export-highlights' && highlight.used) {
-      post();
-    }
-    else if (request.cmd === 'append-highlights' && request.href === args.get('url').split('#')[0]) {
+    if (request.cmd === 'append-highlights' && request.href === args.get('url').split('#')[0]) {
       highlight.import(request.highlights);
     }
     else if (request.cmd === 'close') {
@@ -652,7 +638,11 @@ document.addEventListener('click', e => {
   }
   else if (cmd === 'toggle-highlight') {
     highlight.toggle();
-    highlight.used = true;
+    chrome.runtime.sendMessage({
+      cmd: 'highlights',
+      value: highlight.export(),
+      href: args.get('url').split('#')[0]
+    });
   }
   else if (cmd === 'toggle-design-mode') {
     const active = iframe.contentDocument.designMode === 'on';
@@ -723,6 +713,18 @@ const render = () => chrome.runtime.sendMessage({
     fixationPoint: config.prefs['fixation-point']
   }) : article.content;
 
+  iframe.addEventListener('load', () => {
+    if (document.body.dataset.loaded !== 'true') {
+      // apply transition after initial changes
+      document.body.dataset.loaded = iframe.contentDocument.body.dataset.loaded = true;
+
+      highlight = new iframe.contentWindow.TextHighlight();
+      if (article.highlights) {
+        highlight.import(article.highlights);
+      }
+    }
+  });
+
   iframe.contentDocument.write((await template())
     .replaceAll('%dir%', article.dir ? ' dir=' + article.dir : '')
     .replaceAll('%light-color%', gcs.getPropertyValue('--color-mode-light-color'))
@@ -756,6 +758,11 @@ const render = () => chrome.runtime.sendMessage({
     .replaceAll('%data-columns%', config.prefs['column-count'])
     .replaceAll('%data-mode%', config.prefs.mode));
   iframe.contentDocument.close();
+
+  // To-Do; check on Firefox
+  iframe.contentDocument.addEventListener('DOMContentLoaded', () => {
+    iframe.dispatchEvent(new Event('load'));
+  });
 
   // improves printing title for Firefox; https://github.com/rNeomy/reader-view/issues/157
   const t = document.createElement('title');
@@ -856,17 +863,7 @@ const render = () => chrome.runtime.sendMessage({
   }
 
   iframe.contentDocument.documentElement.appendChild(styles.internals);
-  iframe.addEventListener('load', () => {
-    if (document.body.dataset.loaded !== 'true') {
-      // apply transition after initial changes
-      document.body.dataset.loaded = iframe.contentDocument.body.dataset.loaded = true;
 
-      highlight = new iframe.contentWindow.Highlight();
-      if (article.highlights) {
-        highlight.import(article.highlights);
-      }
-    }
-  });
   // highlight
   iframe.contentDocument.addEventListener('selectionchange', () => {
     const s = iframe.contentDocument.getSelection();

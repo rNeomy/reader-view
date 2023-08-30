@@ -263,14 +263,6 @@ document.getElementById('export-highlights').addEventListener('click', () => {
     setTimeout(() => URL.revokeObjectURL(href));
   });
 });
-// ask all tabs to export their highlights so that the object is ready for exporting
-chrome.tabs.query({}, (tabs = []) => {
-  for (const tab of tabs) {
-    chrome.tabs.sendMessage(tab.id, {
-      cmd: 'export-highlights'
-    }, () => chrome.runtime.lastError);
-  }
-});
 
 document.getElementById('import-highlights').addEventListener('click', () => {
   const input = document.createElement('input');

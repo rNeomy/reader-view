@@ -111,6 +111,12 @@ class ttsComponent extends HTMLElement {
           padding-block: calc(2 * var(--gap));
           background-color: color-mix(in srgb, var(--bg, #f2f2f2) var(--darken), var(--fg)) !important;
         }
+        #body:not(:hover) #two {
+          height: 0;
+          overflow: hidden;
+          padding-top: 0;
+          padding-bottom: 0;
+        }
         #two span.display {
           text-align: center;
         }
@@ -124,11 +130,11 @@ class ttsComponent extends HTMLElement {
         #three > span {
           padding: calc(var(--gap) * 2) var(--gap);
         }
-        #body:not(:hover) .minimized {
-          height: 0 !important;
-          overflow: hidden !important;
-          padding-top: 0 !important;
-          padding-bottom: 0 !important;
+        #body:not(:hover) #three > :not(#msg) {
+          visibility: hidden;
+        }
+        #body:not(:hover) #three:has(#msg:empty) {
+          display: none;
         }
         #msg {
           display: block;
