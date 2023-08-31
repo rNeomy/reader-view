@@ -60,7 +60,7 @@ window.hash = hash;
 const scrollbar = {
   has() {
     const rt = iframe.contentDocument.documentElement;
-    return rt.scrollWidth > rt.clientWidth;
+    return rt.scrollHeight > rt.clientHeight;
   },
   width() {
     // Creating invisible container
