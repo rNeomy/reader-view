@@ -70,7 +70,12 @@ function enable() {
     else if (!player) {
       // document.querySelector('#speech [data-id=msg-speech]').textContent = 'Loading Resources...';
 
+      const ps = await new Promise(resolve => chrome.storage.local.get({
+        'tts-scroll': 'center'
+      }, resolve));
+
       player = document.createElement('tts-component');
+
       // reposition if there is an scrollbar
       try {
         if (scrollbar.has()) {
@@ -137,7 +142,7 @@ function enable() {
             else {
               let text = '';
               for (let n = 0; n < 10; n += 1) {
-                const r = nav[options.type || 'line'](direction);
+                const r = nav[options.type || 'line'](direction, ps['tts-scroll']);
 
                 if (r === 'START_OF_FILE') {
                   player.message('Start of Document', 1000);
@@ -201,11 +206,12 @@ function enable() {
           }
           const vr = localStorage.getItem('tts-v1-rate');
           if (vr) {
-            player.configure('rate', vv);
+            console.log();
+            player.configure('rate', vr);
           }
           const vp = localStorage.getItem('tts-v1-pitch');
           if (vp) {
-            player.configure('pitch', vv);
+            player.configure('pitch', vp);
           }
 
           const v = localStorage.getItem('tts-v1-object');
@@ -302,6 +308,7 @@ function enable() {
       };
       player.rate = (value, e) => {
         if (e?.isTrusted) {
+          console.log(value);
           localStorage.setItem('tts-v1-rate', value);
         }
         speech.rate(value);

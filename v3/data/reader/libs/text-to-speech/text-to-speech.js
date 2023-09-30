@@ -99,7 +99,6 @@ class TTSL1 {
     this.content(options, direction).then(segment => { // segment = {text, 'next-text', delay}
       if (segment) {
         const delay = segment.delay ? (this.voice?.localService ? segment.delay.local : segment.delay.remote) : 0;
-
         this.#timeout = setTimeout(() => this.#play(segment), delay || 0);
       }
       else {

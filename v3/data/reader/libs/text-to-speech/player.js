@@ -57,7 +57,6 @@ class ttsComponent extends HTMLElement {
           cursor: pointer;
           background-color: var(--bg, #f2f2f2);
           height: 24px;
-          padding: var(--gap);
         }
         #play:not(.playing) svg:last-of-type {
           display: none;
@@ -73,9 +72,7 @@ class ttsComponent extends HTMLElement {
           padding: 0;
         }
         #body.minimized #controls,
-        #body.minimized #voices,
-        #body.minimized #two,
-        #body.minimized #three {
+        #body.minimized #voices {
            display: none;
         }
         #body > div {
@@ -104,37 +101,31 @@ class ttsComponent extends HTMLElement {
           justify-content: center;
         }
         #two {
+          background-color: var(--bg, #f2f2f2);
+        }
+        #two[open] {
+          background-color: color-mix(in srgb, var(--bg, #f2f2f2) var(--darken), var(--fg)) !important;
+        }
+        #two summary {
+          display: none;
+        }
+        #two > div {
           display: grid;
           grid-template-columns: min-content 1fr 3ch;
           grid-gap: var(--gap);
           align-items: center;
-          padding-block: calc(2 * var(--gap));
-          background-color: color-mix(in srgb, var(--bg, #f2f2f2) var(--darken), var(--fg)) !important;
-        }
-        #body:not(:hover) #two {
-          height: 0;
-          overflow: hidden;
-          padding-top: 0;
-          padding-bottom: 0;
+          padding: calc(2 * var(--gap));
         }
         #two span.display {
           text-align: center;
         }
         #three {
           display: grid;
-          grid-template-columns: min-content min-content 10fr;
+          grid-template-columns: repeat(5, min-content) 10fr;
           grid-gap: var(--gap);
           align-items: center;
           overflow: hidden;
-        }
-        #three > span {
           padding: calc(var(--gap) * 2) var(--gap);
-        }
-        #body:not(:hover) #three > :not(#msg) {
-          visibility: hidden;
-        }
-        #body:not(:hover) #three:has(#msg:empty) {
-          display: none;
         }
         #msg {
           display: block;
@@ -143,7 +134,7 @@ class ttsComponent extends HTMLElement {
           text-align: end;
           white-space: nowrap;
         }
-        #shortcuts[href] {
+        a[href] {
           text-decoration: none;
           color: var(--lk, #0095dd);
         }
@@ -216,19 +207,25 @@ class ttsComponent extends HTMLElement {
           <option>1.0</option>
           <option>1.5</option>
         </datalist>
-        <div id="two" class="minimized">
-          <span>Volume</span>
-          <input min="0.1" max="1" step="0.1" type="range" id="volume" list="steplist-volume">
-          <span id="volume-span" class="display">1.00</span>
-          <span>Speed</span>
-          <input min="0.1" max="3" step="0.1" type="range" id="rate" list="steplist-rate">
-          <span id="rate-span" class="display">1.00</span>
-          <span>Pitch</span>
-          <input min="0.1" max="2" step="0.1" type="range" id="pitch" list="steplist-pitch">
-          <span id="pitch-span" class="display">1.00</span>
-        </div>
+        <details id="two">
+        <summary>Settings</summary>
+          <div>
+            <span>Volume</span>
+            <input min="0.1" max="1" step="0.1" type="range" id="volume" list="steplist-volume">
+            <span id="volume-span" class="display">1.00</span>
+            <span>Speed</span>
+            <input min="0.1" max="3" step="0.1" type="range" id="rate" list="steplist-rate">
+            <span id="rate-span" class="display">1.00</span>
+            <span>Pitch</span>
+            <input min="0.1" max="2" step="0.1" type="range" id="pitch" list="steplist-pitch">
+            <span id="pitch-span" class="display">1.00</span>
+          </div>
+        </details>
         <div id="three" class="minimized">
           <span id="version">...</span>
+          |
+          <a id="settings" href="#">Settings</a>
+          |
           <a id="shortcuts" target=_blank>Shortcuts</a>
           <span id="msg"></span>
         </div>
@@ -268,6 +265,10 @@ class ttsComponent extends HTMLElement {
       this.shadowRoot.getElementById('pitch-span').textContent = e.target.valueAsNumber.toFixed(2);
       this.pitch(e.target.valueAsNumber, e);
     };
+    this.shadowRoot.getElementById('settings').onclick = () => {
+      const e = this.shadowRoot.getElementById('two');
+      e.open = e.open ? false : true;
+    };
   }
   active(enabled = true) {
     this.shadowRoot.getElementById('play').disabled = enabled === false;
@@ -294,11 +295,12 @@ class ttsComponent extends HTMLElement {
     this.shadowRoot.getElementById('shortcuts').href = href;
   }
   message(msg, timeout = -1) {
-    this.shadowRoot.getElementById('msg').textContent = msg;
+    const e = this.shadowRoot.getElementById('msg');
+    e.title = e.textContent = msg;
     clearTimeout(this.#timeout);
     if (timeout !== -1) {
       setTimeout(() => {
-        this.shadowRoot.getElementById('msg').textContent = '';
+        e.title = e.textContent = '';
       }, timeout);
     }
   }

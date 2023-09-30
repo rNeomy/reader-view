@@ -195,7 +195,7 @@ class NavL4 extends NavL3 {
 
     this.window.document.documentElement.append(this.#span);
   }
-  #scroll() {
+  #scroll(block = 'center') {
     // Get the bounding rectangle of the Range object
     const rect = this.range.getBoundingClientRect();
     this.#span.style.top = CSS.px(rect.top + this.window.scrollY || this.window.pageYOffset);
@@ -208,24 +208,24 @@ class NavL4 extends NavL3 {
       if (!inViewport) {
         this.#span.scrollIntoView({
           behavior: 'auto', // smooth
-          block: 'center'
+          block
         });
       }
       observer.disconnect();
     });
     observer.observe(this.#span);
   }
-  paragraph(direction = 'forward') {
+  paragraph(direction = 'forward', block) {
     const r = super.paragraph(direction);
     if (!r) {
-      this.#scroll();
+      this.#scroll(block);
     }
     return r;
   }
-  line(direction = 'forward') {
+  line(direction = 'forward', block) {
     const r = super.line(direction);
     if (!r) {
-      this.#scroll();
+      this.#scroll(block);
     }
     return r;
   }
