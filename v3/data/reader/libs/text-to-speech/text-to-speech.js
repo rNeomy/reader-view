@@ -147,10 +147,10 @@ class TTSL1 {
     console.error('error', e);
   }
   boundary(e) {
-    console.log('boundary', e);
+    console.info('boundary', e);
   }
   state() {
-    console.log('state changed');
+    console.info('state changed');
   }
 }
 

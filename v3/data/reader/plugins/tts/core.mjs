@@ -206,7 +206,6 @@ function enable() {
           }
           const vr = localStorage.getItem('tts-v1-rate');
           if (vr) {
-            console.log();
             player.configure('rate', vr);
           }
           const vp = localStorage.getItem('tts-v1-pitch');
@@ -231,7 +230,7 @@ function enable() {
 
       /* controls */
       player.voice = (voice, save = true) => {
-        player.message('');
+        player.message('Applying voice...');
         speech.configure(voice);
         const v = speech.voice;
 
@@ -308,7 +307,6 @@ function enable() {
       };
       player.rate = (value, e) => {
         if (e?.isTrusted) {
-          console.log(value);
           localStorage.setItem('tts-v1-rate', value);
         }
         speech.rate(value);

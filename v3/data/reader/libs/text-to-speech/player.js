@@ -72,6 +72,8 @@ class ttsComponent extends HTMLElement {
           padding: 0;
         }
         #body.minimized #controls,
+        #body.minimized #two,
+        #body.minimized #three,
         #body.minimized #voices {
            display: none;
         }
@@ -92,7 +94,7 @@ class ttsComponent extends HTMLElement {
         #one {
           display: grid;
           align-items: center;
-          grid-template-columns: 7ch 1fr min-content;
+          grid-template-columns: 5ch 1fr min-content;
         }
         #controls {
           display: flex;
