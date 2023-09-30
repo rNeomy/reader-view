@@ -27,8 +27,14 @@ const prefs = {
     min: 60
   },
   delay: {
-    sentences: 600,
-    same: 300
+    sentences: {
+      local: 600,
+      remote: 50
+    },
+    same: {
+      local: 100,
+      remote: 0
+    }
   }
 };
 

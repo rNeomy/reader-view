@@ -15,7 +15,10 @@ class TTSL1 {
   content() {
     return Promise.resolve({
       text: 'this is a sample text',
-      delay: 0
+      delay: {
+        local: 0,
+        remote: 0
+      }
     });
   }
   ready() {
@@ -95,7 +98,9 @@ class TTSL1 {
     }
     this.content(options, direction).then(segment => { // segment = {text, 'next-text', delay}
       if (segment) {
-        this.#timeout = setTimeout(() => this.#play(segment), segment.delay || 0);
+        const delay = segment.delay ? (this.voice?.localService ? segment.delay.local : segment.delay.remote) : 0;
+
+        this.#timeout = setTimeout(() => this.#play(segment), delay || 0);
       }
       else {
         console.warn('empty segment');
