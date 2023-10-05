@@ -637,9 +637,20 @@ document.addEventListener('click', e => {
     });
   }
   else if (cmd.startsWith('color-mode-')) {
+    const mode = cmd.replace('color-mode-', '');
     chrome.storage.local.set({
-      mode: cmd.replace('color-mode-', '')
+      mode
     });
+    const modeKind = target.parentElement.getAttribute("data-id")
+
+    if (modeKind === 'dark')
+      chrome.storage.local.set({
+        preferredDarkMode: mode
+      })
+    else
+      chrome.storage.local.set({
+        preferredLightMode: mode
+      })
   }
   else if (cmd === 'close') {
     nav.back(true);
@@ -1009,6 +1020,9 @@ config.onChanged.push(ps => {
   if (ps['show-images']) {
     update.images();
   }
+  if (ps['os-sync']) {
+    ps['os-sync'].newValue ? enableOSSync() : disableOSSync();
+  }
   if (ps['mode']) {
     document.body.dataset.mode = config.prefs.mode;
   }
@@ -1017,9 +1031,40 @@ config.onChanged.push(ps => {
   }
 });
 
+// sync theme with OS. The preferred dark/light of each kind is whichever the user chose last time
+function updateReaderTheme(event) {
+  const newColorScheme = event.matches ? "dark" : "light";
+  console.log("Detected OS color scheme change to: " + newColorScheme);
+
+  chrome.storage.local.get({
+    'preferredDarkMode': 'groove-dark',
+    'preferredLightMode': 'sepia'
+  }, prefs => {
+    const newMode = newColorScheme === 'dark' ? prefs['preferredDarkMode'] : prefs['preferredLightMode'];
+    chrome.storage.local.set({
+      mode: newMode
+    });
+  })
+}
+
+const dark_scheme_media_query = window?.matchMedia('(prefers-color-scheme: dark)');
+const enableOSSync = () => {
+  dark_scheme_media_query?.addEventListener('change', updateReaderTheme)
+};
+const disableOSSync = () => {
+  dark_scheme_media_query?.removeEventListener('change', updateReaderTheme);
+}
+
+
 // load
 config.load(() => {
+
+  if (config.prefs['os-sync'] && dark_scheme_media_query){
+    config.prefs.mode = dark_scheme_media_query.matches ? config.prefs['preferredDarkMode'] : config.prefs['preferredLightMode']
+    enableOSSync();
+  }
   document.body.dataset.mode = config.prefs.mode;
+
   document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
   if (config.prefs['printing-button']) {
     document.getElementById('printing-button').classList.remove('hidden');

@@ -107,6 +107,7 @@ function save() {
     'embedded': document.getElementById('embedded').checked,
     'top-css': document.getElementById('top-style').value,
     'user-css': document.getElementById('user-css').value,
+    'os-sync': document.getElementById('os-sync').checked,
     'user-action': actions,
     'reader-mode': document.getElementById('reader-mode').checked,
     'faqs': document.getElementById('faqs').checked,
@@ -154,6 +155,7 @@ function restore() {
   document.getElementById('top-style').value = config.prefs['top-css'];
   document.getElementById('user-css').value = config.prefs['user-css'];
   document.getElementById('user-action').value = JSON.stringify(config.prefs['user-action'], null, '  ');
+  document.getElementById('os-sync').checked = config.prefs['os-sync'];
 
   document.getElementById('printing-button').checked = config.prefs['printing-button'];
   document.getElementById('screenshot-button').checked = config.prefs['screenshot-button'];
