@@ -78,7 +78,7 @@ const aStorage = {
     });
   },
   get(id) {
-    return storage.get(id).then(o => o.content).catch(e => {
+    return storage.get(id).then(o => o?.content).catch(e => {
       console.warn(e);
 
       clearTimeout(aStorage.ids[id]);

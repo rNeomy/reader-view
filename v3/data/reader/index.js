@@ -41,7 +41,8 @@ const add = (src, o) => new Promise((resolve, reject) => {
 
 // hash
 const hash = link => {
-  const hash = link.hash.substr(1);
+  const hash = link.hash.substring(1);
+
   const a = iframe.contentDocument.querySelector(`[name="${hash}"],#${hash}`);
   if (a) {
     a.scrollIntoView({
@@ -983,8 +984,10 @@ const render = () => chrome.runtime.sendMessage({
     iframe.contentWindow.focus();
   }
   // move to hash
-  if (args.get('url').indexOf('#') !== -1) {
-    const link = new URL(args.get('url'));
+  const url = args.get('url')
+  const indexOfHash = url.indexOf('#');
+  if (indexOfHash !== -1 && indexOfHash !== url.length - 1) {
+    const link = new URL(url);
     hash(link);
   }
 });
