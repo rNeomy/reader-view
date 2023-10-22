@@ -641,16 +641,18 @@ document.addEventListener('click', e => {
     chrome.storage.local.set({
       mode
     });
-    const modeKind = target.parentElement.getAttribute("data-id")
+    const modeKind = target.parentElement.dataset.id;
 
-    if (modeKind === 'dark')
+    if (modeKind === 'dark') {
       chrome.storage.local.set({
-        preferredDarkMode: mode
-      })
-    else
+        'preferred-dark-mode': mode
+      });
+    }
+    else {
       chrome.storage.local.set({
-        preferredLightMode: mode
-      })
+        'preferred-light-mode': mode
+      });
+    }
   }
   else if (cmd === 'close') {
     nav.back(true);
@@ -805,7 +807,7 @@ const render = () => chrome.runtime.sendMessage({
     .replaceAll('%data-images%', config.prefs['show-images'])
     .replaceAll('%data-font%', config.prefs.font)
     .replaceAll('%data-columns%', config.prefs['column-count'])
-    .replaceAll('%data-mode%', config.prefs.mode));
+    .replaceAll('%data-mode%', document.body.dataset.mode));
   iframe.contentDocument.close();
 
   // To-Do; check on Firefox
@@ -1020,50 +1022,46 @@ config.onChanged.push(ps => {
   if (ps['show-images']) {
     update.images();
   }
-  if (ps['os-sync']) {
-    ps['os-sync'].newValue ? enableOSSync() : disableOSSync();
-  }
   if (ps['mode']) {
     document.body.dataset.mode = config.prefs.mode;
+  }
+  if (ps['os-sync']) {
+    mode.query?.dispatchEvent(new Event('change'));
   }
   if (ps['toggle-toolbar']) {
     document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
   }
 });
 
-// sync theme with OS. The preferred dark/light of each kind is whichever the user chose last time
-function updateReaderTheme(event) {
-  const newColorScheme = event.matches ? "dark" : "light";
-  console.log("Detected OS color scheme change to: " + newColorScheme);
+// Decide color scheme based on user configs and os theme
+const mode = (e = mode.query) => new Promise(resolve => {
+  if (!config.prefs['os-sync'] || !e) {
+    resolve(config.prefs.mode);
+    return;
+  }
+  const theme = e.matches ? 'dark' : 'light';
 
   chrome.storage.local.get({
-    'preferredDarkMode': 'groove-dark',
-    'preferredLightMode': 'sepia'
+    'preferred-dark-mode': 'groove-dark',
+    'preferred-light-mode': 'sepia'
   }, prefs => {
-    const newMode = newColorScheme === 'dark' ? prefs['preferredDarkMode'] : prefs['preferredLightMode'];
-    chrome.storage.local.set({
-      mode: newMode
-    });
-  })
+    resolve(prefs[`preferred-${theme}-mode`]);
+  });
+});
+mode.query = window?.matchMedia('(prefers-color-scheme: dark)');
+if (mode.query) {
+  mode.query.addEventListener('change', async () => {
+    const m = await mode();
+    document.body.dataset.mode = m;
+    if (iframe.contentDocument) {
+      iframe.contentDocument.body.dataset.mode = m;
+    }
+  });
 }
-
-const dark_scheme_media_query = window?.matchMedia('(prefers-color-scheme: dark)');
-const enableOSSync = () => {
-  dark_scheme_media_query?.addEventListener('change', updateReaderTheme)
-};
-const disableOSSync = () => {
-  dark_scheme_media_query?.removeEventListener('change', updateReaderTheme);
-}
-
 
 // load
 config.load(() => {
-
-  if (config.prefs['os-sync'] && dark_scheme_media_query){
-    config.prefs.mode = dark_scheme_media_query.matches ? config.prefs['preferredDarkMode'] : config.prefs['preferredLightMode']
-    enableOSSync();
-  }
-  document.body.dataset.mode = config.prefs.mode;
+  mode().then(v => document.body.dataset.mode = v);
 
   document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
   if (config.prefs['printing-button']) {
