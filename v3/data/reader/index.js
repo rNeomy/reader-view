@@ -984,7 +984,7 @@ const render = () => chrome.runtime.sendMessage({
     iframe.contentWindow.focus();
   }
   // move to hash
-  const url = args.get('url')
+  const url = args.get('url');
   const indexOfHash = url.indexOf('#');
   if (indexOfHash !== -1 && indexOfHash !== url.length - 1) {
     const link = new URL(url);
