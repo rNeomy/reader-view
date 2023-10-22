@@ -8,7 +8,8 @@
   --fg: #000; /* foreground  */
   --bg: #fff; /* background  */
   --bd: #000; /* border  */
-  --lk: #0095dd; /* link */
+  --lk: #006fa5; /* link */
+  --lkv: #d33bf0; /* link visited */
   --hg: #ffff81; /* highlight  */
 }
 html {
@@ -24,6 +25,9 @@ body {
   color: var(--fg);
   border-color: var(--bd);
   background-color: var(--bg);
+}
+body[data-mode$="dark"] {
+  --lk: #0096de;
 }
 body[data-mode="light"] {
   color-scheme: light;
@@ -107,6 +111,10 @@ a {
   color: var(--lk);
   text-decoration: none;
 }
+a:visited {
+  color: var(--lkv);
+}
+
 hr {
   background-color: var(--bd);
   height: 1px;

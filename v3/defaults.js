@@ -51,16 +51,6 @@ Original Page: [URL]`,
   'user-css': `body {
   padding-bottom: 64px;
 }
-a:visited {
-  color: #d33bf0;
-}
-a:link, a:link:hover, a:link:active, a:link * {
-  color: #0095dd;
-}
-a:link {
-  text-decoration: none;
-  font-weight: normal;
-}
 pre {
   white-space: pre-wrap;
 }

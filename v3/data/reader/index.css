@@ -2,6 +2,7 @@
   --fg: #000;
   --bg: #fff;
   --bd: #000;
+  --lk: #006fa5;
   --color-mode-light-color: #222;
   --color-mode-light-bg: whitesmoke;
   --color-mode-dark-color: #eee;
@@ -92,6 +93,10 @@ iframe {
   flex: 1;
   border: none;
 }
+a {
+  text-decoration: none;
+  color: var(--lk);
+}
 
 #toolbar {
   user-select: none;
@@ -147,6 +152,9 @@ body[data-toolbar=false] #toolbar {
   height: 60px;
   color: #333;
   font-size: 20px;
+}
+#image-utils tr:not(:last-child),
+#font-utils tr:not(:last-child) {
   border-bottom: 1px solid var(--border-color);
 }
 #image-utils [data-cmd],
@@ -182,39 +190,59 @@ body[data-toolbar=false] #toolbar {
   align-items: center;
   justify-content: center;
   height: 60px;
+  position: relative;
 }
-#font-utils tr:last-child td span[data-cmd="color-mode-light"] {
+#font-utils span[data-cmd="color-mode-light"] {
   color: var(--color-mode-light-color);
   background-color: var(--color-mode-light-bg);
 }
-#font-utils tr:last-child td span[data-cmd="color-mode-dark"] {
+#font-utils span[data-cmd="color-mode-dark"] {
   color: var(--color-mode-dark-color);
   background-color: var(--color-mode-dark-bg);
 }
-#font-utils tr:last-child td span[data-cmd="color-mode-sepia"] {
+#font-utils span[data-cmd="color-mode-sepia"] {
   color: var(--color-mode-sepia-color);
   background-color: var(--color-mode-sepia-bg);
 }
-#font-utils tr:last-child td span[data-cmd="color-mode-groove-dark"] {
+#font-utils span[data-cmd="color-mode-groove-dark"] {
   color: var(--color-mode-groove-dark-color);
   background-color: var(--color-mode-groove-dark-bg);
 }
-#font-utils tr:last-child td span[data-cmd="color-mode-solarized-light"] {
+#font-utils span[data-cmd="color-mode-solarized-light"] {
   color: var(--color-mode-solarized-light-color);
   background-color: var(--color-mode-solarized-light-bg);
 }
-#font-utils tr:last-child td span[data-cmd="color-mode-solarized-dark"] {
+#font-utils span[data-cmd="color-mode-solarized-dark"] {
   color: var(--color-mode-solarized-dark-color);
   background-color: var(--color-mode-solarized-dark-bg);
 }
-#font-utils tr:last-child td span[data-cmd="color-mode-nord-light"] {
+#font-utils span[data-cmd="color-mode-nord-light"] {
   color: var(--color-mode-nord-light-color);
   background-color: var(--color-mode-nord-light-bg);
 }
-#font-utils tr:last-child td span[data-cmd="color-mode-nord-dark"] {
+#font-utils span[data-cmd="color-mode-nord-dark"] {
   color: var(--color-mode-nord-dark-color);
   background-color: var(--color-mode-nord-dark-bg);
 }
+
+body[data-mode="light"] #font-utils span[data-cmd="color-mode-light"]::after,
+body[data-mode="dark"] #font-utils span[data-cmd="color-mode-dark"]::after,
+body[data-mode="sepia"] #font-utils span[data-cmd="color-mode-sepia"]::after,
+body[data-mode="groove-dark"] #font-utils span[data-cmd="color-mode-groove-dark"]::after,
+body[data-mode="solarized-light"] #font-utils span[data-cmd="color-mode-solarized-light"]::after,
+body[data-mode="solarized-dark"] #font-utils span[data-cmd="color-mode-solarized-dark"]::after,
+body[data-mode="nord-light"] #font-utils span[data-cmd="color-mode-nord-light"]::after,
+body[data-mode="nord-dark"] #font-utils span[data-cmd="color-mode-nord-dark"]::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
+  background-color: var(--lk);
+  border-radius: 50%;
+}
+
 #image-utils tr:last-child td {
   font-size: 14px;
 }
@@ -236,9 +264,6 @@ body[data-toolbar=false] #toolbar {
   margin: 0;
   color: var(--color-mode-sepia-color);
   background-color: var(--color-mode-sepia-bg);
-}
-#font-utils p[data-id=help] a {
-  text-decoration: none;
 }
 
 #toolbar [data-id="no-height"] input,
@@ -371,10 +396,6 @@ body:not([data-tips=true]) #tips {
   outline: none;
   color: #a87109;
 }
-#tips a {
-  color: #2e9edc;
-  text-decoration: none;
-}
 
 #speech {
   position: fixed;
@@ -428,8 +449,6 @@ body[data-speech=false] #speech {
   font-size: 10px;
   top: 3px;
   right: 32px;
-  text-decoration: none;
-  color: #0095dd;
 }
 
 #speech [data-id=msg-speech] {
