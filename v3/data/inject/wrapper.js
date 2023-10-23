@@ -18,7 +18,7 @@
     Homepage: https://webextension.org/listing/chrome-reader-view.html
 */
 
-/* global Readability, config */
+/* global Readability, config, extractChapLinks */
 'use strict';
 
 {
@@ -158,11 +158,16 @@ try {
         throw Error('Cannot convert this page!');
       }
 
-      const navLinks = extractChapLinks(document)
-      
-      article.nextLink = navLinks?.nextLink;
-      article.prevLink = navLinks?.prevLink;
-      
+      article.chapters = {};
+      try {
+        const navLinks = extractChapLinks(document);
+        article.chapters.next = navLinks.nextLink;
+        article.chapters.previous = navLinks.prevLink;
+      }
+      catch (e) {
+        console.info('Cannot extract chapters', e);
+      }
+
       article.url = article.url || location.href;
 
       // detect doi

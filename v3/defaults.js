@@ -4,6 +4,7 @@ self.defaults = {
   'auto-rules': [],
   'font-size': 15,
   'os-sync': true,
+  'detect-chapters': true,
   'preferred-dark-mode': 'groove-dark',
   'preferred-light-mode': 'sepia',
   'font': 'sans-serif',

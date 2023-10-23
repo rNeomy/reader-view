@@ -744,6 +744,7 @@ const render = () => chrome.runtime.sendMessage({
     return;
   }
 
+  console.log(obj);
   article = obj;
 
   document.title = document.oTitle = config.prefs.title

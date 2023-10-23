@@ -24,44 +24,6 @@ self.importScripts('menus.js');
 self.importScripts('navigate.js');
 self.importScripts('storage.js');
 
-/**
- * Dynamically loads to the passed tab the nextChap library, unless it was already loaded.
- * @param tab - Tab to target
- * @returns {Promise<void>} - Resolves when loading is completed
- */
-async function loadNextChap(tab) {
-
-  if (typeof (NavType) !== 'undefined')
-    return
-
-  await chrome.storage.session.setAccessLevel({
-    accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS'
-  })
-
-  const nextChapLoadedOnPage = `nextChapLoaded- ${encodeURIComponent(tab.url)}-${tab.id}`;
-  const sessionStorage = await chrome.storage.session.get(nextChapLoadedOnPage);
-
-  console.debug(`Inside loadNextChap, sessionStorage.nextChapLoadedOnPage:${sessionStorage.nextChapLoaded}`)
-  if (!sessionStorage.nextChapLoadedOnPage) {
-
-      const target = {tabId: tab.id}
-
-      await chrome.scripting.executeScript({
-          target,
-          injectImmediately: true,
-          files: ['data/inject/next-chap/fast-levenshtein/levenshtein.js']
-      });
-
-      await chrome.scripting.executeScript({
-          target,
-          injectImmediately: true,
-          files: ['data/inject/next-chap/NextChap.js']
-      });
-
-      await chrome.storage.session.set({nextChapLoadedOnPage: true});
-  }
-}
-
 const notify = e => {
   console.error(e);
   return chrome.notifications.create({
@@ -70,7 +32,7 @@ const notify = e => {
     iconUrl: '/data/icons/48.png',
     message: e.message || e
   });
-}
+};
 
 const onClicked = async (tab, embedded = false) => {
   const root = chrome.runtime.getURL('');
@@ -92,7 +54,8 @@ const onClicked = async (tab, embedded = false) => {
       });
 
       const prefs = await new Promise(resolve => chrome.storage.local.get({
-        'auto-fullscreen': defaults['auto-fullscreen']
+        'auto-fullscreen': defaults['auto-fullscreen'],
+        'detect-chapters': defaults['detect-chapters']
       }, resolve));
 
       if (prefs['auto-fullscreen']) {
@@ -118,7 +81,19 @@ const onClicked = async (tab, embedded = false) => {
         args: [embedded]
       });
 
-      await loadNextChap(tab);
+      // detect chapters
+      if (prefs['detect-chapters']) {
+        await chrome.scripting.executeScript({
+          target,
+          injectImmediately: true,
+          files: ['data/inject/next-chap/fastest-levenshtein/mod.js']
+        });
+        await chrome.scripting.executeScript({
+          target,
+          injectImmediately: true,
+          files: ['data/inject/next-chap/NextChap.js']
+        });
+      }
 
       await chrome.scripting.executeScript({
         target,
@@ -134,7 +109,7 @@ const onClicked = async (tab, embedded = false) => {
 };
 chrome.action.onClicked.addListener(onClicked);
 
-chrome.commands.onCommand.addListener(function(command, tab) {
+chrome.commands.onCommand.addListener(command => {
   if (command === 'toggle-reader-view') {
     chrome.tabs.query({
       active: true,
@@ -221,9 +196,8 @@ const onMessage = (request, sender, response) => {
       }
       chrome.tabs.update({
         url: request.url
-      })
-      .catch(error => {
-        console.log(`Error updating tab to go to URL ${request.url}, cause : ${error}`)
+      }).catch(e => {
+        console.log(`Error updating tab to go to URL ${request.url}, cause : ${e.message}`);
       });
     }
     else {

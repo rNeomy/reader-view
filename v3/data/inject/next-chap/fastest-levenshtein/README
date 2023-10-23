@@ -1,0 +1,5 @@
+https://unpkg.com/browse/fastest-levenshtein@1.0.16/esm/mod.js
+ -> modified from ems to inject with "chrome.scripting.executeScript"
+ export {closest, distance};
+ //
+ self.levenshtein = {closest, distance};

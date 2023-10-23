@@ -635,7 +635,7 @@ function similarityBasedConfidenceCandidates(originalURL, links, navType) {
         throw new Error('navType must be a value of type NavType')
 
     return links.map(link => {
-        const editDistance = window.Levenshtein.get(originalURL.href, link.href)
+        const editDistance = self.levenshtein.distance(originalURL.href, link.href)
         return new CandidateLink(link, navType,
             editDistance === 1 ? 1 :
                 editDistance === 2 ? .7 :
