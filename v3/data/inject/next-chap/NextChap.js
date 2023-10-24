@@ -6,8 +6,7 @@
         static chapterNumberSuffix = /(?:chapter|chap|c|page|[_-]|\b)(\d{1,4}$)/;
         static boundary_or_non_number = /(?:\D|\b)?/;
 
-        static chapterNumberAnywhere =
-            new RegExp(UrlUtils.boundary_or_non_number.source + '(\\d{1,4})' + UrlUtils.boundary_or_non_number.source, 'g');
+        static chapterNumberAnywhere = new RegExp(UrlUtils.boundary_or_non_number.source + '(\\d{1,4})' + UrlUtils.boundary_or_non_number.source, 'g');
 
         /**
          * I invented a new word. Cnum is a chapter number. Even Co-pilot got it.
@@ -18,8 +17,7 @@
 
             const matches = [...str.matchAll(UrlUtils.chapterNumberAnywhere)]
 
-            if (!matches || !matches.length)
-                return null;
+            if (!matches || !matches.length) return null;
 
             return matches.map(match => parseInt(match[1]))
         }
@@ -38,15 +36,6 @@
          */
         static toDecodedPathSegments(url) {
             return url ? url.href.split("/").slice(1).map(decodeURIComponent) : null
-        }
-
-        /**
-         * @param {URL | HTMLAnchorElement} url
-         * @returns string - Returns an absolute URL, which is just the href property (Not to be confused with the href attribute which
-         * can be a relative url), but better named.
-         */
-        static toAbsoluteURL(url) {
-            return url ? url.href : undefined
         }
 
         /**
@@ -95,7 +84,7 @@
          * or refere to elements in the current page.
          * For example, just have 'href="#"', 'href="#top"' or 'href="javascript:void(0);"'
          * @param links - links to filter
-         * @param {URL} curURL - the current page URL
+         * @param {URL | Location} curURL - the current page URL
          * @returns normal http/https links to a different page
          */
         static removeBogusLinks(links, curURL) {
@@ -126,9 +115,7 @@
 
     // This is a fake enum, the symbols inside aren't actually of type NavType, but the namespace helps
     const NavType = {
-        PREV: Symbol('prev'),
-        NEXT: Symbol('next'),
-        INVALID: Symbol('invalid')
+        PREV: Symbol('prev'), NEXT: Symbol('next'), INVALID: Symbol('invalid')
     };
 
     class NavigationLocator {
@@ -182,9 +169,7 @@
             const atLeastOne = nextLinks.length === 1 || prevLinks.length === 1
             const atMostOneEach = nextLinks.length <= 1 && prevLinks.length <= 1;
 
-            return atLeastOne && atMostOneEach ?
-                NavigationCandidates.nonAmbiguousCandidates(prevLinks?.[0], nextLinks?.[0], this.weight) :
-                NavigationCandidates.similarityBased(url, prevLinks, nextLinks, this.weight);
+            return atLeastOne && atMostOneEach ? NavigationCandidates.nonAmbiguousCandidates(prevLinks?.[0], nextLinks?.[0], this.weight) : NavigationCandidates.similarityBased(url, prevLinks, nextLinks, this.weight);
         }
     }
 
@@ -207,16 +192,12 @@
 
                 const elemToTotalKWCount = KeywordLocator.mapElemToKeywordCount(elements, keywords);
 
-                if (elemToTotalKWCount.size === 0)
-                    return;
+                if (elemToTotalKWCount.size === 0) return;
 
                 const sumAppearnces = [...elemToTotalKWCount.values()].reduce((acc, val) => acc + val, 0);
 
 
-                const candidates = [...elemToTotalKWCount.entries()].map(
-                    ([elem, allKWCount]) => new CandidateLink(elem, navType,
-                        allKWCount * (elem.nextChap_copies ?? 1) / sumAppearnces)
-                );
+                const candidates = [...elemToTotalKWCount.entries()].map(([elem, allKWCount]) => new CandidateLink(elem, navType, allKWCount * (elem.nextChap_copies ?? 1) / sumAppearnces));
 
                 navTypeToLinkCandidates.set(navType, candidates);
             });
@@ -275,26 +256,22 @@
             this.next = nextInput
         }
 
-        linksFound(){
+        linksFound() {
             return this.prev || this.next
         }
 
-        toLinks(input) {
+        toLinks() {
             return {
-                nextLink: Navigation.toLink(this.next),
-                prevLink: Navigation.toLink(this.prev)
+                nextLink: Navigation.toLink(this.next), prevLink: Navigation.toLink(this.prev)
             }
         }
 
         static toLink(input) {
-            if (input instanceof CandidateLink)
-                return input.link.href
+            if (input instanceof CandidateLink) return input.link.href
 
-            if (input instanceof String)
-                return input
+            if (input instanceof String) return input
 
-            if (!input)
-                return undefined
+            if (!input) return undefined
 
             throw new Error(`The passed value ${input} is of an unexpected type. Accepting CandidateLink|String|null|undefined`)
         }
@@ -311,12 +288,10 @@
          */
         constructor(prevCandidates, nextCandidates, weight = 1) {
 
-            if (!Array.isArray(prevCandidates) || !prevCandidates.every((candidate) => candidate instanceof CandidateLink))
-                throw new Error('prevCandidates parameter must be an array of CandidateLinks');
+            if (!Array.isArray(prevCandidates) || !prevCandidates.every((candidate) => candidate instanceof CandidateLink)) throw new Error('prevCandidates parameter must be an array of CandidateLinks');
 
 
-            if (!Array.isArray(nextCandidates) || !nextCandidates.every((candidate) => candidate instanceof CandidateLink))
-                throw new Error('nextCandidates parameter must be an array of CandidateLinks');
+            if (!Array.isArray(nextCandidates) || !nextCandidates.every((candidate) => candidate instanceof CandidateLink)) throw new Error('nextCandidates parameter must be an array of CandidateLinks');
 
             this.next = nextCandidates;
             this.prev = prevCandidates;
@@ -336,33 +311,26 @@
         }
 
         static fromMap(navTypeToCandidates, weight = 1) {
-            return new NavigationCandidates(navTypeToCandidates.get(NavType.PREV) || [],
-                navTypeToCandidates.get(NavType.NEXT) || [], weight)
+            return new NavigationCandidates(navTypeToCandidates.get(NavType.PREV) || [], navTypeToCandidates.get(NavType.NEXT) || [], weight)
         }
 
         static nonAmbiguousCandidates(prevLink, nextLink, weight) {
-            if (!prevLink && !nextLink)
-                throw new Error("At least one of prevLink or nextLink must be provided")
+            if (!prevLink && !nextLink) throw new Error("At least one of prevLink or nextLink must be provided")
 
-            return new NavigationCandidates(
-                prevLink ? [new CandidateLink(prevLink, NavType.PREV, 1)] : [],
-                nextLink ? [new CandidateLink(nextLink, NavType.NEXT, 1)] : [],
-                weight)
+            return new NavigationCandidates(prevLink ? [new CandidateLink(prevLink, NavType.PREV, 1)] : [], nextLink ? [new CandidateLink(nextLink, NavType.NEXT, 1)] : [], weight)
 
         }
 
         /**
          *
-         * @param {URL} baseUrl -  url of the current page
+         * @param {URL | Location} baseUrl -  url of the current page
          * @param prevLinks - link array of candidates for previous link
          * @param nextLinks - link array of candidates for next link
          * @param weight - weight of the navigation candidates
          * @returns {NavigationCandidates}
          */
         static similarityBased(baseUrl, prevLinks, nextLinks, weight) {
-            return new NavigationCandidates(
-                similarityBasedConfidenceCandidates(baseUrl, prevLinks, NavType.PREV),
-                similarityBasedConfidenceCandidates(baseUrl, nextLinks, NavType.NEXT), weight)
+            return new NavigationCandidates(similarityBasedConfidenceCandidates(baseUrl, prevLinks, NavType.PREV), similarityBasedConfidenceCandidates(baseUrl, nextLinks, NavType.NEXT), weight)
         }
 
         /**
@@ -373,15 +341,10 @@
          */
         static mergeNavigationCandidates(navCandidatesArray) {
 
-            const navTypeToMergedCandidatesMap = new Map([
-                    [NavType.PREV, new Map()],
-                    [NavType.NEXT, new Map()],
-                ]
-            );
+            const navTypeToMergedCandidatesMap = new Map([[NavType.PREV, new Map()], [NavType.NEXT, new Map()],]);
 
             navCandidatesArray.reduce((navTypeToMergedCandidatesMap, navCandidates) => {
-                if (!(navCandidates instanceof NavigationCandidates))
-                    throw new Error('navCandidates must be an array of NavigationCandidates')
+                if (!(navCandidates instanceof NavigationCandidates)) throw new Error('navCandidates must be an array of NavigationCandidates')
 
                 this.reduceNavigationCandidates(navTypeToMergedCandidatesMap.get(NavType.PREV), navCandidates.prev, navCandidates.weight)
                 this.reduceNavigationCandidates(navTypeToMergedCandidatesMap.get(NavType.NEXT), navCandidates.next, navCandidates.weight)
@@ -390,8 +353,7 @@
 
             }, navTypeToMergedCandidatesMap);
 
-            return new NavigationCandidates([...navTypeToMergedCandidatesMap.get(NavType.PREV).values()],
-                [...navTypeToMergedCandidatesMap.get(NavType.NEXT).values()], 1)
+            return new NavigationCandidates([...navTypeToMergedCandidatesMap.get(NavType.PREV).values()], [...navTypeToMergedCandidatesMap.get(NavType.NEXT).values()], 1)
         }
 
         /**
@@ -419,8 +381,7 @@
                 }
             }, new CandidateLink(null, NavType.INVALID, -1));
 
-            if (maxCount > 1 || maxCount === -1)
-                return null
+            if ((singleBest && maxCount > 1) || maxCount === -1) return null
             return bestCandidateLink;
         }
 
@@ -452,8 +413,7 @@
          * @returns {boolean}
          */
         areHighConfidenceCandidates(confidenceThreshold = 0.7) {
-            return this?.prev?.some(candidate => candidate.confidence >= confidenceThreshold) &&
-                this?.next?.some(candidate => candidate.confidence >= confidenceThreshold);
+            return this?.prev?.some(candidate => candidate.confidence >= confidenceThreshold) && this?.next?.some(candidate => candidate.confidence >= confidenceThreshold);
         }
 
         /**
@@ -530,8 +490,7 @@
 
                 for (let i = 0; i < link_path.length; i++) {
 
-                    if (curPathSegments?.[i] === link_path[i])
-                        continue;
+                    if (curPathSegments?.[i] === link_path[i]) continue;
 
                     if (!curPathSegments?.[i]) {
                         //TODO: Should I handle extra segment of chapter only on the link ? Anywhere sort of does that.
@@ -543,8 +502,7 @@
                         const curPathNumber = UrlUtils.extractNumberSuffixFromString(curPathSegments[i])
                         const linkChapNumber = UrlUtils.extractNumberSuffixFromString(link_path[i])
 
-                        if (!curPathNumber || !linkChapNumber)
-                            continue;
+                        if (!curPathNumber || !linkChapNumber) continue;
 
                         switch (offsetToNavType(curPathNumber, linkChapNumber)) {
                             case NavType.NEXT:
@@ -587,8 +545,7 @@
             let prevLinks = [];
             let nextLinks = [];
 
-            if (!links || links.length < 1)
-                throw new Error(`links must be a non empty array of HTMLAnchorElement`)
+            if (!links || links.length < 1) throw new Error(`links must be a non empty array of HTMLAnchorElement`)
 
             links.forEach(link => {
                 const offset = PageNumberAnywhereLocator.findCnumAnywhereInPath(url, new URL(link.href))
@@ -617,8 +574,7 @@
          */
         static findCnumAnywhereInPath(curURL, testLink) {
 
-            if (!curURL || !testLink)
-                return NavType.INVALID;
+            if (!curURL || !testLink) return NavType.INVALID;
 
             const curSegments = UrlUtils.toDecodedPathSegments(curURL)
             const testSegments = UrlUtils.toDecodedPathSegments(testLink)
@@ -628,8 +584,7 @@
             let checkedSegmentsMatchOrExtra = true
             zip('', curSegments, testSegments).forEach(([curSeg, testSeg]) => {
 
-                if (curSeg === testSeg)
-                    return;
+                if (curSeg === testSeg) return;
 
                 const curNumbers = UrlUtils.extractAnyCnumFromString(curSeg)
                 const testNumbers = testSeg && UrlUtils.extractAnyCnumFromString(testSeg)
@@ -663,8 +618,7 @@
                     }
                 }
 
-                if (curSeg && testSeg)
-                    checkedSegmentsMatchOrExtra = false
+                if (curSeg && testSeg) checkedSegmentsMatchOrExtra = false
 
             })
 
@@ -681,7 +635,7 @@
      * @returns - An array where element i is an array of all the i elements of the passed arrays or a fill value for the shorter arrays.
      * */
     function zip(fillValue, ...arrays) {
-        var longest = arrays.reduce(function (a, b) {
+        let longest = arrays.reduce(function (a, b) {
             return a.length > b.length ? a : b
         }, []);
 
@@ -700,18 +654,13 @@
      * @returns
      */
     function similarityBasedConfidenceCandidates(originalURL, links, navType) {
-        if (!links?.length)
-            return []
+        if (!links?.length) return []
 
-        if (!navType || !Object.values(NavType).includes(navType))
-            throw new Error('navType must be a value of type NavType')
+        if (!navType || !Object.values(NavType).includes(navType)) throw new Error('navType must be a value of type NavType')
 
         return links.map(link => {
             const editDistance = self.levenshtein.distance(originalURL.href, link.href)
-            return new CandidateLink(link, navType,
-                editDistance === 1 ? 1 :
-                    editDistance === 2 ? .7 :
-                        (Math.min(0.2, 1 / links.length) + 1 / editDistance))
+            return new CandidateLink(link, navType, editDistance === 1 ? 1 : editDistance === 2 ? .7 : (Math.min(0.2, 1 / links.length) + 1 / editDistance))
         })
     }
 
@@ -767,8 +716,7 @@
         const relCandidates = relLocator.locate(curLocation, links);
 
         const relNavigation = relCandidates.bestCandidates(0.7, true);
-        if (relNavigation.linksFound())
-            return relNavigation.toLinks();
+        if (relNavigation.linksFound()) return relNavigation.toLinks();
 
         const suffixNumberLocator = new PageNumberSuffixLocator()
         const suffixCandidates = suffixNumberLocator.locate(curLocation, links)
@@ -779,20 +727,21 @@
         const keywordLocator = new KeywordLocator();
         const keywordCandidates = keywordLocator.locate(null, links)
 
-        const mergedCandidates =
-            NavigationCandidates.mergeNavigationCandidates([suffixCandidates, anywhereCandidates, keywordCandidates]);
+        const mergedCandidates = NavigationCandidates.mergeNavigationCandidates([suffixCandidates, anywhereCandidates, keywordCandidates]);
 
         return mergedCandidates.bestCandidates(confidenceThreshold, true).toLinks()
     }
 
-    if (typeof self !== "undefined")
-        self.extractChapLinks = extractChapLinks;
+    if (typeof self !== "undefined") self.extractChapLinks = extractChapLinks;
 
-    if (typeof module !== "undefined" && module !== null &&
-        typeof exports !== "undefined" && module.exports === exports) {
+    if (typeof module !== "undefined" && module !== null && typeof exports !== "undefined" && module.exports === exports) {
         module.exports = {
-            PageNumberSuffixLocator, PageNumberAnywhereLocator,
-            KeywordLocator, extractPotentialLinks, UrlUtils, extractChapLinks
+            PageNumberSuffixLocator,
+            PageNumberAnywhereLocator,
+            KeywordLocator,
+            extractPotentialLinks,
+            UrlUtils,
+            extractChapLinks
         };
     }
 }
