@@ -138,6 +138,7 @@ function save() {
     './plugins/note/core.mjs': document.getElementById('./plugins/note/core.mjs').checked,
     './plugins/notify/core.mjs': document.getElementById('./plugins/notify/core.mjs').checked,
     './plugins/health/core.mjs': document.getElementById('./plugins/health/core.mjs').checked,
+    './plugins/chapters/core.mjs': document.getElementById('./plugins/chapters/core.mjs').checked,
 
     shortcuts
   }, () => {
@@ -186,6 +187,7 @@ function restore() {
   document.getElementById('./plugins/note/core.mjs').checked = config.prefs['./plugins/note/core.mjs'];
   document.getElementById('./plugins/notify/core.mjs').checked = config.prefs['./plugins/notify/core.mjs'];
   document.getElementById('./plugins/health/core.mjs').checked = config.prefs['./plugins/health/core.mjs'];
+  document.getElementById('./plugins/chapters/core.mjs').checked = config.prefs['./plugins/chapters/core.mjs'];
 
   for (const div of [...document.getElementById('shortcuts').querySelectorAll('div')]) {
     const [ctrl, shift] = [...div.querySelectorAll('input[type=checkbox]')];

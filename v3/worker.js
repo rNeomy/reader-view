@@ -55,7 +55,7 @@ const onClicked = async (tab, embedded = false) => {
 
       const prefs = await new Promise(resolve => chrome.storage.local.get({
         'auto-fullscreen': defaults['auto-fullscreen'],
-        'detect-chapters': defaults['detect-chapters']
+        './plugins/chapters/core.mjs': defaults['./plugins/chapters/core.mjs']
       }, resolve));
 
       if (prefs['auto-fullscreen']) {
@@ -82,7 +82,7 @@ const onClicked = async (tab, embedded = false) => {
       });
 
       // detect chapters
-      if (prefs['detect-chapters']) {
+      if (prefs['./plugins/chapters/core.mjs']) {
         await chrome.scripting.executeScript({
           target,
           injectImmediately: true,

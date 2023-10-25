@@ -4,7 +4,6 @@ self.defaults = {
   'auto-rules': [],
   'font-size': 15,
   'os-sync': true,
-  'detect-chapters': true,
   'preferred-dark-mode': 'groove-dark',
   'preferred-light-mode': 'sepia',
   'font': 'sans-serif',
@@ -100,6 +99,8 @@ body[data-mode=dark] {}`,
     'highlight': ['Ctrl/Command', 'Shift', 'KeyH'],
     'next-page': ['Ctrl/Command', 'Shift', 'ArrowRight'],
     'previous-page': ['Ctrl/Command', 'Shift', 'ArrowLeft'],
+    'previous-chapter': ['Ctrl/Command', 'PageUp'],
+    'next-chapter': ['Ctrl/Command', 'PageDown'],
     'toggle-toolbar': ['Ctrl/Command', 'Shift', 'KeyY']
   },
   './plugins/tip/core.mjs': true,
@@ -107,6 +108,7 @@ body[data-mode=dark] {}`,
   './plugins/note/core.mjs': true,
   './plugins/notify/core.mjs': true,
   './plugins/health/core.mjs': true,
-  './plugins/tts/core.mjs': true
+  './plugins/tts/core.mjs': true,
+  './plugins/chapters/core.mjs': true
 };
 
