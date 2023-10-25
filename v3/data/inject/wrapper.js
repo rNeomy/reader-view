@@ -165,7 +165,7 @@ try {
         article.chapters.previous = navLinks.prevLink;
       }
       catch (e) {
-        console.info('Cannot extract chapters', e);
+        console.error('Cannot extract chapters', e);
       }
 
       article.url = article.url || location.href;

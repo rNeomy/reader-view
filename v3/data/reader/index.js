@@ -138,7 +138,7 @@ const favicon = article => {
 };
 
 const template = async () => {
-  const r = await await fetch('template.html');
+  const r = await fetch('template.html');
   return await r.text();
 };
 
