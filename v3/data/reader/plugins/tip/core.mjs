@@ -29,9 +29,11 @@ const tips = [{
   hidden: true,
   save: false
 }, {
-  message: 'If you prefer "Reader View" to display the "favicon" of websites, <a href="#" data-cmd="favicon-permission">click here</a> to grant permission.',
+  message: 'If you prefer "Reader View" to display the "favicon" of websites, <a href="#" data-cmd="favicon-permission">click here</a>.',
   hidden: true,
   save: false
+}, {
+  message: 'If you like the extension to convert navigated links to reader view, <a href="#" data-cmd="switch-permission">click here</a>.'
 }];
 window.tips = tips;
 
@@ -75,7 +77,9 @@ tips.show = (i, forced = false) => {
 };
 
 const permission = e => {
-  if (e.target.dataset.cmd === 'favicon-permission') {
+  const {cmd} = e.target.dataset;
+
+  if (cmd === 'favicon-permission') {
     chrome.permissions.request({
       permissions: ['favicon']
     }, granted => {
@@ -86,19 +90,22 @@ const permission = e => {
       }
     });
   }
-  else if (e.target.dataset.cmd === 'image-permission') {
+  else if (cmd === 'image-permission' || cmd === 'switch-permission') {
     chrome.permissions.request({
       origins: ['*://*/*']
     }, granted => {
       if (granted) {
-        location.reload();
+        e.target.closest('[data-id]').remove();
+        if (cmd === 'image-permission') {
+          location.reload();
+        }
       }
     });
   }
 };
 
 function enable() {
-  document.addEventListener('click', permission);
+  document.getElementById('tips').addEventListener('click', permission);
   // favicon
   const next = granted => {
     if (config.prefs['ask-for-favicon'] && granted !== true) {
@@ -122,7 +129,7 @@ function enable() {
   }
 }
 function disable() {
-  document.removeEventListener('click', permission);
+  document.getElementById('tips').removeEventListener('click', permission);
 }
 
 export {
