@@ -21,6 +21,8 @@
 /* global Readability, config, extractChapLinks */
 'use strict';
 
+// error on https://www.un.org/about-us/specialized-agencies
+
 {
   // http://add0n.com/chrome-reader-view.html#IDComment1117127387
   HTMLElement.prototype.setAttribute = new Proxy(HTMLElement.prototype.setAttribute, {
@@ -136,6 +138,58 @@ try {
     }));
   }
   else {
+    const style = () => {
+      style.clean();
+
+      config.load(() => {
+        if (config.prefs['display-loader'] === false) {
+          return;
+        }
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`
+          <div class="rv-overlay" style="
+            all: initial;
+            background-color: rgba(0, 0, 0, 0.5);
+            position: fixed;
+            inset: 0 0 0 0;
+            z-index: 2147483647;
+            display: grid;
+            align-items: end;
+          ">
+            <div style="
+              all: initial;
+              display: grid;
+              grid-template-columns: 1fr min-content;
+              align-items: center;
+              padding: 1ch 2ch;
+              background-color: #282828;">
+              <span style="
+                all: initial;
+                font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+                font-size: 16px;
+                color: #bcc5ce;">Converting to Reader View...</span>
+              <input type="button" value="×" style="
+                all: initial;
+                border: none;
+                background: transparent;
+                color: #bcc5ce;
+                cursor: pointer;
+                font-size: 32px;">
+            </div>
+          </div>`, 'text/html');
+        const p = doc.querySelector('div');
+        doc.querySelector('input').onclick = () => {
+          p.remove();
+          document.removeEventListener('DOMContentLoaded', convert);
+          chrome.runtime.sendMessage({
+            cmd: 'aborted'
+          });
+        };
+        document.documentElement.append(p);
+      });
+    };
+    style.clean = () => [...document.querySelectorAll('.rv-overlay')].forEach(e => e.remove());
+
     const convert = () => {
       // health check
       const id = setTimeout(() => {
@@ -276,17 +330,35 @@ try {
           document.body.replaceWith(dom.querySelector('body'));
           document.title = title;
 
+          style.clean();
           chrome.runtime.sendMessage({
             cmd: 'converted'
           });
         }
         else {
+          style.clean();
           chrome.runtime.sendMessage({
             cmd: 'open-reader',
             article
           });
         }
       });
+    };
+    const safeConvert = () => {
+      try {
+        // visual banner
+        style();
+        // convert
+        convert();
+      }
+      catch (e) {
+        style.clean();
+        chrome.runtime.sendMessage({
+          cmd: 'aborted'
+        });
+        console.error(e);
+        alert('Cannot convert to reader view:\n\n' + e.message);
+      }
     };
 
     if (self.converting && Date.now() - self.converting < 1000) {
@@ -298,10 +370,10 @@ try {
         cmd: 'converting'
       });
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', convert);
+        document.addEventListener('DOMContentLoaded', safeConvert);
       }
       else {
-        convert();
+        safeConvert();
       }
     }
   }

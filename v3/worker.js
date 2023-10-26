@@ -119,8 +119,9 @@ chrome.commands.onCommand.addListener(command => {
 });
 
 /* when tab loads switch to the reader view */
-const lazy = id => {
-  lazy.cache[id] = true;
+const lazy = tabId => {
+  lazy.cache[tabId] = true;
+
   chrome.tabs.onUpdated.removeListener(lazy.watch);
   chrome.tabs.onUpdated.addListener(lazy.watch);
 };
@@ -252,33 +253,20 @@ const onMessage = (request, sender, response) => {
   else if (request.cmd === 'health-check') {
     response(true);
   }
-  else if (request.cmd === 'converting') {
+  else if (request.cmd === 'converting' || request.cmd === 'converted' || request.cmd === 'aborted') {
+    const title = request.cmd === 'converting' ? chrome.i18n.getMessage('bg_converting') : chrome.runtime.getManifest().name;
+    const color = request.cmd === 'converting' ? 'green/' : (request.cmd === 'converted' ? 'blue/' : '');
     chrome.action.setTitle({
       tabId: sender.tab.id,
-      title: chrome.i18n.getMessage('bg_converting')
+      title
     });
     chrome.action.setIcon({
       tabId: sender.tab.id,
       path: {
-        '16': '/data/icons/green/16.png',
-        '32': '/data/icons/green/32.png',
-        '48': '/data/icons/green/48.png',
-        '64': '/data/icons/green/64.png'
-      }
-    });
-  }
-  else if (request.cmd === 'converted') {
-    chrome.action.setTitle({
-      tabId: sender.tab.id,
-      title: chrome.runtime.getManifest().name
-    });
-    chrome.action.setIcon({
-      tabId: sender.tab.id,
-      path: {
-        '16': '/data/icons/blue/16.png',
-        '32': '/data/icons/blue/32.png',
-        '48': '/data/icons/blue/48.png',
-        '64': '/data/icons/blue/64.png'
+        '16': '/data/icons/' + color + '16.png',
+        '32': '/data/icons/' + color + '32.png',
+        '48': '/data/icons/' + color + '48.png',
+        '64': '/data/icons/' + color + '64.png'
       }
     });
   }
