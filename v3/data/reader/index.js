@@ -26,6 +26,38 @@ let highlight;
 
 const args = new URLSearchParams(location.search);
 
+// Relax restrictions on remote access (#175)
+const remote = () => {
+  const id = Number(args.get('id'));
+  return chrome.declarativeNetRequest.updateSessionRules({
+    removeRuleIds: [id],
+    addRules: [{
+      'id': id,
+      'priority': 1,
+      'action': {
+        'type': 'modifyHeaders',
+        'requestHeaders': [{
+          'header': 'referer',
+          'operation': 'set',
+          'value': args.get('url')
+        }, {
+          'header': 'origin',
+          'operation': 'remove'
+        }],
+        'responseHeaders': [{
+          'operation': 'set',
+          'header': 'access-control-allow-origin',
+          'value': '*'
+        }]
+      },
+      'condition': {
+        'resourceTypes': ['image'],
+        'tabIds': [id]
+      }
+    }]
+  });
+};
+
 // add script
 const add = (src, o) => new Promise((resolve, reject) => {
   if (o && typeof o !== 'undefined') {
@@ -743,6 +775,8 @@ const render = () => chrome.runtime.sendMessage({
 
     return;
   }
+  // set referer
+  await remote().catch(e => console.error('cannot set referer', e));
 
   article = obj;
 
