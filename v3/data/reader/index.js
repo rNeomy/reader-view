@@ -204,6 +204,7 @@ const update = {
     if (prefs['line-height']) {
       lh = (prefs['font-size'] * (prefs['line-height'] === 32 ? 1.5 : 1.2)).toFixed(1) + 'px';
     }
+
     styles.internals.textContent = `body {
       font-size:  ${prefs['font-size']}px;
       font-family: ${getFont(prefs.font)};
@@ -666,21 +667,18 @@ document.addEventListener('click', e => {
   }
   else if (cmd.startsWith('color-mode-')) {
     const mode = cmd.replace('color-mode-', '');
-    chrome.storage.local.set({
-      mode
-    });
-    const modeKind = target.parentElement.dataset.id;
+    const kind = target.parentElement.dataset.id;
 
-    if (modeKind === 'dark') {
-      chrome.storage.local.set({
-        'preferred-dark-mode': mode
-      });
+    // if os-sync is enabled and mode is not changed, the old os-based color will be selected
+    if (config.prefs['os-sync']) {
+      document.body.dataset.mode = mode;
+      iframe.contentDocument.body.dataset.mode = mode;
     }
-    else {
-      chrome.storage.local.set({
-        'preferred-light-mode': mode
-      });
-    }
+
+    chrome.storage.local.set({
+      mode,
+      ['preferred-' + kind + '-mode']: mode
+    });
   }
   else if (cmd === 'close') {
     nav.back(true);
