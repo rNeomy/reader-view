@@ -319,6 +319,11 @@ const cleanup = () => typeof caches === 'object' && caches.keys().then(keys => {
 chrome.runtime.onInstalled.addListener(cleanup);
 chrome.runtime.onStartup.addListener(cleanup);
 chrome.tabs.onRemoved.addListener(id => {
+  // revert restrictions on remote access
+  chrome.declarativeNetRequest.updateSessionRules({
+    removeRuleIds: [id]
+  });
+  //
   if (typeof caches !== 'undefined') {
     caches.delete(id.toString());
   }

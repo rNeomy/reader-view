@@ -247,16 +247,12 @@ const update = {
 const iframe = document.querySelector('iframe');
 
 const fontUtils = document.querySelector('#font-utils');
-fontUtils.addEventListener('blur', () => {
-  setTimeout(() => {
-    fontUtils.classList.add('hidden');
-    iframe.contentWindow.focus();
-  }, 100);
+fontUtils.addEventListener('focus', () => {
+  fontUtils.dataset.opening = false;
 });
 const imageUtils = document.querySelector('#image-utils');
-imageUtils.addEventListener('blur', () => {
-  imageUtils.classList.add('hidden');
-  iframe.contentWindow.focus();
+imageUtils.addEventListener('focus', () => {
+  imageUtils.dataset.opening = false;
 });
 
 const shortcuts = new Map();
@@ -690,11 +686,11 @@ document.addEventListener('click', e => {
     nav.back(true);
   }
   else if (cmd === 'open-font-utils') {
-    fontUtils.classList.remove('hidden');
+    fontUtils.dataset.opening = true;
     fontUtils.focus();
   }
   else if (cmd === 'open-image-utils') {
-    imageUtils.classList.remove('hidden');
+    imageUtils.dataset.opening = true;
     imageUtils.focus();
   }
   else if (cmd === 'image-increase' || cmd === 'image-decrease') {

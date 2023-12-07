@@ -141,6 +141,10 @@ body[data-toolbar=false] #toolbar {
 #image-utils {
   top: 420px;
 }
+#image-utils:not(:focus-within):not([data-opening=true]),
+#font-utils:not(:focus-within):not([data-opening=true]) {
+  display: none;
+}
 #image-utils table,
 #font-utils table {
   width: 100%;
