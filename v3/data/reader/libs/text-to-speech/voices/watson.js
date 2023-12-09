@@ -26,7 +26,6 @@ speechSynthesis.getVoices = new Proxy(speechSynthesis.getVoices, {
         .map(byte => byte.toString(16).padStart(2, '0')).join('');
 
       if (m.has(hash)) {
-        console.log('using cache');
         return m.get(hash);
       }
 

@@ -1,5 +1,6 @@
 {
   const audio = new Audio();
+  audio.preservesPitch = true;
   let voice;
 
   /* custom SpeechSynthesisUtterance */
@@ -68,6 +69,7 @@
             // To-Do; save the audio to cache
             audio.src = src;
           }
+          audio.playbackRate = instance.rate || 1;
 
           audio.onended = instance.onend;
           audio.onerror = instance.onerror;

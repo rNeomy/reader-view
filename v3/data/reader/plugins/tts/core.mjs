@@ -237,6 +237,7 @@ function enable() {
       player.voice = (voice, save = true) => {
         player.message('Applying voice...');
         speech.configure(voice);
+
         const v = speech.voice;
 
         if (save) {

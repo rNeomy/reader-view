@@ -213,13 +213,13 @@ class ttsComponent extends HTMLElement {
         <summary>Settings</summary>
           <div>
             <span>Volume</span>
-            <input min="0.1" max="1" step="0.1" type="range" id="volume" list="steplist-volume">
+            <input min="0.1" max="1" step="0.1" type="range" id="volume" list="steplist-volume" value="1">
             <span id="volume-span" class="display">1.00</span>
             <span>Speed</span>
-            <input min="0.1" max="3" step="0.1" type="range" id="rate" list="steplist-rate">
+            <input min="0.1" max="3" step="0.1" type="range" id="rate" list="steplist-rate" value="1">
             <span id="rate-span" class="display">1.00</span>
             <span>Pitch</span>
-            <input min="0.1" max="2" step="0.1" type="range" id="pitch" list="steplist-pitch">
+            <input min="0.1" max="2" step="0.1" type="range" id="pitch" list="steplist-pitch" value="1">
             <span id="pitch-span" class="display">1.00</span>
           </div>
         </details>
@@ -261,6 +261,7 @@ class ttsComponent extends HTMLElement {
     };
     this.shadowRoot.getElementById('rate').oninput = e => {
       this.shadowRoot.getElementById('rate-span').textContent = e.target.valueAsNumber.toFixed(2);
+
       this.rate(e.target.valueAsNumber, e);
     };
     this.shadowRoot.getElementById('pitch').oninput = e => {
