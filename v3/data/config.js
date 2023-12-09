@@ -27,7 +27,8 @@ if (window.top !== window) {
 }
 
 // do not load config when possible
-if (typeof config === 'undefined') {
+// https://github.com/rNeomy/reader-view/issues/182
+if (typeof config === 'undefined' || !window.config.load) {
   const config = {
     callbacks: [], // will be called when prefs are ready,
     onChanged: []

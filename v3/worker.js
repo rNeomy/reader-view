@@ -50,7 +50,7 @@ const onClicked = async (tab, embedded = false) => {
       await chrome.scripting.executeScript({
         target,
         injectImmediately: true,
-        files: ['data/inject/Readability.js']
+        files: ['/data/inject/Readability.js']
       });
 
       const prefs = await new Promise(resolve => chrome.storage.local.get({
@@ -72,7 +72,7 @@ const onClicked = async (tab, embedded = false) => {
       await chrome.scripting.executeScript({
         target,
         injectImmediately: true,
-        files: ['data/config.js']
+        files: ['/data/config.js']
       });
       await chrome.scripting.executeScript({
         target,
@@ -86,19 +86,19 @@ const onClicked = async (tab, embedded = false) => {
         await chrome.scripting.executeScript({
           target,
           injectImmediately: true,
-          files: ['data/inject/next-chap/fastest-levenshtein/mod.js']
+          files: ['/data/inject/next-chap/fastest-levenshtein/mod.js']
         });
         await chrome.scripting.executeScript({
           target,
           injectImmediately: true,
-          files: ['data/inject/next-chap/NextChap.js']
+          files: ['/data/inject/next-chap/NextChap.js']
         });
       }
 
       await chrome.scripting.executeScript({
         target,
         injectImmediately: true,
-        files: ['data/inject/wrapper.js']
+        files: ['/data/inject/wrapper.js']
       });
     }
     catch (e) {
@@ -174,9 +174,9 @@ const onMessage = (request, sender, response) => {
         chrome.action.setIcon({
           tabId: id,
           path: {
-            16: 'data/icons/blue/16.png',
-            32: 'data/icons/blue/32.png',
-            48: 'data/icons/blue/48.png'
+            16: '/data/icons/blue/16.png',
+            32: '/data/icons/blue/32.png',
+            48: '/data/icons/blue/48.png'
           }
         });
       }
