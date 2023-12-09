@@ -133,48 +133,51 @@ class NavL3 extends NavL2 {
     const r = super.line(...args);
     if (r === 'END_OF_FILE') {
       this['next_matched_string'] = '';
-      return r;
-    }
-    // store current range
-    const {range} = this;
-
-    // run next
-    const j = super.line('forward');
-    if (j === 'END_OF_FILE') {
-      this['next_matched_string'] = '';
     }
     else {
-      this['next_matched_string'] = this.string();
+      this.#predict();
     }
-    // revert
-    this.range = range;
-    this.selection.removeAllRanges();
-    this.selection.addRange(this.range);
-
     return r;
   }
   paragraph(...args) {
     const r = super.paragraph(...args);
     if (r === 'END_OF_FILE') {
       this['next_matched_string'] = '';
-      return r;
-    }
-    // store current range
-    const {range} = this;
-    // run next
-    const j = super.line(...args);
-    if (j === 'END_OF_FILE') {
-      this['next_matched_string'] = '';
     }
     else {
-      this['next_matched_string'] = this.string();
+      this.#predict();
+    }
+    return r;
+  }
+  #predict() {
+    // store current range
+    const {range, predict} = this;
+
+    // only predict if this.predict === true
+    if (!predict) {
+      return;
+    }
+
+    // run next
+    for (let n = 0; n < 5; n += 1) {
+      const j = super.line('forward');
+
+      if (j === 'END_OF_FILE') {
+        this['next_matched_string'] = '';
+        break;
+      }
+      else {
+        const s = this.string();
+        if (s && s.trim()) {
+          this['next_matched_string'] = s;
+          break;
+        }
+      }
     }
     // revert
     this.range = range;
     this.selection.removeAllRanges();
     this.selection.addRange(this.range);
-
-    return r;
   }
 }
 // scroll into the view

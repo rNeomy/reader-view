@@ -15,9 +15,6 @@ self.defaults = {
     name: `Serif`,
     value: `Georgia, 'Times New Roman', serif`
   }, {
-    name: `Arial`,
-    value: `'Arial', sans-serif`
-  }, {
     name: `Helvetica`,
     value: `'Helvetica', sans-serif`
   }, {
@@ -32,9 +29,6 @@ self.defaults = {
   }, {
     name: `Tahoma`,
     value: `'Tahoma', sans-serif`
-  }, {
-    name: `Roboto`,
-    value: `'Roboto', sans-serif`
   }, {
     name: `Open Sans`,
     value: `'Open Sans', sans-serif`

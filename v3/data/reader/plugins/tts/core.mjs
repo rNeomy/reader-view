@@ -118,6 +118,10 @@ function enable() {
 
       const nav = new class extends Navigate {
       }(iframe.contentWindow, iframe.contentDocument.getElementById('readability-page-1'));
+
+      // only enable prediction for audio voices
+      nav.predict = (localStorage.getItem('tts-v1-object') || '').includes('"voiceURI":"audio"');
+
       const speech = new class extends TextToSpeech {
         content(options, direction) {
           const {length, delay} = prefs;
@@ -168,8 +172,9 @@ function enable() {
 
               speech.ncache = nav['next_matched_string'];
               if (speech.ncache?.length > length.max) {
-                speech.ncache = splitText(speech.ncache)[0];
+                speech.ncache = splitText(speech.ncache, length.max, length.min)[0];
               }
+              // console.log(text, ' -> ', speech.ncache);
 
               player.message('Preparing...');
               resolve({
@@ -235,6 +240,7 @@ function enable() {
         const v = speech.voice;
 
         if (save) {
+          nav.predict = voice.voiceURI === `audio`;
           localStorage.setItem('tts-v1-object', JSON.stringify(voice));
         }
 
