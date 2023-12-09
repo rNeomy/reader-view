@@ -281,15 +281,6 @@ try {
         if (prefs.embedded || window.embedded === true) {
           const {pathname, hostname} = (new URL(article.url));
           const title = document.title;
-          const getFont = font => {
-            switch (font) {
-            case 'serif':
-              return 'Georgia, "Times New Roman", serif';
-            case 'sans-serif':
-            default:
-              return 'Helvetica, Arial, sans-serif';
-            }
-          };
           const resp = await fetch(chrome.runtime.getURL('/data/reader/template.html'));
           const html = (await resp.text())
             .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
@@ -310,13 +301,14 @@ try {
             .replace('%byline%', article.byline || '')
             .replace('%reading-time-fast%', article.readingTimeMinsFast)
             .replace('%reading-time-slow%', article.readingTimeMinsSlow)
+            .replace('%published-time%', article['published_time'] || '')
             .replace('%href%', article.url)
             .replace('%hostname%', hostname)
             .replace('%pathname%', pathname)
             .replace('/*user-css*/', `
               body {
                 font-size:  ${prefs['font-size']}px;
-                font-family: ${getFont(prefs.font)} !important;
+                font-family: ${prefs.font} !important;
                 width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
               }
             ` + prefs['user-css'])

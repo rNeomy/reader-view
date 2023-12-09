@@ -124,6 +124,15 @@ body[data-toolbar=false] #toolbar {
   border-bottom: solid 1px var(--border-color);
   cursor: pointer;
 }
+#font-selector {
+  width: 100%;
+  border: none;
+  outline: none;
+}
+#font-selector option {
+  padding: 5px;
+  text-align: center;
+}
 #image-utils,
 #font-utils {
   position: absolute;
@@ -164,25 +173,6 @@ body[data-toolbar=false] #toolbar {
 #image-utils [data-cmd],
 #font-utils [data-cmd] {
   cursor: pointer;
-}
-#font-utils tr:first-child td:first-child {
-  height: 100px;
-  font-family: Helvetica, Arial, sans-serif;
-}
-#font-utils tr:first-child td:last-child {
-  font-family: Georgia, "Times New Roman", serif;
-}
-#image-utils tr:first-child span,
-#font-utils tr:first-child span {
-  display: block;
-}
-#font-utils tr:first-child span:first-child {
-  font-size: 62px;
-}
-#font-utils tr:first-child span:last-child {
-  margin-top: -4px;
-  color: var(--color-font-utils-light);
-  font-size: 12px;
 }
 #font-utils tr:last-child td div {
   display: flex;

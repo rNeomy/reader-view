@@ -34,7 +34,7 @@ if (typeof config === 'undefined') {
   };
   window.config = config;
 
-  config.prefs = defaults;
+  config.prefs = Object.assign({}, defaults);
 
   chrome.storage.onChanged.addListener(prefs => {
     Object.keys(prefs).forEach(key => config.prefs[key] = prefs[key].newValue);

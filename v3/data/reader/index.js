@@ -207,7 +207,7 @@ const update = {
 
     styles.internals.textContent = `body {
       font-size:  ${prefs['font-size']}px;
-      font-family: ${getFont(prefs.font)};
+      font-family: ${prefs.font};
       width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
     }
     p {
@@ -579,15 +579,11 @@ const styles = {
   internals: document.createElement('style')
 };
 
-function getFont(font) {
-  switch (font) {
-  case 'serif':
-    return 'Georgia, "Times New Roman", serif';
-  case 'sans-serif':
-  default:
-    return 'Helvetica, Arial, sans-serif';
-  }
-}
+document.getElementById('font-selector').onchange = e => {
+  chrome.storage.local.set({
+    'font': e.target.value
+  });
+};
 
 document.addEventListener('click', e => {
   const target = e.target.closest('[data-cmd]');
@@ -599,12 +595,7 @@ document.addEventListener('click', e => {
     e.target.classList.add('active');
   }
 
-  if (cmd.startsWith('font-type-')) {
-    chrome.storage.local.set({
-      'font': cmd.replace('font-type-', '')
-    });
-  }
-  else if (cmd === 'font-decrease' || cmd === 'font-increase') {
+  if (cmd === 'font-decrease' || cmd === 'font-increase') {
     const size = config.prefs['font-size'];
     chrome.storage.local.set({
       'font-size': cmd === 'font-decrease' ? Math.max(9, size - 1) : Math.min(50, size + 1)
@@ -686,6 +677,24 @@ document.addEventListener('click', e => {
   else if (cmd === 'open-font-utils') {
     fontUtils.dataset.opening = true;
     fontUtils.focus();
+
+    // Loading fonts
+    const e = document.getElementById('font-selector');
+    if (e.isLoaded !== true) {
+      e.textContent = '';
+
+      const aa = config.prefs['supported-fonts'].length ? config.prefs['supported-fonts'] : defaults['supported-fonts'];
+      for (const {name, value} of aa) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = name;
+        e.append(option);
+      }
+
+      e.value = config.prefs.font;
+      e.selectedOptions[0]?.scrollIntoView({block: 'center'});
+      e.isLoaded = true;
+    }
   }
   else if (cmd === 'open-image-utils') {
     imageUtils.dataset.opening = true;
@@ -1047,6 +1056,9 @@ config.onChanged.push(ps => {
   ) {
     update.async();
   }
+  if (ps['font']) {
+    document.getElementById('font-selector').value = ps.font.newValue;
+  }
   if (ps['show-images']) {
     update.images();
   }
@@ -1092,6 +1104,7 @@ config.load(() => {
   mode().then(v => document.body.dataset.mode = v);
 
   document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
+
   if (config.prefs['printing-button']) {
     document.getElementById('printing-button').classList.remove('hidden');
   }

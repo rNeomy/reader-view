@@ -339,6 +339,20 @@ chrome.runtime.onSuspend.addListener(() => chrome.tabs.query({}, tabs => {
   }
 }));
 
+/*
+  backward font compatibility
+  TO-DO: Remove this after next release
+*/
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.local.get('font', prefs => {
+    if (prefs.font === 'serif' || prefs.font === 'sans-serif') {
+      chrome.storage.local.set({
+        font: (prefs.font === 'serif' ? `Georgia, 'Times New Roman', serif` : `Helvetica, Arial, sans-serif`)
+      });
+    }
+  });
+});
+
 /* FAQs & Feedback */
 {
   const {management, runtime: {onInstalled, setUninstallURL, getManifest}, storage, tabs} = chrome;

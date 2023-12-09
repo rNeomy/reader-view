@@ -101,6 +101,14 @@ function save() {
     key.value = config.prefs.shortcuts[id].filter(s => s !== 'Ctrl/Command' && s !== 'Shift')[0];
   }
 
+  const fonts = new Map();
+  for (const line of document.getElementById('supported-fonts').value.split('\n')) {
+    const [name, value] = line.split(/\s*:\s*/);
+    if (name && value) {
+      fonts.set(name.trim(), value.trim());
+    }
+  }
+
   chrome.storage.local.set({
     'auto-rules': json,
     'auto-fullscreen': document.getElementById('auto-fullscreen').checked,
@@ -133,6 +141,8 @@ function save() {
     'navigate-buttons': document.getElementById('navigate-buttons').checked,
     'show-icon': document.getElementById('show-icon').checked,
     'title': document.getElementById('title').value || '[ORIGINAL] :: [BRAND]',
+
+    'supported-fonts': Array.from(fonts, ([name, value]) => ({name, value})),
 
     './plugins/tip/core.mjs': document.getElementById('./plugins/tip/core.mjs').checked,
     './plugins/doi/core.mjs': document.getElementById('./plugins/doi/core.mjs').checked,
@@ -199,6 +209,9 @@ function restore() {
     shift.checked = config.prefs.shortcuts[id].indexOf('Shift') !== -1;
     key.value = config.prefs.shortcuts[id].filter(s => s !== 'Ctrl/Command' && s !== 'Shift')[0];
   }
+
+  document.getElementById('supported-fonts').value = config.prefs['supported-fonts']
+    .map(({name, value}) => name + ': ' + value).join('\n');
 }
 config.load(restore);
 document.getElementById('save').addEventListener('click', save);

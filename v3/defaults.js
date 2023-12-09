@@ -7,7 +7,47 @@ self.defaults = {
   'display-loader': true,
   'preferred-dark-mode': 'groove-dark',
   'preferred-light-mode': 'sepia',
-  'font': 'sans-serif',
+  'font': 'Helvetica, Arial, sans-serif',
+  'supported-fonts': [{
+    name: 'Sans-serif',
+    value: `Helvetica, Arial, sans-serif`
+  }, {
+    name: `Serif`,
+    value: `Georgia, 'Times New Roman', serif`
+  }, {
+    name: `Arial`,
+    value: `'Arial', sans-serif`
+  }, {
+    name: `Helvetica`,
+    value: `'Helvetica', sans-serif`
+  }, {
+    name: `Times New Roman`,
+    value: `'Times New Roman', serif`
+  }, {
+    name: `Georgia`,
+    value: `'Georgia', serif`
+  }, {
+    name: `Verdana`,
+    value: `'Verdana', sans-serif`
+  }, {
+    name: `Tahoma`,
+    value: `'Tahoma', sans-serif`
+  }, {
+    name: `Roboto`,
+    value: `'Roboto', sans-serif`
+  }, {
+    name: `Open Sans`,
+    value: `'Open Sans', sans-serif`
+  }, {
+    name: `Poppins`,
+    value: `Poppins, sans-serif`
+  }, {
+    name: `Comic Neue`,
+    value: `'Comic Neue', Arial, sans-serif`
+  }, {
+    name: `Lexend Deca`,
+    value: `'Lexend Deca', Arial, sans-serif`
+  }],
   'width': 600,
   'line-height': 32,
   'column-count': 1,
