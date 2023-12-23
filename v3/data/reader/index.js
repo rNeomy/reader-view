@@ -924,9 +924,9 @@ const render = () => chrome.runtime.sendMessage({
     shortcuts.set(next, {
       id: 'next-page',
       action: () => next.click()
-    }, {
+    });
+    shortcuts.set(previous, {
       id: 'previous-page',
-      span: previous,
       action: () => previous.click()
     });
     shortcuts.render();
