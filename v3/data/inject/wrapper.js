@@ -24,6 +24,21 @@
 // error on https://www.un.org/about-us/specialized-agencies
 
 {
+  // https://github.com/rNeomy/reader-view/issues/185
+  // example: https://parade.com/food/trader-joes-harry-and-david-comice-pears
+  const originalParentNode = Object.getOwnPropertyDescriptor(Node.prototype, 'parentNode');
+  Object.defineProperty(Node.prototype, 'parentNode', {
+    enumerable: true,
+    configurable: true,
+    get: function() {
+      const o = originalParentNode.get.call(this);
+      return o || {
+        tagName: 'BODY',
+        getAttribute() {}
+      };
+    }
+  });
+
   // http://add0n.com/chrome-reader-view.html#IDComment1117127387
   HTMLElement.prototype.setAttribute = new Proxy(HTMLElement.prototype.setAttribute, {
     apply(target, self, args) {
