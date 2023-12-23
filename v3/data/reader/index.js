@@ -29,33 +29,39 @@ const args = new URLSearchParams(location.search);
 // Relax restrictions on remote access (#175)
 const remote = () => {
   const id = Number(args.get('id'));
-  return chrome.declarativeNetRequest.updateSessionRules({
-    removeRuleIds: [id],
-    addRules: [{
-      'id': id,
-      'priority': 1,
-      'action': {
-        'type': 'modifyHeaders',
-        'requestHeaders': [{
-          'header': 'referer',
-          'operation': 'set',
-          'value': args.get('url')
-        }, {
-          'header': 'origin',
-          'operation': 'remove'
-        }],
-        'responseHeaders': [{
-          'operation': 'set',
-          'header': 'access-control-allow-origin',
-          'value': '*'
-        }]
-      },
-      'condition': {
-        'resourceTypes': ['image'],
-        'tabIds': [id]
-      }
-    }]
-  });
+  return Promise.race([
+    // https://github.com/rNeomy/reader-view/issues/183
+    new Promise(resolve => setTimeout(() => {
+      resolve('possible remote timeout');
+    }, 200)),
+    chrome.declarativeNetRequest.updateSessionRules({
+      removeRuleIds: [id],
+      addRules: [{
+        'id': id,
+        'priority': 1,
+        'action': {
+          'type': 'modifyHeaders',
+          'requestHeaders': [{
+            'header': 'referer',
+            'operation': 'set',
+            'value': args.get('url')
+          }, {
+            'header': 'origin',
+            'operation': 'remove'
+          }],
+          'responseHeaders': [{
+            'operation': 'set',
+            'header': 'access-control-allow-origin',
+            'value': '*'
+          }]
+        },
+        'condition': {
+          'resourceTypes': ['image'],
+          'tabIds': [id]
+        }
+      }]
+    }).then(() => '')
+  ]).then(msg => msg && console.log(msg));
 };
 
 // add script
