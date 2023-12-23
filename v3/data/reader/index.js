@@ -229,7 +229,9 @@ const update = {
     document.querySelector('[data-id=no-height] input').checked = Boolean(prefs['line-height']) === false;
     document.querySelector('[data-id=full-width] input').checked = Boolean(prefs.width) === false;
     // as a CSS selector
-    document.body.dataset.font = prefs.font;
+    document.body.dataset.font = (
+      prefs['supported-fonts'].filter(o => o.value === prefs.font).map(o => o.name).shift() || prefs.font
+    ).toLowerCase().replaceAll(/\s+/g, '-');
     //
     document.querySelector('#font-details [data-id="font-size"]').textContent = prefs['font-size'] + 'px';
     document.querySelector('#font-details [data-id="screen-width"]').textContent = prefs['width'] || 'unset';
@@ -848,7 +850,7 @@ const render = () => chrome.runtime.sendMessage({
     .replaceAll('%pathname%', pathname)
     .replaceAll('/*user-css*/', config.prefs['user-css'])
     .replaceAll('%data-images%', config.prefs['show-images'])
-    .replaceAll('%data-font%', config.prefs.font)
+    .replaceAll('%data-font%', document.body.dataset.font)
     .replaceAll('%data-columns%', config.prefs['column-count'])
     .replaceAll('%data-mode%', document.body.dataset.mode));
   iframe.contentDocument.close();

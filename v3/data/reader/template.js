@@ -89,7 +89,8 @@ config.onChanged.push(ps => {
     document.body.dataset.mode = config.prefs.mode;
   }
   if (ps['font']) {
-    document.body.dataset.font = config.prefs.font;
+    // as a CSS selector
+    document.body.dataset.font = parent.document.body.dataset.font;
   }
   if (ps['column-count']) {
     document.body.dataset.columns = config.prefs['column-count'];

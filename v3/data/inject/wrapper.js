@@ -282,6 +282,11 @@ try {
           const {pathname, hostname} = (new URL(article.url));
           const title = document.title;
           const resp = await fetch(chrome.runtime.getURL('/data/reader/template.html'));
+
+          const font = (
+            prefs['supported-fonts'].filter(o => o.value === prefs.font).map(o => o.name).shift() || prefs.font
+          ).toLowerCase().replaceAll(/\s+/g, '-');
+
           const html = (await resp.text())
             .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
             .replace('%light-color%', '#222')
@@ -314,7 +319,7 @@ try {
             ` + prefs['user-css'])
             .replace('%data-images%', prefs['show-images'])
             .replace('%data-mode%', prefs.mode)
-            .replace('%data-font%', prefs.font)
+            .replace('%data-font%', font)
             .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
           const dom = (new DOMParser()).parseFromString(html, `text/html`);

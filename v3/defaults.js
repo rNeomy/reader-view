@@ -3,7 +3,7 @@ self.defaults = {
   'auto-fullscreen': false,
   'auto-rules': [],
   'font-size': 15,
-  'os-sync': true,
+  'os-sync': false,
   'display-loader': true,
   'preferred-dark-mode': 'groove-dark',
   'preferred-light-mode': 'sepia',
