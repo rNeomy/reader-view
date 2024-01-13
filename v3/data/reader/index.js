@@ -791,9 +791,14 @@ const render = () => chrome.runtime.sendMessage({
 
   article = obj;
 
+
+  const currentDate = new Date();
   document.title = document.oTitle = config.prefs.title
     .replace('[ORIGINAL]', (article.title || args.get('url')).replace(' :: Reader View', ''))
-    .replace('[BRAND]', 'Reader View');
+    .replace('[BRAND]', 'Reader View')
+    .replace('[DD]', String(currentDate.getDate()).padStart(2, '0'))
+    .replace('[MM]', String(currentDate.getMonth() + 1).padStart(2, '0'))
+    .replace('[YYYY]', currentDate.getFullYear());
 
   if (!article) { // open this page from history for instance
     return location.replace(args.get('url'));

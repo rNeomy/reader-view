@@ -254,16 +254,6 @@ else if (navigator.userAgent.indexOf('Edg/') !== -1) {
     'https://microsoftedge.microsoft.com/addons/detail/lpmbefndcmjoaepdpgmoonafikcalmnf';
 }
 
-document.getElementById('ref-1').onclick = () => chrome.tabs.create({
-  url: chrome.runtime.getManifest().homepage_url + '#faq5'
-});
-document.getElementById('ref-2').onclick = () => chrome.tabs.create({
-  url: chrome.runtime.getManifest().homepage_url + '#faq5'
-});
-document.getElementById('ref-3').onclick = () => chrome.tabs.create({
-  url: chrome.runtime.getManifest().homepage_url + '#faq16'
-});
-
 document.getElementById('export-highlights').addEventListener('click', () => {
   chrome.storage.local.get({
     'highlights-objects': {}
@@ -384,3 +374,10 @@ document.getElementById('import-notes').addEventListener('click', () => {
   };
   input.click();
 });
+
+// links
+for (const a of [...document.querySelectorAll('[data-href]')]) {
+  if (a.hasAttribute('href') === false) {
+    a.href = chrome.runtime.getManifest().homepage_url + '#' + a.dataset.href;
+  }
+}
