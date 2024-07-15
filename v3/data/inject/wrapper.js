@@ -108,6 +108,17 @@
       }
     });
   }
+
+  // https://github.com/rNeomy/reader-view/issues/191
+  Readability.prototype._clean = new Proxy(Readability.prototype._clean, {
+    apply(target, self, args) {
+      const [, tag] = args;
+      if (tag === 'aside') {
+        return;
+      }
+      return Reflect.apply(target, self, args);
+    }
+  });
 }
 
 // The implementation is from https://stackoverflow.com/a/5084441/260793
@@ -382,7 +393,10 @@ try {
         cmd: 'converting'
       });
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', safeConvert);
+        Promise.race([
+          new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve)),
+          new Promise(resolve => setTimeout(resolve, 3000))
+        ]).then(safeConvert);
       }
       else {
         safeConvert();

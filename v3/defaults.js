@@ -99,9 +99,17 @@ pre code {
   display: block;
   padding: 5px 10px;
 }
+blockquote {
+  padding: 0;
+  padding-inline-start: 2ch;
+  border-inline-start: 2px solid var(--bd);
+}
+aside {
+  color: color-mix(in srgb, var(--fg), var(--bg) 20%);
+}
 body[data-mode="dark"] pre code {
-  background-color: #585858;
-  color: #e8e8e8;
+  background-color: #eff0f1;
+  color: #393318;
 }
 
 /* CSS for sans-serif fonts */
