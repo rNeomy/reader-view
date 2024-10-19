@@ -1,1 +1,1 @@
-https://raw.githubusercontent.com/mozilla/readability/726381cd58c684561f340d958691439e8c776ff0/Readability.js
+https://github.com/mozilla/readability/blob/65578aeba436aa7dbaa16ceadc89b7ebd6dc6035/Readability.js

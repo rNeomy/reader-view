@@ -113,6 +113,7 @@
   Readability.prototype._clean = new Proxy(Readability.prototype._clean, {
     apply(target, self, args) {
       const [, tag] = args;
+
       if (tag === 'aside') {
         return;
       }
@@ -232,7 +233,7 @@ try {
       });
       // prepare
       const doc = getSelectionHTML() || document.cloneNode(true);
-      const article = new Readability(doc).parse();
+      const article = new Readability(doc, {}).parse();
 
       if (!article) {
         throw Error('Cannot convert this page!');
