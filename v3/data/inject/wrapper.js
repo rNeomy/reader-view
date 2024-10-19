@@ -231,6 +231,24 @@ try {
           clearTimeout(id);
         }
       });
+      // fix SVG resizing issue
+      for (const svg of document.querySelectorAll('svg')) {
+        // Check if width or height attribute is missing
+        if (!svg.hasAttribute('width') || !svg.hasAttribute('height')) {
+          const style = getComputedStyle(svg);
+
+          // Set width if it's missing
+          if (!svg.hasAttribute('width')) {
+            const width = style.width;
+            svg.setAttribute('width', width);
+          }
+          // Set height if it's missing
+          if (!svg.hasAttribute('height')) {
+            const height = style.height;
+            svg.setAttribute('height', height);
+          }
+        }
+      }
       // prepare
       const doc = getSelectionHTML() || document.cloneNode(true);
       const article = new Readability(doc, {}).parse();
