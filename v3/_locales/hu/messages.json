@@ -1,5 +1,5 @@
 {
   "description": {
-    "message": "Eltávolítja az olyan zavaró elemeket, mint a gombok, háttérképek, és megváltoztatja az oldal szövegének méretét, kontrasztját és elrendezését a jobb olvashatóság érdekében."
+    "message": "Eltávolítja a gombokat és háttérképeket, javítja a betűméretet, kontrasztot és elrendezést a jobb olvashatóság érdekében."
   }
 }
