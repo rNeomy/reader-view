@@ -214,7 +214,7 @@ const update = {
     styles.internals.textContent = `body {
       font-size:  ${prefs['font-size']}px;
       font-family: ${prefs.font};
-      width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
+      width: ${prefs.width ? `min(100% - 2rem, ${prefs.width + 'px'})` : 'calc(100vw - 50px)'};
     }
     p {
       text-align: ${prefs['text-align'] ? 'justify' : 'initial'}
