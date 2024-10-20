@@ -251,10 +251,36 @@ try {
       }
       // prepare
       const doc = getSelectionHTML() || document.cloneNode(true);
-      const article = new Readability(doc, {}).parse();
+      const articles = [...doc.querySelectorAll('article')].map(e => e.cloneNode(true));
+      const reader = new Readability(doc, {
+        debug: false
+      });
+      const article = reader.parse();
+
+      // multiple articles
+      for (let n = 0; n < articles.length; n += 1) {
+        const doc = document.implementation.createHTMLDocument(document.title);
+        doc.body.appendChild(articles[n]);
+
+        const reader = new Readability(doc, {
+          debug: false
+        });
+        const a = reader.parse();
+        if (a) {
+          article.contents = article.contents || [];
+          article.contents.push(
+            `<h2 class="page-separator">Page ${n + 1}</h2>`,
+            a.content.replace('id="readability-page-1"', `id="readability-page-${n + 1}"`)
+          );
+        }
+      }
 
       if (!article) {
         throw Error('Cannot convert this page!');
+      }
+      if (article.contents && article.contents.length) {
+        article.content = article.contents.join('');
+        delete article.contents;
       }
 
       article.chapters = {};

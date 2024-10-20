@@ -98,6 +98,7 @@ pre code {
   font-family: monospace;
   display: block;
   padding: 5px 10px;
+  overflow: hidden;
 }
 blockquote {
   padding: 0;
