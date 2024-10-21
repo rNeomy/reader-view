@@ -39,6 +39,58 @@
 }
 html {
   overflow: overlay;
+  scrollbar-color: var(--fg) var(--bg);
+}
+html[data-mode$="dark"] {
+  --lk: #0096de;
+}
+html[data-mode="light"] {
+  color-scheme: light;
+  --fg: %light-color%;
+  --bd: %light-color%;
+  --bg: %light-bg%;
+}
+html[data-mode="dark"] {
+  color-scheme: dark;
+  --fg: %dark-color%;
+  --bd: %dark-color%;
+  --bg: %dark-bg%;
+}
+html[data-mode="sepia"] {
+  color-scheme: light;
+  --fg: %sepia-color%;
+  --bd: %sepia-color%;
+  --bg: %sepia-bg%;
+}
+html[data-mode="solarized-light"] {
+  color-scheme: light;
+  --fg: %solarized-light-color%;
+  --bd: %solarized-light-color%;
+  --bg: %solarized-light-bg%;
+}
+html[data-mode="nord-light"] {
+  color-scheme: light;
+  --fg: %nord-light-color%;
+  --bd: %nord-light-color%;
+  --bg: %nord-light-bg%;
+}
+html[data-mode="groove-dark"] {
+  color-scheme: dark;
+  --fg: %groove-dark-color%;
+  --bd: %groove-dark-color%;
+  --bg: %groove-dark-bg%;
+}
+html[data-mode="solarized-dark"] {
+  color-scheme: dark;
+  --fg: %solarized-dark-color%;
+  --bd: %solarized-dark-color%;
+  --bg: %solarized-dark-bg%;
+}
+html[data-mode="nord-dark"] {
+  color-scheme: dark;
+  --fg: %nord-dark-color%;
+  --bd: %nord-dark-color%;
+  --bg: %nord-dark-bg%;
 }
 body {
   -webkit-font-smoothing: antialiased;
@@ -51,60 +103,10 @@ body {
   border-color: var(--bd);
   background-color: var(--bg);
 }
-body[data-mode$="dark"] {
-  --lk: #0096de;
-}
-body[data-mode="light"] {
-  color-scheme: light;
-  --fg: %light-color%;
-  --bd: %light-color%;
-  --bg: %light-bg%;
-}
-body[data-mode="dark"] {
-  color-scheme: dark;
-  --fg: %dark-color%;
-  --bd: %dark-color%;
-  --bg: %dark-bg%;
-}
-body[data-mode="sepia"] {
-  color-scheme: light;
-  --fg: %sepia-color%;
-  --bd: %sepia-color%;
-  --bg: %sepia-bg%;
-}
-body[data-mode="solarized-light"] {
-  color-scheme: light;
-  --fg: %solarized-light-color%;
-  --bd: %solarized-light-color%;
-  --bg: %solarized-light-bg%;
-}
-body[data-mode="nord-light"] {
-  color-scheme: light;
-  --fg: %nord-light-color%;
-  --bd: %nord-light-color%;
-  --bg: %nord-light-bg%;
-}
-body[data-mode="groove-dark"] {
-  color-scheme: dark;
-  --fg: %groove-dark-color%;
-  --bd: %groove-dark-color%;
-  --bg: %groove-dark-bg%;
-}
-body[data-mode="solarized-dark"] {
-  color-scheme: dark;
-  --fg: %solarized-dark-color%;
-  --bd: %solarized-dark-color%;
-  --bg: %solarized-dark-bg%;
-}
-body[data-mode="nord-dark"] {
-  color-scheme: dark;
-  --fg: %nord-dark-color%;
-  --bd: %nord-dark-color%;
-  --bg: %nord-dark-bg%;
-}
+
 
 @media print {
-  body[data-mode] {
+  html[data-mode] {
     --fg: #000;
     --bd: #000;
     --bg: #fff;
@@ -215,7 +217,7 @@ body:not([data-columns="1"]) .page :is(h1, h2) {
 </style>
   <style id="user-css">/*user-css*/</style>
 </head>
-<body tabindex="1" data-images=%data-images% data-mode=%data-mode% data-font=%data-font% data-columns=%data-columns%>
+<body tabindex="1" data-images=%data-images% data-font=%data-font% data-columns=%data-columns%>
   <span></span> <!-- for IntersectionObserver -->
   <a id="reader-domain" href="%href%">
     <span>%hostname%</span>

@@ -122,6 +122,15 @@
   });
 }
 
+function createHTMLDocument() {
+  const doc = document.implementation.createHTMLDocument(document.title);
+  const base = doc.createElement('base');
+  base.href = location.href;
+  doc.head.appendChild(base);
+
+  return doc;
+}
+
 // The implementation is from https://stackoverflow.com/a/5084441/260793
 function getSelectionHTML() {
   const selection = window.getSelection();
@@ -135,7 +144,7 @@ function getSelectionHTML() {
       range.setStart(selection.anchorNode, selection.anchorOffset);
       range.setEnd(selection.focusNode, selection.focusOffset);
     }
-    const doc = document.implementation.createHTMLDocument(document.title);
+    const doc = createHTMLDocument();
 
     const article = doc.body.appendChild(doc.createElement('article'));
     let start = range.startContainer;
@@ -251,6 +260,7 @@ try {
       }
       // prepare
       const doc = getSelectionHTML() || document.cloneNode(true);
+
       const articles = [...doc.querySelectorAll('article')].map(e => e.cloneNode(true));
       const reader = new Readability(doc, {
         debug: false
@@ -259,7 +269,7 @@ try {
 
       // multiple articles
       for (let n = 0; n < articles.length; n += 1) {
-        const doc = document.implementation.createHTMLDocument(document.title);
+        const doc = createHTMLDocument();
         doc.body.appendChild(articles[n]);
 
         const reader = new Readability(doc, {
@@ -278,8 +288,13 @@ try {
       if (!article) {
         throw Error('Cannot convert this page!');
       }
-      if (article.contents && article.contents.length) {
-        article.content = article.contents.join('');
+
+      // each article has two elements
+      if (article.contents && article.contents.length > 2) {
+        const content = article.contents.join('');
+        if (content.length > article.content.length) {
+          article.content = content;
+        }
         delete article.contents;
       }
 
@@ -389,13 +404,14 @@ try {
               }
             ` + prefs['user-css'])
             .replace('%data-images%', prefs['show-images'])
-            .replace('%data-mode%', prefs.mode)
             .replace('%data-font%', font)
             .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
           const dom = (new DOMParser()).parseFromString(html, `text/html`);
           document.head.replaceWith(dom.querySelector('head'));
           document.body.replaceWith(dom.querySelector('body'));
+          document.documentElement.dataset.mode = prefs.mode;
+          console.log(document.documentElement);
           document.title = title;
 
           style.clean();

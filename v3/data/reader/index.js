@@ -671,7 +671,7 @@ document.addEventListener('click', e => {
     // if os-sync is enabled and mode is not changed, the old os-based color will be selected
     if (config.prefs['os-sync']) {
       document.body.dataset.mode = mode;
-      iframe.contentDocument.body.dataset.mode = mode;
+      iframe.contentDocument.documentElement.dataset.mode = mode;
     }
 
     chrome.storage.local.set({
@@ -856,9 +856,9 @@ const render = () => chrome.runtime.sendMessage({
     .replaceAll('/*user-css*/', config.prefs['user-css'])
     .replaceAll('%data-images%', config.prefs['show-images'])
     .replaceAll('%data-font%', document.body.dataset.font)
-    .replaceAll('%data-columns%', config.prefs['column-count'])
-    .replaceAll('%data-mode%', document.body.dataset.mode));
+    .replaceAll('%data-columns%', config.prefs['column-count']));
   iframe.contentDocument.close();
+  iframe.contentDocument.documentElement.dataset.mode = document.body.dataset.mode;
 
   // To-Do; check on Firefox
   iframe.contentDocument.addEventListener('DOMContentLoaded', () => {
@@ -1107,7 +1107,7 @@ if (mode.query) {
     const m = await mode();
     document.body.dataset.mode = m;
     if (iframe.contentDocument) {
-      iframe.contentDocument.body.dataset.mode = m;
+      iframe.contentDocument.documentElement.dataset.mode = m;
     }
   });
 }

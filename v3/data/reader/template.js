@@ -86,7 +86,7 @@ config.onChanged.push(ps => {
     document.body.dataset.images = config.prefs['show-images'];
   }
   if (ps['mode']) {
-    document.body.dataset.mode = config.prefs.mode;
+    document.documentElement.dataset.mode = config.prefs.mode;
   }
   if (ps['font']) {
     // as a CSS selector
