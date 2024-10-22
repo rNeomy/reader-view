@@ -411,7 +411,6 @@ try {
           document.head.replaceWith(dom.querySelector('head'));
           document.body.replaceWith(dom.querySelector('body'));
           document.documentElement.dataset.mode = prefs.mode;
-          console.log(document.documentElement);
           document.title = title;
 
           style.clean();
