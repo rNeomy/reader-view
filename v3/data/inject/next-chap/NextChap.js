@@ -573,14 +573,14 @@
       );
 
       if (bestPrev) {
-        console.log(
+        console.info(
           `Previous candidate, conf: ${bestPrev.confidence} link: ${bestPrev.link}`
         );
         bestPrev = bestPrev.confidence > confidenceThreshold ? bestPrev : null;
       }
 
       if (bestNext) {
-        console.log(
+        console.info(
           `Next candidate, conf: ${bestNext.confidence} link: ${bestNext.link}`
         );
         bestNext = bestNext.confidence > confidenceThreshold ? bestNext : null;

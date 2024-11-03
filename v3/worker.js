@@ -333,7 +333,7 @@ chrome.tabs.onRemoved.addListener(id => {
 
 /* exit reader view if you can */
 chrome.runtime.onSuspend.addListener(() => chrome.tabs.query({}, tabs => {
-  console.log('SUSPEND');
+  console.info('SUSPEND');
   for (const tab of tabs) {
     chrome.tabs.sendMessage(tab.id, {
       cmd: 'close'

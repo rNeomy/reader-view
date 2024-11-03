@@ -290,13 +290,17 @@ try {
       }
 
       // each article has two elements
+      // example with multiple articles that should not be used
+      // https://www.ctvnews.ca/health/are-you-in-perimenopause-here-s-what-to-look-for-according-to-a-doctor-1.7094650
+      // example with multiple articles that should be used
+      // chatgpt with multiple Q&A
+
       if (article.contents && article.contents.length > 2) {
-        const content = article.contents.join('');
-        if (content.length > article.content.length) {
-          article.content = content;
+        if (article.contents.some(c => c.length >= article.content.length)) {
+          article.content = article.contents.join('');
         }
-        delete article.contents;
       }
+      delete article.contents;
 
       article.chapters = {};
       try {
