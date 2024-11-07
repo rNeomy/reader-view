@@ -119,11 +119,11 @@ body[data-font=sans-serif] {}
 body[data-font=serif] {}
 
 /* CSS for "sepia" theme */
-html[data-mode=sepia] {}
+html[data-mode=sepia] body {}
 /* CSS for "light" theme */
-html[data-mode=light] {}
+html[data-mode=light] body {}
 /* CSS for "dark" theme */
-html[data-mode=dark] {}`,
+html[data-mode=dark] body {}`,
   'context-open-in-reader-view': false,
   'context-open-in-reader-view-bg': false,
   'context-switch-to-reader-view': true,

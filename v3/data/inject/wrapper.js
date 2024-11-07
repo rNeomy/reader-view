@@ -379,6 +379,7 @@ try {
 
           const html = (await resp.text())
             .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
+            .replace('%lang%', article.lang ? ' lang=' + article.lang : '')
             .replace('%light-color%', '#222')
             .replace('%light-bg%', 'whitesmoke')
             .replace('%dark-color%', '#eee')

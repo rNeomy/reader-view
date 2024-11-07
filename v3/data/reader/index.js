@@ -790,7 +790,7 @@ const render = () => chrome.runtime.sendMessage({
   await remote().catch(e => console.error('cannot set referer', e));
 
   article = obj;
-
+  document.body.dataset.lang = article.lang;
 
   const currentDate = new Date();
   document.title = document.oTitle = config.prefs.title
@@ -828,6 +828,7 @@ const render = () => chrome.runtime.sendMessage({
 
   iframe.contentDocument.write((await template())
     .replaceAll('%dir%', article.dir ? ' dir=' + article.dir : '')
+    .replaceAll('%lang%', article.lang ? ' lang=' + article.lang : '')
     .replaceAll('%light-color%', gcs.getPropertyValue('--color-mode-light-color'))
     .replaceAll('%light-bg%', gcs.getPropertyValue('--color-mode-light-bg'))
     .replaceAll('%dark-color%', gcs.getPropertyValue('--color-mode-dark-color'))
