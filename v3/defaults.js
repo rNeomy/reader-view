@@ -153,6 +153,7 @@ html[data-mode=dark] body {}`,
   './plugins/notify/core.mjs': true,
   './plugins/health/core.mjs': true,
   './plugins/tts/core.mjs': true,
-  './plugins/chapters/core.mjs': true
+  './plugins/chapters/core.mjs': true,
+  './plugins/multiple-articles/core.mjs': true
 };
 

@@ -1,5 +1,7 @@
 :root {
   --fg: #000;
+  --fg-selected-light: #4093db;
+  --fg-selected-dark: #4dacff;
   --bg: #fff;
   --bd: #000;
   --lk: #006fa5;
@@ -55,34 +57,43 @@ body {
 body[data-mode="light"] {
   --fg: var(--color-mode-light-color);
   --bg: var(--color-mode-light-bg);
+  --fg-selected: var(--fg-selected-light);
+
 }
 body[data-mode="dark"] {
   --fg: var(--color-mode-dark-color);
   --bg: var(--color-mode-dark-bg);
+  --fg-selected: var(--fg-selected-dark);
 }
 body[data-mode="sepia"] {
   --fg: var(--color-mode-sepia-color);
   --bg: var(--color-mode-sepia-bg);
+  --fg-selected: var(--fg-selected-light);
 }
 body[data-mode="groove-dark"] {
   --fg: var(--color-mode-groove-dark-color);
   --bg: var(--color-mode-groove-dark-bg);
+  --fg-selected: var(--fg-selected-dark);
 }
 body[data-mode="solarized-light"] {
   --fg: var(--color-mode-solarized-light-color);
   --bg: var(--color-mode-solarized-light-bg);
+  --fg-selected: var(--fg-selected-light);
 }
 body[data-mode="solarized-dark"] {
   --fg: var(--color-mode-solarized-dark-color);
   --bg: var(--color-mode-solarized-dark-bg);
+  --fg-selected: var(--fg-selected-dark);
 }
 body[data-mode="nord-light"] {
   --fg: var(--color-mode-nord-light-color);
   --bg: var(--color-mode-nord-light-bg);
+  --fg-selected: var(--fg-selected-light);
 }
 body[data-mode="nord-dark"] {
   --fg: var(--color-mode-nord-dark-color);
   --bg: var(--color-mode-nord-dark-bg);
+  --fg-selected: var(--fg-selected-dark);
 }
 input {
   font-family: fontello, sans-serif;
@@ -107,7 +118,7 @@ a {
   box-shadow: 0 0 0 1px var(--border-color);
   z-index: 1;
 }
-body[data-toolbar=false] #toolbar {
+body[data-toolbar="false"] #toolbar {
   display: none;
 }
 #toolbar .active:not([data-cmd="full-width"]):not([data-cmd="no-height"]) {
@@ -133,22 +144,31 @@ body[data-toolbar=false] #toolbar {
   padding: 5px;
   text-align: center;
 }
+span[data-cmd="open-font-utils"] {
+  anchor-name: --font-button;
+}
+#font-utils {
+  top: 50px;
+  position-anchor: --font-button;
+}
+#images-button {
+  anchor-name: --image-button;
+}
+#image-utils {
+  top: 420px;
+  position-anchor: --image-button;
+}
 #image-utils,
 #font-utils {
   position: absolute;
-  left: 60px;
   width: 100px;
+  top: anchor(top);
+  left:60px;
   border-radius: 4px;
   box-shadow: 0 1px 12px var(--color-font-utils-light);
   min-width: 320px;
   background-color: #fbfbfb;
   outline: none;
-}
-#font-utils {
-  top: 50px;
-}
-#image-utils {
-  top: 420px;
 }
 #image-utils:not(:focus-within):not([data-opening=true]),
 #font-utils:not(:focus-within):not([data-opening=true]) {
@@ -299,7 +319,7 @@ body[data-mode="nord-dark"] #font-utils span[data-cmd="color-mode-nord-dark"]::a
   display: inline;
 }
 #toolbar [data-cmd="toggle-design-mode"][data-active=true] {
-  color: #4dacff;
+  color: var(--fg-selected);
 }
 
 #toolbar > div::after,

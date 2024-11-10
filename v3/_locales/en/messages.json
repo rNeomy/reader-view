@@ -32,6 +32,12 @@
   "rd_highlight": {
     "message": "Toggle highlight (command)\n\nThese highlights are persistent until the browser restart"
   },
+  "rd_stm": {
+    "message": "Show all articles in this document"
+  },
+  "rd_sts": {
+    "message": "Only show the main article in this document"
+  },
   "rd_warning_1": {
     "message": "Reader's content is not available anymore. Switching back to the original page in a few seconds..."
   },

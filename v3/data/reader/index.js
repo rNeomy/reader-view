@@ -810,9 +810,33 @@ const render = () => chrome.runtime.sendMessage({
 
   const {textVide} = await import('./libs/text-vide/index.mjs');
   // http://add0n.com/chrome-reader-view.html#IDComment1118667428
-  const content = config.prefs['fixation-point'] ? textVide(article.content.replace(/&nbsp;/g, ' '), {
-    fixationPoint: config.prefs['fixation-point']
-  }) : article.content;
+
+  let content = article.content;
+
+  // each article has two elements
+  // example with multiple articles that should not be used
+  // https://www.ctvnews.ca/health/are-you-in-perimenopause-here-s-what-to-look-for-according-to-a-doctor-1.7094650
+  // example with multiple articles that should be used
+  // chatgpt with multiple Q&A
+  if (article.contents && article.contents.length > 2) {
+    if (article.contents.some(c => c.length >= article.content.length)) {
+      const extract = args.has('extract-articles') ?
+        args.get('extract-articles') === 'true' : config.prefs['./plugins/multiple-articles/core.mjs'];
+      if (extract) {
+        content = article.contents.join('');
+        document.body.dataset['articles'] = true;
+      }
+      else {
+        document.body.dataset['articles'] = false;
+      }
+    }
+  }
+
+  if (config.prefs['fixation-point']) {
+    content = textVide(article.content.replace(/&nbsp;/g, ' '), {
+      fixationPoint: config.prefs['fixation-point']
+    });
+  }
 
   iframe.addEventListener('load', () => {
     if (document.body.dataset.loaded !== 'true') {
