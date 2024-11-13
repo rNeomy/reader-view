@@ -46,16 +46,44 @@ document.getElementById('auto-permission').addEventListener('click', e => {
   }, granted => {
     if (granted) {
       document.getElementById('auto-rules').disabled = false;
-      document.getElementById('auto-permission').style.display = 'none';
+      document.getElementById('auto-permission').classList.add('hidden');
+      document.getElementById('proceed-wo-permission').classList.add('hidden');
     }
   });
+});
+document.getElementById('proceed-wo-permission').addEventListener('click', e => {
+  e.preventDefault();
+
+  if (e.target.origins) {
+    chrome.permissions.request({
+      origins: e.target.origins
+    }, () => {
+      document.getElementById('auto-rules').disabled = false;
+      e.target.classList.add('hidden');
+    });
+    delete e.target.origins;
+    e.target.textContent = 'Limited Host Access';
+  }
+  else {
+    const hosts = prompt('Comma-separated list of hosts (e.g. example.com, google.com)');
+    if (hosts) {
+      e.target.origins = hosts.split(/\s*,\s*/).filter(s => s).map(h => {
+        if (h.startsWith('http')) {
+          return h;
+        }
+        return '*://' + h + '/*';
+      });
+      e.target.textContent = 'Click to Confirm';
+    }
+  }
 });
 chrome.permissions.contains({
   origins: ['*://*/*']
 }, granted => {
   if (granted) {
     document.getElementById('auto-rules').disabled = false;
-    document.getElementById('auto-permission').style.display = 'none';
+    document.getElementById('auto-permission').classList.add('hidden');
+    document.getElementById('proceed-wo-permission').classList.add('hidden');
   }
 });
 

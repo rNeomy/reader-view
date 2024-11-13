@@ -32,6 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
           next();
           break;
         }
+        else if (location.hostname.endsWith('.' + rule)) {
+          next();
+          break;
+        }
       }
     }
   });
