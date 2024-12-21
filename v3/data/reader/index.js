@@ -606,7 +606,7 @@ document.addEventListener('click', e => {
   if (cmd === 'font-decrease' || cmd === 'font-increase') {
     const size = config.prefs['font-size'];
     chrome.storage.local.set({
-      'font-size': cmd === 'font-decrease' ? Math.max(9, size - 1) : Math.min(50, size + 1)
+      'font-size': cmd === 'font-decrease' ? Math.max(9, size - 1) : Math.min(100, size + 1)
     });
   }
   else if (cmd === 'width-decrease' || cmd === 'width-increase') {
