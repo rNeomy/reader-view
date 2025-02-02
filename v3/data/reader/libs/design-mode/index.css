@@ -54,3 +54,6 @@ select {
 #help a {
   text-decoration: none;
 }
+html[data-spellcheck="true"] [data-command="spellcheck"] {
+  fill: blue;
+}

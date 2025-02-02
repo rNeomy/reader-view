@@ -8,6 +8,12 @@
 {
   const toolbar = document.createElement('iframe');
   const doc = iframe.contentDocument;
+  toolbar.onload = () => {
+    toolbar.contentWindow.postMessage({
+      method: 'spellcheck',
+      value: doc.body.spellcheck
+    }, '*');
+  };
 
   // do not allow link opening
   const noredirect = e => {
@@ -153,6 +159,12 @@
     else if (command === 'close') {
       unload();
       stop();
+    }
+    else if (command === 'spellcheck:false') {
+      doc.body.spellcheck = false;
+    }
+    else if (command === 'spellcheck:true') {
+      doc.body.spellcheck = true;
     }
   };
 

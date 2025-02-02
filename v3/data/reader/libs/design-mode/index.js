@@ -5,7 +5,12 @@ const post = (method, data) => top.postMessage({
 
 document.addEventListener('click', e => {
   const command = e.target.dataset.command;
-  if (command) {
+  if (command === 'spellcheck') {
+    const b = document.documentElement.dataset.spellcheck === 'false';
+    document.documentElement.dataset.spellcheck = b;
+    post('spellcheck:' + b);
+  }
+  else if (command) {
     post(command);
   }
 });
@@ -24,4 +29,13 @@ document.onmouseup = () => {
   document.onmousemove = '';
 };
 
+// spellcheck
+onmessage = e => {
+  const {method, value} = e.data;
+  if (method === 'spellcheck') {
+    document.documentElement.dataset.spellcheck = value;
+  }
+};
+
+//
 top.links(document);
