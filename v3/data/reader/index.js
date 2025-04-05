@@ -128,16 +128,23 @@ const scrollbar = {
 // exit by passing ESC, exit after link is opened in the Reader view, exit after auto reader view
 const nav = {
   back(forced = false) {
-    const now = Date.now();
-    if (forced === false && (!nav.timeout || (now - nav.timeout > 2000))) {
-      nav.timeout = now;
-      return window.notify('Press ESC again to exit', undefined, 2000);
+    if (location.protocol.startsWith('safari')) {
+      chrome.runtime.sendMessage({
+        cmd: 'closed'
+      });
+      location.replace(args.get('url'));
     }
-
-    chrome.runtime.sendMessage({
-      cmd: 'closed'
-    });
-    history.back(-2);
+    else {
+      const now = Date.now();
+      if (forced === false && (!nav.timeout || (now - nav.timeout > 2000))) {
+        nav.timeout = now;
+        return window.notify('Press ESC again to exit', undefined, 2000);
+      }
+      chrome.runtime.sendMessage({
+        cmd: 'closed'
+      });
+      history.back(-2);
+    }
   }
 };
 window.nav = nav;
@@ -158,7 +165,7 @@ const favicon = article => {
   else if (article.icon && article.icon.startsWith('data:')) {
     next(article.icon);
   }
-  else if (chrome.runtime.getManifest()['manifest_version'] === 3) {
+  else if (chrome.runtime.getManifest()['manifest_version'] === 3 && location.protocol.startsWith('safari') === false) {
     chrome.permissions.contains({
       permissions: ['favicon']
     }, granted => {
@@ -279,11 +286,14 @@ shortcuts.render = (spans = shortcuts.keys()) => {
 
 /* Toolbar Visibility*/
 {
-  shortcuts.set(document.getElementById('toolbar'), {
+  const span = document.getElementById('pinned');
+  span.onclick = () => chrome.storage.local.set({
+    'toggle-toolbar': config.prefs['toggle-toolbar'] === false
+  });
+
+  shortcuts.set(span, {
     id: 'toggle-toolbar',
-    action: () => chrome.storage.local.set({
-      'toggle-toolbar': config.prefs['toggle-toolbar'] === false
-    })
+    action: span.onclick
   });
 }
 
@@ -775,7 +785,8 @@ ready.cache = [];
 
 
 const render = () => chrome.runtime.sendMessage({
-  cmd: 'read-data'
+  cmd: 'read-data',
+  id: Number(args.get('id')) // Safari rename ids after reload
 }, async obj => {
   if (obj === false) {
     document.getElementById('content').dataset.msg = chrome.i18n.getMessage('rd_warning_1') + '\n\n' + args.get('url');
@@ -804,8 +815,6 @@ const render = () => chrome.runtime.sendMessage({
     return location.replace(args.get('url'));
   }
 
-  iframe.contentDocument.open();
-  const {pathname, hostname} = (new URL(article.url));
   const gcs = window.getComputedStyle(document.documentElement);
 
   const {textVide} = await import('./libs/text-vide/index.mjs');
@@ -838,52 +847,89 @@ const render = () => chrome.runtime.sendMessage({
     });
   }
 
-  iframe.addEventListener('load', () => {
-    if (document.body.dataset.loaded !== 'true') {
-      // apply transition after initial changes
-      document.body.dataset.loaded = iframe.contentDocument.body.dataset.loaded = true;
-
-      highlight = new iframe.contentWindow.TextHighlight();
-      if (article.highlights) {
-        highlight.import(article.highlights);
-      }
-    }
-  });
-
-  iframe.contentDocument.write((await template())
-    .replaceAll('%dir%', article.dir ? ' dir=' + article.dir : '')
-    .replaceAll('%lang%', article.lang ? ' lang=' + article.lang : '')
-    .replaceAll('%light-color%', gcs.getPropertyValue('--color-mode-light-color'))
-    .replaceAll('%light-bg%', gcs.getPropertyValue('--color-mode-light-bg'))
-    .replaceAll('%dark-color%', gcs.getPropertyValue('--color-mode-dark-color'))
-    .replaceAll('%dark-bg%', gcs.getPropertyValue('--color-mode-dark-bg'))
-    .replaceAll('%sepia-color%', gcs.getPropertyValue('--color-mode-sepia-color'))
-    .replaceAll('%sepia-bg%', gcs.getPropertyValue('--color-mode-sepia-bg'))
-    .replaceAll('%solarized-light-color%', gcs.getPropertyValue('--color-mode-solarized-light-color'))
-    .replaceAll('%solarized-light-bg%', gcs.getPropertyValue('--color-mode-solarized-light-bg'))
-    .replaceAll('%nord-light-color%', gcs.getPropertyValue('--color-mode-nord-light-color'))
-    .replaceAll('%nord-light-bg%', gcs.getPropertyValue('--color-mode-nord-light-bg'))
-    .replaceAll('%groove-dark-color%', gcs.getPropertyValue('--color-mode-groove-dark-color'))
-    .replaceAll('%groove-dark-bg%', gcs.getPropertyValue('--color-mode-groove-dark-bg'))
-    .replaceAll('%solarized-dark-color%', gcs.getPropertyValue('--color-mode-solarized-dark-color'))
-    .replaceAll('%solarized-dark-bg%', gcs.getPropertyValue('--color-mode-solarized-dark-bg'))
-    .replaceAll('%nord-dark-color%', gcs.getPropertyValue('--color-mode-nord-dark-color'))
-    .replaceAll('%nord-dark-bg%', gcs.getPropertyValue('--color-mode-nord-dark-bg'))
-    .replaceAll('%content%', content)
-    .replaceAll('%title%', article.title || 'Unknown Title')
-    .replaceAll('%byline%', article.byline || '')
-    .replaceAll('%reading-time-fast%', article.readingTimeMinsFast)
-    .replaceAll('%reading-time-slow%', article.readingTimeMinsSlow)
-    .replaceAll('%published-time%', article['published_time'] || '')
-    .replaceAll('%href%', article.url)
-    .replaceAll('%hostname%', hostname)
-    .replaceAll('%pathname%', pathname)
-    .replaceAll('/*user-css*/', config.prefs['user-css'])
-    .replaceAll('%data-images%', config.prefs['show-images'])
-    .replaceAll('%data-font%', document.body.dataset.font)
-    .replaceAll('%data-columns%', config.prefs['column-count']));
-  iframe.contentDocument.close();
+  if (article.dir) {
+    iframe.contentDocument.documentElement.setAttribute('dir', article.dir);
+  }
+  if (article.lang) {
+    iframe.contentDocument.documentElement.setAttribute('lang', article.lang);
+  }
+  iframe.contentDocument.getElementById('ftp').textContent = `html[data-mode="light"] {
+    color-scheme: light;
+    --fg: ${gcs.getPropertyValue('--color-mode-light-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-light-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-light-bg')};
+  }
+  html[data-mode="dark"] {
+    color-scheme: dark;
+    --fg: ${gcs.getPropertyValue('--color-mode-dark-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-dark-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-dark-bg')};
+  }
+  html[data-mode="sepia"] {
+    color-scheme: light;
+    --fg: ${gcs.getPropertyValue('--color-mode-sepia-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-sepia-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-sepia-bg')};
+  }
+  html[data-mode="solarized-light"] {
+    color-scheme: light;
+    --fg: ${gcs.getPropertyValue('--color-mode-solarized-light-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-solarized-light-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-solarized-light-bg')};
+  }
+  html[data-mode="nord-light"] {
+    color-scheme: light;
+    --fg: ${gcs.getPropertyValue('--color-mode-nord-light-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-nord-light-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-nord-light-bg')};
+  }
+  html[data-mode="groove-dark"] {
+    color-scheme: dark;
+    --fg: ${gcs.getPropertyValue('--color-mode-groove-dark-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-groove-dark-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-groove-dark-bg')}
+  }
+  html[data-mode="solarized-dark"] {
+    color-scheme: dark;
+    --fg: ${gcs.getPropertyValue('--color-mode-solarized-dark-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-solarized-dark-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-solarized-dark-bg')};
+  }
+  html[data-mode="nord-dark"] {
+    color-scheme: dark;
+    --fg: ${gcs.getPropertyValue('--color-mode-nord-dark-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-nord-dark-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-nord-dark-bg')};
+  }`;
+  iframe.contentDocument.getElementById('reader-title').textContent = article.title || 'Unknown Title';
+  iframe.contentDocument.getElementById('reader-content').outerHTML = content;
+  iframe.contentDocument.getElementById('reader-credits').textContent = article.byline || '';
+  iframe.contentDocument.getElementById('reader-estimated-time').textContent =
+    article.readingTimeMinsFast + '-' + article.readingTimeMinsSlow + ' minutes';
+  iframe.contentDocument.getElementById('published-time').textContent = article['published_time'] || '';
+  iframe.contentDocument.getElementById('reader-domain').setAttribute('href', article.url);
+  const {pathname, hostname} = (new URL(article.url));
+  const children = iframe.contentDocument.getElementById('reader-domain').children;
+  children[0].textContent = hostname;
+  children[1].textContent = pathname;
+  iframe.contentDocument.getElementById('user-css').textContent = config.prefs['user-css'];
+  iframe.contentDocument.body.dataset.images = config.prefs['show-images'];
+  iframe.contentDocument.body.dataset.font = document.body.dataset.font;
+  iframe.contentDocument.body.dataset.columns = config.prefs['column-count'];
   iframe.contentDocument.documentElement.dataset.mode = document.body.dataset.mode;
+
+  if (document.body.dataset.loaded !== 'true') {
+    // apply transition after initial changes
+    requestAnimationFrame(() => {
+      document.body.dataset.loaded = true;
+      iframe.contentDocument.body.dataset.loaded = true;
+    });
+
+    highlight = new iframe.contentWindow.TextHighlight();
+    if (article.highlights) {
+      highlight.import(article.highlights);
+    }
+  }
 
   // To-Do; check on Firefox
   iframe.contentDocument.addEventListener('DOMContentLoaded', () => {
@@ -1138,49 +1184,51 @@ if (mode.query) {
 }
 
 // load
-config.load(() => {
-  mode().then(v => document.body.dataset.mode = v);
+iframe.addEventListener('load', () => {
+  config.load(() => {
+    mode().then(v => document.body.dataset.mode = v);
 
-  document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
+    document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
 
-  if (config.prefs['printing-button']) {
-    document.getElementById('printing-button').classList.remove('hidden');
-  }
-  if (config.prefs['screenshot-button']) {
-    document.getElementById('screenshot-button').classList.remove('hidden');
-  }
-  if (config.prefs['note-button']) {
-    document.getElementById('note-button').classList.remove('hidden');
-  }
-  if (config.prefs['mail-button']) {
-    document.getElementById('mail-button').classList.remove('hidden');
-  }
-  if (config.prefs['save-button']) {
-    document.getElementById('save-button').classList.remove('hidden');
-  }
-  if (config.prefs['fullscreen-button']) {
-    document.getElementById('fullscreen-button').classList.remove('hidden');
-  }
-  if (config.prefs['images-button']) {
-    document.getElementById('images-button').classList.remove('hidden');
-  }
-  if (config.prefs['highlight-button']) {
-    document.getElementById('highlight-button').classList.remove('hidden');
-  }
-  if (config.prefs['design-mode-button']) {
-    document.getElementById('design-mode-button').classList.remove('hidden');
-  }
-  update.images();
-  update.async();
+    if (config.prefs['printing-button']) {
+      document.getElementById('printing-button').classList.remove('hidden');
+    }
+    if (config.prefs['screenshot-button']) {
+      document.getElementById('screenshot-button').classList.remove('hidden');
+    }
+    if (config.prefs['note-button']) {
+      document.getElementById('note-button').classList.remove('hidden');
+    }
+    if (config.prefs['mail-button']) {
+      document.getElementById('mail-button').classList.remove('hidden');
+    }
+    if (config.prefs['save-button']) {
+      document.getElementById('save-button').classList.remove('hidden');
+    }
+    if (config.prefs['fullscreen-button']) {
+      document.getElementById('fullscreen-button').classList.remove('hidden');
+    }
+    if (config.prefs['images-button']) {
+      document.getElementById('images-button').classList.remove('hidden');
+    }
+    if (config.prefs['highlight-button']) {
+      document.getElementById('highlight-button').classList.remove('hidden');
+    }
+    if (config.prefs['design-mode-button']) {
+      document.getElementById('design-mode-button').classList.remove('hidden');
+    }
+    update.images();
+    update.async();
 
-  styles.top.textContent = config.prefs['top-css'];
-  document.documentElement.appendChild(styles.top);
+    styles.top.textContent = config.prefs['top-css'];
+    document.documentElement.appendChild(styles.top);
 
-  if (config.prefs['navigate-buttons']) {
-    document.getElementById('navigate').classList.remove('hidden');
-  }
+    if (config.prefs['navigate-buttons']) {
+      document.getElementById('navigate').classList.remove('hidden');
+    }
 
-  render();
+    render();
+  });
 });
 
 // convert data HREFs

@@ -132,8 +132,8 @@ function createHTMLDocument() {
 }
 
 // The implementation is from https://stackoverflow.com/a/5084441/260793
-function getSelectionHTML() {
-  const selection = window.getSelection();
+function getSelectionHTML(doc) {
+  const selection = doc.defaultView.getSelection();
   if (selection && selection.rangeCount && selection.toString().trim().length > 2) {
     let range;
     if (selection.getRangeAt) {
@@ -182,8 +182,9 @@ try {
           return;
         }
         const parser = new DOMParser();
+        // we add class "comment" to prevent reader view from using this div
         const doc = parser.parseFromString(`
-          <div class="rv-overlay" style="
+          <div class="rv-overlay comment" style="
             all: initial;
             background-color: rgba(0, 0, 0, 0.5);
             position: fixed;
@@ -258,12 +259,26 @@ try {
           }
         }
       }
-      // prepare
-      const doc = getSelectionHTML() || document.cloneNode(true);
+      /* prepare */
+      // What if content is loaded inside an iframe (https://blog.naver.com/dgtghsh/220545505856)
+      const docs = [document];
+      for (const f of document.querySelectorAll('iframe,frame')) {
+        try {
+          const v = f.contentDocument.documentElement.innerText.length;
+          if (v > 100) {
+            docs.push(f.contentDocument);
+          }
+        }
+        catch (e) {}
+      }
+      docs.sort((a, b) => {
+        return b.documentElement.innerText.length - a.documentElement.innerText.length;
+      });
+      const doc = getSelectionHTML(docs[0]) || docs[0].cloneNode(true);
 
       const articles = [...doc.querySelectorAll('article')].map(e => e.cloneNode(true));
       const reader = new Readability(doc, {
-        debug: false
+        debug: true
       });
       const article = reader.parse();
 
@@ -286,7 +301,7 @@ try {
       }
 
       if (!article) {
-        throw Error('Cannot convert this page!');
+        throw Error('No article was detected in this page. Please select the desire content then retry.');
       }
 
       article.lang = article.lang || document.documentElement?.lang || 'en';
@@ -366,44 +381,88 @@ try {
             prefs['supported-fonts'].filter(o => o.value === prefs.font).map(o => o.name).shift() || prefs.font
           ).toLowerCase().replaceAll(/\s+/g, '-');
 
+          if (article.dir) {
+            document.documentElement.setAttribute('dir', article.dir);
+          }
+          if (article.lang) {
+            document.documentElement.setAttribute('lang', article.lang);
+          }
+
           const html = (await resp.text())
-            .replace('%dir%', article.dir ? ' dir=' + article.dir : '')
-            .replace('%lang%', article.lang ? ' lang=' + article.lang : '')
-            .replace('%light-color%', '#222')
-            .replace('%light-bg%', 'whitesmoke')
-            .replace('%dark-color%', '#eee')
-            .replace('%dark-bg%', '#333')
-            .replace('%sepia-color%', '#5b4636')
-            .replace('%sepia-bg%', '#f4ecd8')
-            .replace('%solarized-light-color%', '#586e75')
-            .replace('%solarized-light-bg%', '#fdf6e3')
-            .replace('%groove-dark-color%', '#cec4ac')
-            .replace('%groove-dark-bg%', '#282828')
-            .replace('%solarized-dark-color%', '#839496')
-            .replace('%solarized-dark-bg%', '#002b36')
-            .replace('%content%', article.content)
-            .replace('%title%', article.title || 'Unknown Title')
-            .replace('%byline%', article.byline || '')
-            .replace('%reading-time-fast%', article.readingTimeMinsFast)
-            .replace('%reading-time-slow%', article.readingTimeMinsSlow)
-            .replace('%published-time%', article['published_time'] || '')
-            .replace('%href%', article.url)
-            .replace('%hostname%', hostname)
-            .replace('%pathname%', pathname)
-            .replace('/*user-css*/', `
-              body {
-                font-size:  ${prefs['font-size']}px;
-                font-family: ${prefs.font} !important;
-                width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
-              }
-            ` + prefs['user-css'])
-            .replace('%data-images%', prefs['show-images'])
-            .replace('%data-font%', font)
             .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
           const dom = (new DOMParser()).parseFromString(html, `text/html`);
-          document.head.replaceWith(dom.querySelector('head'));
-          document.body.replaceWith(dom.querySelector('body'));
+          const head = dom.querySelector('head');
+          head.querySelector('#user-css').textContent = `
+            body {
+              font-size:  ${prefs['font-size']}px;
+              font-family: ${prefs.font} !important;
+              width: ${prefs.width ? prefs.width + 'px' : 'calc(100vw - 50px)'};
+            }
+          ` + prefs['user-css'];
+          head.querySelector('#ftp').textContent = `html[data-mode="light"] {
+    color-scheme: light;
+    --fg: #222;
+    --bd: #222;
+    --bg: whitesmoke;
+  }
+  html[data-mode="dark"] {
+    color-scheme: dark;
+    --fg: #eee;
+    --bd: #eee;
+    --bg: #333;
+  }
+  html[data-mode="sepia"] {
+    color-scheme: light;
+    --fg: #5b4636;
+    --bd: #5b4636;
+    --bg: #f4ecd8;
+  }
+  html[data-mode="solarized-light"] {
+    color-scheme: light;
+    --fg: #586e75;
+    --bd: #586e75;
+    --bg: #fdf6e3;
+  }
+  html[data-mode="nord-light"] {
+    color-scheme: light;
+    --fg: #cec4ac;
+    --bd: #cec4ac;
+    --bg: #282828;
+  }
+  html[data-mode="groove-dark"] {
+    color-scheme: dark;
+    --fg: #cec4ac;
+    --bd: #cec4ac;
+    --bg: #282828;
+  }
+  html[data-mode="solarized-dark"] {
+    color-scheme: dark;
+    --fg: #839496;
+    --bd: #839496;
+    --bg: #002b36;
+  }
+  html[data-mode="nord-dark"] {
+    color-scheme: dark;
+    --fg: #e5e9f0;
+    --bd: #e5e9f0;
+    --bg: #2e3440;
+  }`;
+          document.head.replaceWith(head);
+          const body = dom.querySelector('body');
+          body.querySelector('#reader-content').outerHTML = article.content;
+          body.querySelector('#reader-credits').textContent = article.byline || '';
+          body.querySelector('#reader-estimated-time').textContent =
+            article.readingTimeMinsFast + '-' + article.readingTimeMinsSlow + ' minutes';
+          body.querySelector('#published-time').textContent = article['published_time'] || '';
+          body.querySelector('#reader-domain').setAttribute('href', article.url);
+          const children = body.querySelector('#reader-domain').children;
+          children[0].textContent = hostname;
+          children[1].textContent = pathname;
+          body.dataset.images = config.prefs['show-images'];
+          body.dataset.font = font;
+          body.dataset.columns = config.prefs['column-count'];
+          document.body.replaceWith(body);
           document.documentElement.dataset.mode = prefs.mode;
           document.title = title;
 

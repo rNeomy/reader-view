@@ -23,7 +23,7 @@
 
 // iframe issue
 if (window.top !== window) {
-  chrome = top.chrome;
+  self.chrome = top.chrome;
 }
 
 // do not load config when possible

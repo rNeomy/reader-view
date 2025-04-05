@@ -95,6 +95,18 @@ const aStorage = {
   }
 };
 
+if (location.protocol.startsWith('safari')) {
+  aStorage.set = (id, content) => {
+    aStorage.cache[id] = content;
+    return Promise.resolve();
+  };
+  aStorage.get = (id, content) => Promise.resolve(aStorage.cache[id]);
+  aStorage.delete = id => setTimeout(() => {
+    delete aStorage.cache[id];
+  }, 10000);
+  aStorage.clean = () => {};
+}
+
 // delete stored article
 chrome.tabs.onRemoved.addListener(id => aStorage.delete(id));
 chrome.runtime.onMessage.addListener((request, sender) => {

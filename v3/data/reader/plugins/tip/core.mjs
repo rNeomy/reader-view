@@ -80,15 +80,17 @@ const permission = e => {
   const {cmd} = e.target.dataset;
 
   if (cmd === 'favicon-permission') {
-    chrome.permissions.request({
-      permissions: ['favicon']
-    }, granted => {
-      if (granted) {
-        chrome.storage.local.set({
-          'ask-for-favicon': false
-        }, () => location.reload());
-      }
-    });
+    if (location.protocol.startsWith('safari') === false) {
+      chrome.permissions.request({
+        permissions: ['favicon']
+      }, granted => {
+        if (granted) {
+          chrome.storage.local.set({
+            'ask-for-favicon': false
+          }, () => location.reload());
+        }
+      });
+    }
   }
   else if (cmd === 'image-permission' || cmd === 'switch-permission') {
     chrome.permissions.request({
@@ -119,7 +121,7 @@ function enable() {
       tips.show(i);
     }
   };
-  if (chrome.runtime.getManifest()['manifest_version'] === 3) {
+  if (chrome.runtime.getManifest()['manifest_version'] === 3 && location.protocol.startsWith('safari') === false) {
     chrome.permissions.contains({
       permissions: ['favicon']
     }, next);

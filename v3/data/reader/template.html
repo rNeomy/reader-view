@@ -1,234 +1,187 @@
 <!DOCTYPE html>
-<html%dir%%lang%>
+<html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   <base target="_blank">
+  <style type="text/css" id="ftp"></style>
   <style>
-/* latin */
-@font-face {
-  font-family: 'Comic Neue';
-  font-style: normal;
-  font-weight: 400;
-  src: url(fonts/4UaHrEJDsxBrF37olUeD96rp57F2IwM.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-/* latin */
-@font-face {
-  font-family: 'Lexend Deca';
-  font-style: normal;
-  font-weight: 400;
-  src: url(fonts/K2FifZFYk-dHSE0UPPuwQ7CrD94i-NCKm-U48M1wqxnDirZPl3v-.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-/* latin */
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 400;
-  src: url(fonts/pxiEyp8kv8JHgFVrJJfecnFHGPc.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
+    /* latin */
+    @font-face {
+      font-family: 'Comic Neue';
+      font-style: normal;
+      font-weight: 400;
+      src: url(fonts/4UaHrEJDsxBrF37olUeD96rp57F2IwM.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    /* latin */
+    @font-face {
+      font-family: 'Lexend Deca';
+      font-style: normal;
+      font-weight: 400;
+      src: url(fonts/K2FifZFYk-dHSE0UPPuwQ7CrD94i-NCKm-U48M1wqxnDirZPl3v-.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    /* latin */
+    @font-face {
+      font-family: 'Poppins';
+      font-style: normal;
+      font-weight: 400;
+      src: url(fonts/pxiEyp8kv8JHgFVrJJfecnFHGPc.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
 
-:root {
-  --fg: #000; /* foreground  */
-  --bg: #fff; /* background  */
-  --bd: #000; /* border  */
-  --lk: #006fa5; /* link */
-  --lkv: #d33bf0; /* link visited */
-  --hg: #ffff81; /* highlight  */
-}
-html {
-  overflow: overlay;
-  scrollbar-color: var(--fg) var(--bg);
-}
-html[data-mode$="dark"] {
-  --lk: #0096de;
-}
-html[data-mode="light"] {
-  color-scheme: light;
-  --fg: %light-color%;
-  --bd: %light-color%;
-  --bg: %light-bg%;
-}
-html[data-mode="dark"] {
-  color-scheme: dark;
-  --fg: %dark-color%;
-  --bd: %dark-color%;
-  --bg: %dark-bg%;
-}
-html[data-mode="sepia"] {
-  color-scheme: light;
-  --fg: %sepia-color%;
-  --bd: %sepia-color%;
-  --bg: %sepia-bg%;
-}
-html[data-mode="solarized-light"] {
-  color-scheme: light;
-  --fg: %solarized-light-color%;
-  --bd: %solarized-light-color%;
-  --bg: %solarized-light-bg%;
-}
-html[data-mode="nord-light"] {
-  color-scheme: light;
-  --fg: %nord-light-color%;
-  --bd: %nord-light-color%;
-  --bg: %nord-light-bg%;
-}
-html[data-mode="groove-dark"] {
-  color-scheme: dark;
-  --fg: %groove-dark-color%;
-  --bd: %groove-dark-color%;
-  --bg: %groove-dark-bg%;
-}
-html[data-mode="solarized-dark"] {
-  color-scheme: dark;
-  --fg: %solarized-dark-color%;
-  --bd: %solarized-dark-color%;
-  --bg: %solarized-dark-bg%;
-}
-html[data-mode="nord-dark"] {
-  color-scheme: dark;
-  --fg: %nord-dark-color%;
-  --bd: %nord-dark-color%;
-  --bg: %nord-dark-bg%;
-}
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  margin: 30px auto 0 auto;
-  padding: 10px;
-  position: relative;
+    :root {
+      --fg: #000; /* foreground  */
+      --bg: #fff; /* background  */
+      --bd: #000; /* border  */
+      --lk: #006fa5; /* link */
+      --lkv: #d33bf0; /* link visited */
+      --hg: #ffff81; /* highlight  */
+    }
+    html {
+      overflow: overlay;
+      scrollbar-color: var(--fg) var(--bg);
+    }
+    html[data-mode$="dark"] {
+      --lk: #0096de;
+    }
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      margin: 30px auto 0 auto;
+      padding: 10px;
+      position: relative;
 
-  color: var(--fg);
-  border-color: var(--bd);
-  background-color: var(--bg);
-}
+      color: var(--fg);
+      border-color: var(--bd);
+      background-color: var(--bg);
+    }
 
 
-@media print {
-  html[data-mode] {
-    --fg: #000;
-    --bd: #000;
-    --bg: #fff;
+    @media print {
+      html[data-mode] {
+        --fg: #000;
+        --bd: #000;
+        --bg: #fff;
 
-    width: unset;
-    padding: 0;
-    margin: 0;
-  }
-}
-body[data-loaded=true] {
-  transition: color 0.4s, background-color 0.4s;
-}
-img {
-  max-width: 100%;
-  height: auto;
-}
-img:not([width])[src$=".svg"] {
-  max-width: 100px;
-}
-body[data-images=false] canvas,
-body[data-images=false] svg,
-body[data-images=false] img {
-  display: none;
-}
-svg:not([width]):not([height]) {
-  max-width: 25vmin;
-}
-a {
-  color: var(--lk);
-  text-decoration: none;
-}
-a:visited {
-  color: var(--lkv);
-}
+        width: unset;
+        padding: 0;
+        margin: 0;
+      }
+    }
+    body[data-loaded=true] {
+      transition: color 0.4s, background-color 0.4s;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+    img:not([width])[src$=".svg"] {
+      max-width: 100px;
+    }
+    body[data-images=false] canvas,
+    body[data-images=false] svg,
+    body[data-images=false] img {
+      display: none;
+    }
+    svg:not([width]):not([height]) {
+      max-width: 25vmin;
+    }
+    a {
+      color: var(--lk);
+      text-decoration: none;
+    }
+    a:visited {
+      color: var(--lkv);
+    }
 
-hr {
-  background-color: var(--bd);
-  height: 1px;
-  border: 0;
-}
-#reader-domain {
-  font-family: Helvetica, Arial, sans-serif;
-  text-decoration: none;
-  border-bottom-color: currentcolor;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-  display: inline-block;
-  direction: ltr;
-}
-#reader-domain > span:first-child {
-  font-size: 1.1em;
-}
-#reader-domain > span:last-child {
-  font-size: 0.8em;
-}
-#reader-title {
-  font-size: 1.6em;
-  line-height: 1.25em;
-  width: 100%;
-  margin: 20px 0;
-  padding: 0;
-}
-#reader-credits,
-#doi,
-#published-time,
-#reader-estimated-time {
-  font-size: 0.85em;
-  line-height: 1.48em;
-  margin: 0 0 10px 0;
-  padding: 0;
-}
-#reader-credits:not(:empty)::after {
-  content: ' ⋮ ';
-}
-#published-time:not(:empty)::before {
-  content: ' ⋮ ';
-}
-#doi-json {
-  overflow: hidden;
-}
-#doi-json code {
-  overflow: auto;
-  max-height: 400px;
-}
-#published-time:empty,
-#reader-credits:empty {
-  display: none;
-}
-mark.hghlght {
-  background-color: var(--hg);
-}
-body:not([data-columns="1"]) .page :is(h1, h2) {
-  column-span: all;
-  background-color: rgba(125, 125, 125, 0.1);
-  padding: 10px;
-}
-.hidden {
-  display: none;
-}
-.page-separator {
-  background-color: rgba(125, 125, 125, 0.1);
-  padding-block: 2ch;
-  text-align: center;
-  font-size: medium;
-}
-</style>
-  <style id="user-css">/*user-css*/</style>
+    hr {
+      background-color: var(--bd);
+      height: 1px;
+      border: 0;
+    }
+    #reader-domain {
+      font-family: Helvetica, Arial, sans-serif;
+      text-decoration: none;
+      border-bottom-color: currentcolor;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      display: inline-block;
+      direction: ltr;
+    }
+    #reader-domain > span:first-child {
+      font-size: 1.1em;
+    }
+    #reader-domain > span:last-child {
+      font-size: 0.8em;
+    }
+    #reader-title {
+      font-size: 1.6em;
+      line-height: 1.25em;
+      width: 100%;
+      margin: 20px 0;
+      padding: 0;
+    }
+    #reader-credits,
+    #doi,
+    #published-time,
+    #reader-estimated-time {
+      font-size: 0.85em;
+      line-height: 1.48em;
+      margin: 0 0 10px 0;
+      padding: 0;
+    }
+    #reader-credits:not(:empty)::after {
+      content: ' ⋮ ';
+    }
+    #published-time:not(:empty)::before {
+      content: ' ⋮ ';
+    }
+    #doi-json {
+      overflow: hidden;
+    }
+    #doi-json code {
+      overflow: auto;
+      max-height: 400px;
+    }
+    #published-time:empty,
+    #reader-credits:empty {
+      display: none;
+    }
+    mark.hghlght {
+      background-color: var(--hg);
+    }
+    body:not([data-columns="1"]) .page :is(h1, h2) {
+      column-span: all;
+      background-color: rgba(125, 125, 125, 0.1);
+      padding: 10px;
+    }
+    .hidden {
+      display: none;
+    }
+    .page-separator {
+      background-color: rgba(125, 125, 125, 0.1);
+      padding-block: 2ch;
+      text-align: center;
+      font-size: medium;
+    }
+  </style>
+  <style id="user-css"></style>
 </head>
 <body tabindex="1" data-images=%data-images% data-font=%data-font% data-columns=%data-columns%>
   <span></span> <!-- for IntersectionObserver -->
-  <a id="reader-domain" href="%href%">
-    <span>%hostname%</span>
-    <span>%pathname%</span>
+  <a id="reader-domain">
+    <span></span>
+    <span></span>
   </a>
-  <h1 dir="auto" id="reader-title">%title%</h1>
-  <span dir="auto" id="reader-credits">%byline%</span>
-  <span dir="auto" id="reader-estimated-time">%reading-time-fast%-%reading-time-slow% minutes</span>
-  <span dir="auto" id="published-time">%published-time%</span>
+  <h1 dir="auto" id="reader-title"></h1>
+  <span dir="auto" id="reader-credits"></span>
+  <span dir="auto" id="reader-estimated-time"></span>
+  <span dir="auto" id="published-time"></span>
   <hr/>
-  %content%
+  <div id="reader-content"></div>
   <span></span> <!-- for IntersectionObserver -->
   <script src="/defaults.js"></script>
   <script src="/data/config.js"></script>

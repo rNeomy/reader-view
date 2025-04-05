@@ -22,6 +22,7 @@ input[type=button] {
   text-shadow: rgb(240, 240, 240) 0 1px 0;
   border: solid 1px var(--border);
   padding: 0 5px;
+  font-size: inherit;
 }
 input[type=number],
 input[type=text],
@@ -122,4 +123,10 @@ a:visited {
 
 .hidden {
   display: none;
+}
+
+@supports (-webkit-hyphens: none) and (not (-moz-appearance: none)) {
+  #support {
+    display: none;
+  }
 }

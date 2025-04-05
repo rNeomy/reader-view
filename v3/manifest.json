@@ -19,7 +19,14 @@
     "<all_urls>"
   ],
   "background": {
-    "service_worker": "worker.js"
+    "service_worker": "worker.js",
+    "scripts": [
+      "defaults.js",
+      "menus.js",
+      "navigate.js",
+      "storage.js",
+      "worker.js"
+    ]
   },
   "action": {},
   "homepage_url": "https://webextension.org/listing/chrome-reader-view.html",
@@ -38,13 +45,15 @@
   },
   "incognito": "split",
   "commands": {
-    "_execute_action": {},
+    "_execute_action": {
+      "description": "Execute Action"
+    },
     "toggle-reader-view": {
       "description": "Toggle the Reader View"
     }
   },
   "web_accessible_resources": [{
-    "resources": ["/data/reader/template.html"],
+    "resources": ["data/reader/template.html"],
     "matches": ["*://*/*"]
   }]
 }

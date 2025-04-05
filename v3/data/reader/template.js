@@ -24,7 +24,7 @@
 const args = new URLSearchParams(top.location.search);
 
 if (window.top !== window) {
-  chrome = top.chrome;
+  self.chrome = top.chrome;
   window.config = top.config;
 }
 
