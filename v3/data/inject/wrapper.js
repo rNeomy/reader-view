@@ -278,7 +278,7 @@ try {
 
       const articles = [...doc.querySelectorAll('article')].map(e => e.cloneNode(true));
       const reader = new Readability(doc, {
-        debug: true
+        debug: false
       });
       const article = reader.parse();
 
