@@ -166,6 +166,8 @@ function getSelectionHTML(doc) {
 }
 
 try {
+  let timeout;
+
   // if a website has an automatic redirect use this method to wait for a new page load
   if (location.href.indexOf('://news.google.') !== -1 &&
       location.href.indexOf('/articles/') !== -1) {
@@ -225,11 +227,13 @@ try {
         const p = doc.querySelector('div');
         doc.querySelector('input').onclick = () => {
           document.removeEventListener('DOMContentLoaded', convert);
+          clearTimeout(timeout);
           convert();
         };
         doc.querySelector('input:last-of-type').onclick = () => {
           p.remove();
           document.removeEventListener('DOMContentLoaded', convert);
+          clearTimeout(timeout);
           chrome.runtime.sendMessage({
             cmd: 'aborted'
           });
@@ -528,7 +532,9 @@ try {
       if (document.readyState !== 'complete') {
         Promise.race([
           new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve)),
-          new Promise(resolve => setTimeout(resolve, 3000))
+          new Promise(resolve => {
+            timeout = setTimeout(resolve, 3000);
+          })
         ]).then(safeConvert);
       }
       else {
