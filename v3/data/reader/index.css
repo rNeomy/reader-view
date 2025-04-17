@@ -105,6 +105,9 @@ iframe {
   flex: 1;
   border: none;
 }
+body:not([data-loaded=true]) iframe {
+  opacity: 0;
+}
 a {
   text-decoration: none;
   color: var(--lk);
@@ -115,15 +118,14 @@ a {
   z-index: 1;
   box-shadow: 0 0 0 1px var(--border-color);
   grid-gap: 10px;
+  position: relative;
 }
 #toolbar {
   user-select: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: auto hidden;
   scrollbar-width: thin;
 }
 #toolbar .active:not([data-cmd="full-width"]):not([data-cmd="no-height"]) {
@@ -151,7 +153,6 @@ a {
 body[data-toolbar="false"] {
   #toolbar-container {
     grid-template-rows: 1fr;
-    height: min-content;
     position: fixed;
     background-color: var(--bg);
   }

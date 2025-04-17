@@ -146,8 +146,6 @@ chrome.commands.onCommand.addListener(command => {
 const lazy = tabId => {
   lazy.cache[tabId] = true;
 
-  console.log('lazy', tabId);
-
   chrome.tabs.onUpdated.removeListener(lazy.watch);
   chrome.tabs.onUpdated.addListener(lazy.watch);
 };

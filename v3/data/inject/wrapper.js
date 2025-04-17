@@ -196,7 +196,8 @@ try {
             <div style="
               all: initial;
               display: grid;
-              grid-template-columns: 1fr min-content;
+              grid-template-columns: 1fr min-content min-content;
+              grid-gap: 15px;
               align-items: center;
               padding: 1ch 2ch;
               background-color: #282828;">
@@ -204,7 +205,14 @@ try {
                 all: initial;
                 font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
                 font-size: 16px;
-                color: #bcc5ce;">Converting to Reader View...</span>
+                color: #bcc5ce;">Reader View will start once the page has finished loading...</span>
+              <input type="button" value="Skip Waiting" style="
+                all: initial;
+                font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+                font-size: 16px;
+                cursor: pointer;
+                white-space: nowrap;
+                color: #bcc5ce;">
               <input type="button" value="×" style="
                 all: initial;
                 border: none;
@@ -216,6 +224,10 @@ try {
           </div>`, 'text/html');
         const p = doc.querySelector('div');
         doc.querySelector('input').onclick = () => {
+          document.removeEventListener('DOMContentLoaded', convert);
+          convert();
+        };
+        doc.querySelector('input:last-of-type').onclick = () => {
           p.remove();
           document.removeEventListener('DOMContentLoaded', convert);
           chrome.runtime.sendMessage({
@@ -271,18 +283,26 @@ try {
         }
         catch (e) {}
       }
+      // sort by content length
       docs.sort((a, b) => {
         return b.documentElement.innerText.length - a.documentElement.innerText.length;
       });
-      const doc = getSelectionHTML(docs[0]) || docs[0].cloneNode(true);
-
-      const articles = [...doc.querySelectorAll('article')].map(e => e.cloneNode(true));
-      const reader = new Readability(doc, {
-        debug: false
-      });
-      const article = reader.parse();
+      let article;
+      let doc;
+      // Select the first lengthy document that returns reader content
+      for (const d of docs) {
+        doc = getSelectionHTML(d) || d.cloneNode(true);
+        const reader = new Readability(doc, {
+          debug: false
+        });
+        article = reader.parse();
+        if (article) {
+          break;
+        }
+      }
 
       // multiple articles
+      const articles = [...doc.querySelectorAll('article')].map(e => e.cloneNode(true));
       for (let n = 0; n < articles.length; n += 1) {
         const doc = createHTMLDocument();
         doc.body.appendChild(articles[n]);
@@ -482,8 +502,6 @@ try {
     };
     const safeConvert = () => {
       try {
-        // visual banner
-        style();
         // convert
         convert();
       }
@@ -505,7 +523,9 @@ try {
       chrome.runtime.sendMessage({
         cmd: 'converting'
       });
-      if (document.readyState === 'loading') {
+      // visual banner
+      style();
+      if (document.readyState !== 'complete') {
         Promise.race([
           new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve)),
           new Promise(resolve => setTimeout(resolve, 3000))

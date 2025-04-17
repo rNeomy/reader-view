@@ -182,11 +182,6 @@ const favicon = article => {
   }
 };
 
-const template = async () => {
-  const r = await fetch('template.html');
-  return await r.text();
-};
-
 const download = (href, type, convert = false) => {
   if (convert) {
     const blob = new Blob([href], {
@@ -297,6 +292,15 @@ shortcuts.render = (spans = shortcuts.keys()) => {
   });
 }
 
+/* fake speech (until the plugin loads) to prevent rearrangement */
+{
+  const span = document.createElement('span');
+  span.id = 'speech-button';
+  span.title = chrome.i18n.getMessage('rd_speech');
+  span.classList.add('icon-speech');
+
+  document.getElementById('toolbar').appendChild(span);
+}
 /* printing */
 {
   const span = document.createElement('span');
@@ -784,10 +788,12 @@ ready.busy = true;
 ready.cache = [];
 
 
-const render = () => chrome.runtime.sendMessage({
-  cmd: 'read-data',
-  id: Number(args.get('id')) // Safari rename ids after reload
-}, async obj => {
+const render = async () => {
+  const obj = await chrome.runtime.sendMessage({
+    cmd: 'read-data',
+    id: Number(args.get('id')) // Safari rename ids after reload
+  });
+
   if (obj === false) {
     document.getElementById('content').dataset.msg = chrome.i18n.getMessage('rd_warning_1') + '\n\n' + args.get('url');
 
@@ -919,11 +925,15 @@ const render = () => chrome.runtime.sendMessage({
   iframe.contentDocument.documentElement.dataset.mode = document.body.dataset.mode;
 
   if (document.body.dataset.loaded !== 'true') {
-    // apply transition after initial changes
-    requestAnimationFrame(() => {
-      document.body.dataset.loaded = true;
-      iframe.contentDocument.body.dataset.loaded = true;
-    });
+
+
+
+
+
+
+
+
+
 
     highlight = new iframe.contentWindow.TextHighlight();
     if (article.highlights) {
@@ -1124,7 +1134,7 @@ const render = () => chrome.runtime.sendMessage({
     const link = new URL(url);
     hash(link);
   }
-});
+};
 
 // pref changes
 config.onChanged.push(ps => {
@@ -1184,8 +1194,9 @@ if (mode.query) {
 }
 
 // load
-iframe.addEventListener('load', () => {
-  config.load(() => {
+iframe.src = 'template.html';
+Promise.all([
+  new Promise(resolve => config.load(() => {
     mode().then(v => document.body.dataset.mode = v);
 
     document.body.dataset.toolbar = config.prefs['toggle-toolbar'];
@@ -1226,9 +1237,11 @@ iframe.addEventListener('load', () => {
     if (config.prefs['navigate-buttons']) {
       document.getElementById('navigate').classList.remove('hidden');
     }
-
-    render();
-  });
+    resolve();
+  })),
+  new Promise(resolve => iframe.addEventListener('load', resolve))
+]).then(() => render()).then(() => {
+  document.body.dataset.loaded = true;
 });
 
 // convert data HREFs

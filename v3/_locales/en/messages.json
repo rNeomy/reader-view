@@ -1,6 +1,6 @@
 {
   "description": {
-    "message": "Strips away clutter like buttons, background images, and changes the page's text size, contrast and layout for better readability"
+    "message": "Removes clutter like buttons, backgrounds, adjusts text size, contrast, and layout for better readability"
   },
   "rd_printing": {
     "message": "Print in the Reader View (command)"

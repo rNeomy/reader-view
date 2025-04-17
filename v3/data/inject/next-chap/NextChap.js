@@ -939,3 +939,6 @@
     };
   }
 }
+
+// eslint-disable-next-line semi
+''

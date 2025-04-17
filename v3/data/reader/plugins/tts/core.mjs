@@ -41,15 +41,21 @@ const prefs = {
 let player;
 
 function enable() {
-  const span = document.createElement('span');
-  span.title = chrome.i18n.getMessage('rd_speech');
-  span.classList.add('icon-speech');
+  // we insert this button on load to prevent toolbar rearrangement
+  let span = document.getElementById('speech-button');
+  if (!span) {
+    span = document.createElement('span');
+    span.id = 'speech-button';
+    span.classList.add('icon-speech');
+    span.title = chrome.i18n.getMessage('rd_speech');
+
+    const print = document.querySelector('#toolbar .icon-print');
+    document.getElementById('toolbar').insertBefore(span, print);
+  }
+
   if (config.prefs['speech-button'] === false) {
     span.classList.add('hidden');
   }
-  span.id = 'speech-button';
-  const print = document.querySelector('#toolbar .icon-print');
-  document.getElementById('toolbar').insertBefore(span, print);
 
   span.onclick = async () => {
     if (typeof TextToSpeech === 'undefined') {
