@@ -483,6 +483,7 @@ try {
           const children = body.querySelector('#reader-domain').children;
           children[0].textContent = hostname;
           children[1].textContent = pathname;
+          children[2].textContent = article.url;
           body.dataset.images = config.prefs['show-images'];
           body.dataset.font = font;
           body.dataset.columns = config.prefs['column-count'];

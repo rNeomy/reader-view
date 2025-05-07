@@ -918,6 +918,7 @@ const render = async () => {
   const children = iframe.contentDocument.getElementById('reader-domain').children;
   children[0].textContent = hostname;
   children[1].textContent = pathname;
+  children[2].textContent = article.url;
   iframe.contentDocument.getElementById('user-css').textContent = config.prefs['user-css'];
   iframe.contentDocument.body.dataset.images = config.prefs['show-images'];
   iframe.contentDocument.body.dataset.font = document.body.dataset.font;
@@ -925,16 +926,6 @@ const render = async () => {
   iframe.contentDocument.documentElement.dataset.mode = document.body.dataset.mode;
 
   if (document.body.dataset.loaded !== 'true') {
-
-
-
-
-
-
-
-
-
-
     highlight = new iframe.contentWindow.TextHighlight();
     if (article.highlights) {
       highlight.import(article.highlights);

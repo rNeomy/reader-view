@@ -154,6 +154,7 @@ html[data-mode=dark] body {}`,
   './plugins/health/core.mjs': true,
   './plugins/tts/core.mjs': true,
   './plugins/chapters/core.mjs': true,
-  './plugins/multiple-articles/core.mjs': true
+  './plugins/multiple-articles/core.mjs': true,
+  './plugins/qr-code/core.mjs': true
 };
 

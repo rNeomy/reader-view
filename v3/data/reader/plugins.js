@@ -16,7 +16,8 @@ ready().then(() => chrome.storage.local.get({
   './plugins/notify/core.mjs': defaults['./plugins/notify/core.mjs'],
   './plugins/tts/core.mjs': defaults['./plugins/tts/core.mjs'],
   './plugins/chapters/core.mjs': defaults['./plugins/chapters/core.mjs'],
-  './plugins/multiple-articles/core.mjs': defaults['./plugins/multiple-articles/core.mjs']
+  './plugins/multiple-articles/core.mjs': defaults['./plugins/multiple-articles/core.mjs'],
+  './plugins/qr-code/core.mjs': defaults['./plugins/qr-code/core.mjs']
 
 }, prefs => {
   if (prefs['./plugins/tip/core.mjs']) {
@@ -39,6 +40,9 @@ ready().then(() => chrome.storage.local.get({
   }
   if (prefs['./plugins/multiple-articles/core.mjs']) {
     import('./plugins/multiple-articles/core.mjs').then(o => o.enable());
+  }
+  if (prefs['./plugins/qr-code/core.mjs']) {
+    import('./plugins/qr-code/core.mjs').then(o => o.enable());
   }
 }));
 chrome.storage.onChanged.addListener(ps => {
@@ -68,6 +72,10 @@ chrome.storage.onChanged.addListener(ps => {
   if ('./plugins/multiple-article/core.mjs' in ps) {
     import('./plugins/multiple-article/core.mjs')
       .then(o => o[ps['./plugins/multiple-article/core.mjs'].newValue ? 'enable' : 'disable']());
+  }
+  if ('./plugins/qr-code/core.mjs' in ps) {
+    import('./plugins/qr-code/core.mjs')
+      .then(o => o[ps['./plugins/qr-code/core.mjs'].newValue ? 'enable' : 'disable']());
   }
 });
 
