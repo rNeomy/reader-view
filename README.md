@@ -1,12 +1,12 @@
 ## Reader View (a browser extension)
 
-Strips away clutter like buttons, background images, and changes the page's text size, contrast, and layout for better readability
+Strips away clutter like buttons and background images, and changes the page's text size, contrast, and layout for better readability.
 
 ### Preview
 
 [![Preview](https://img.youtube.com/vi/_JCKc1CCOR0/0.jpg)](https://www.youtube.com/watch?v=_JCKc1CCOR0)
 
-Reader View extension brings Mozilla's open-source Readability implantation to Chromium. Using this extension you can strip clutters from webpages and read them on the "Reader View" mode. The extension allows you to toggle between normal view and reader view by pressing the page-action button.
+Reader View extension brings Mozilla's open-source Readability implementation to Chromium. Using this extension, you can strip clutter from webpages and read them in the "Reader View" mode. The extension allows you to toggle between normal view and reader view by pressing the page-action button.
 
 ### Links
 
