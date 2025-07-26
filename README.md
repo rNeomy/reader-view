@@ -16,3 +16,8 @@ Reader View extension brings Mozilla's open-source Readability implementation to
   * Firefox: https://addons.mozilla.org/en-US/firefox/addon/readability-based-reader-view/
   * Opera: https://addons.opera.com/en/extensions/details/reader-view-2/
   * Edge: https://microsoftedge.microsoft.com/addons/detail/reader-view/lpmbefndcmjoaepdpgmoonafikcalmnf
+
+
+### Support Development
+  * PayPay: https://www.paypal.com/paypalme/addondev/
+  * Ko-Fi: https://ko-fi.com/webextension
