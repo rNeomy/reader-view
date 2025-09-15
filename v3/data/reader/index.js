@@ -404,6 +404,24 @@ shortcuts.render = (spans = shortcuts.keys()) => {
   span.classList.add('icon-save', 'hidden');
   span.id = 'save-button';
   span.onclick = e => {
+    const next = (href, type, convert) => {
+      // only for mouse clicks
+      const k = e instanceof KeyboardEvent ||
+        e instanceof iframe.contentWindow.KeyboardEvent;
+
+      if ((e.ctrlKey || e.metaKey) && !k) {
+        navigator.clipboard.writeText(href).then(() => {
+          window.notify(chrome.i18n.getMessage('rd_copied'));
+        }).catch(e => {
+          console.error(e);
+          window.notify('Error: ' + e.message);
+        });
+      }
+      else {
+        download(href, type, convert);
+      }
+    };
+
     const dom = iframe.contentDocument.documentElement.cloneNode(true);
 
     // remove script tags
@@ -420,7 +438,7 @@ shortcuts.render = (spans = shortcuts.keys()) => {
         const turndownService = new self.TurndownService();
         const markdown = turndownService.turndown(dom.querySelector('body'));
 
-        download(markdown, 'text/markdown', true);
+        next(markdown, 'text/markdown', true);
       });
     }
     else {
@@ -443,7 +461,7 @@ shortcuts.render = (spans = shortcuts.keys()) => {
       const content = '<!DOCTYPE html>\n' + dom.outerHTML
         // remove transition
         .replace(/transition:.*/, '');
-      download(content, 'text/html', true);
+      next(content, 'text/html', true);
     }
   };
   shortcuts.set(span, {
@@ -1052,7 +1070,16 @@ const render = async () => {
   });
   // close on escape
   {
+    // callback now supports secondary keyboard stroke
     const callback = e => {
+      // only a modifier is pressed as a passive event for 3 seconds
+      if (['Alt', 'Control', 'Shift', 'Meta'].includes(e.key)) {
+        callback.passiveEvents.push(e);
+        clearTimeout(callback.id);
+        callback.id = setTimeout(() => callback.passiveEvents.length = 0, 5000);
+        return;
+      }
+
       if (e.key === 'Escape' && !(
         document.fullscreenElement ||
         window.matchMedia('(display-mode: fullscreen)').matches)
@@ -1074,6 +1101,7 @@ const render = async () => {
 
       for (const o of shortcuts.values()) {
         const s = config.prefs.shortcuts[o.id] || '';
+
         if (s.includes(e.code) === false) {
           continue;
         }
@@ -1092,10 +1120,26 @@ const render = async () => {
         e.preventDefault();
         e.stopImmediatePropagation();
 
-        o.action(e);
+        if (callback.passiveEvents.length) {
+          o.action(new Proxy(e, {
+            get(target, prop, receiver) {
+              if (['shiftKey', 'ctrlKey', 'altKey', 'metaKey'].includes(prop)) {
+                return [target, ...callback.passiveEvents].some(e => e[prop]);
+              }
+              return target[prop];
+            }
+          }));
+          callback.passiveEvents.length = 0;
+        }
+        else {
+          o.action(e);
+        }
         break;
       }
     };
+    // store meta events for 5 seconds to allow user to run extra features of a command
+    callback.passiveEvents = [];
+
     // editor commands issue in FF
     iframe.contentWindow.addEventListener('keydown', e => {
       if (iframe.contentDocument.designMode === 'on') {
