@@ -98,7 +98,7 @@
 
     if (
       command === 'bold' || command === 'italic' || command === 'insertorderedlist' || command === 'removeformat' ||
-      command === 'insertunorderedlist' || command === 'indent' || command === 'outdent'
+      command === 'insertunorderedlist' || command === 'indent' || command === 'outdent' || command === 'underline'
     ) {
       doc.execCommand(command);
       stop();
@@ -148,7 +148,38 @@
       stop();
     }
     else if (command === 'blockquote') {
-      doc.execCommand('formatBlock', false, 'blockquote');
+      // find the parent element for quoting
+      const find = () => {
+        const sel = doc.getSelection();
+        let node = sel.anchorNode;
+        while (node && node.nodeType === 3) {
+          node = node.parentNode;
+        }
+        while (node && node.nodeType === 1 && node.tagName !== 'BODY' && node.tagName !== 'BLOCKQUOTE') {
+          if (['P', 'DIV', 'PRE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.tagName)) {
+            break;
+          }
+          node = node.parentNode;
+        }
+        return node;
+      };
+
+      const node = find();
+      if (node && node.tagName === 'BLOCKQUOTE') {
+        doc.execCommand('formatBlock', false, node.dataset.tag || 'p');
+      }
+      else {
+        const tag = node.tagName; // store for reversing
+        doc.execCommand('formatBlock', false, 'blockquote');
+        if (['P', 'DIV', 'PRE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(tag)) {
+          // find the new blockquote element
+          const n = find();
+          if (n.tagName === 'BLOCKQUOTE') {
+            n.dataset.tag = tag;
+          }
+        }
+      }
+
       stop();
     }
     else if (command === 'move') {

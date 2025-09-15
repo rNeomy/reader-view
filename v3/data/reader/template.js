@@ -32,7 +32,7 @@ if (window.top !== window) {
 document.getElementById('reader-domain').addEventListener('click', e => {
   e.preventDefault();
   e.stopPropagation();
-  top.nav.back();
+  top.nav.back(true);
 });
 
 // link handling

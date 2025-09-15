@@ -57,3 +57,9 @@ select {
 html[data-spellcheck="true"] [data-command="spellcheck"] {
   fill: blue;
 }
+
+svg[data-command="underline"] {
+  stroke: currentcolor;
+  stroke-width: 2;
+  fill: none;
+}
