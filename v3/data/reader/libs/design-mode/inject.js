@@ -202,7 +202,7 @@
   toolbar.src = chrome.runtime.getURL('/data/reader/libs/design-mode/index.html');
   toolbar.classList.add('edit-toolbar');
   toolbar.style = `
-    z-index: 1000000000000;
+    z-index: calc(Infinity);
     position: fixed;
     top: 10px;
     right: 10px;
