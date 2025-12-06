@@ -137,6 +137,9 @@ function save() {
     }
   }
 
+  const el = document.getElementById('max-wait-for-page-load');
+  const waitTime = Math.max(0, Number.isNaN(el.valueAsNumber) ? 3 : el.valueAsNumber);
+
   chrome.storage.local.set({
     'auto-rules': json,
     'auto-fullscreen': document.getElementById('auto-fullscreen').checked,
@@ -145,6 +148,7 @@ function save() {
     'user-css': document.getElementById('user-css').value,
     'os-sync': document.getElementById('os-sync').checked,
     'display-loader': document.getElementById('display-loader').checked,
+    'max-wait-for-page-load': waitTime,
     'user-action': actions,
     'reader-mode': document.getElementById('reader-mode').checked,
     'faqs': document.getElementById('faqs').checked,
@@ -199,6 +203,7 @@ function restore() {
   document.getElementById('user-action').value = JSON.stringify(config.prefs['user-action'], null, '  ');
   document.getElementById('os-sync').checked = config.prefs['os-sync'];
   document.getElementById('display-loader').checked = config.prefs['display-loader'];
+  document.getElementById('max-wait-for-page-load').value = config.prefs['max-wait-for-page-load'];
 
   document.getElementById('printing-button').checked = config.prefs['printing-button'];
   document.getElementById('screenshot-button').checked = config.prefs['screenshot-button'];

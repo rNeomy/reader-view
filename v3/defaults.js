@@ -5,6 +5,7 @@ self.defaults = {
   'font-size': 15,
   'os-sync': false,
   'display-loader': true,
+  'max-wait-for-page-load': 3, // seconds
   'preferred-dark-mode': 'groove-dark',
   'preferred-light-mode': 'sepia',
   'font': 'Helvetica, Arial, sans-serif',

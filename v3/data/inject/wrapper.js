@@ -530,13 +530,18 @@ try {
       });
       // visual banner
       style();
+
       if (document.readyState !== 'complete') {
-        Promise.race([
-          new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve)),
-          new Promise(resolve => {
-            timeout = setTimeout(resolve, 3000);
-          })
-        ]).then(safeConvert);
+        config.load(() => {
+          console.log(config.prefs['max-wait-for-page-load'] * 1000);
+
+          Promise.race([
+            new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve)),
+            new Promise(resolve => {
+              timeout = setTimeout(resolve, config.prefs['max-wait-for-page-load'] * 1000);
+            })
+          ]).then(safeConvert);
+        });
       }
       else {
         safeConvert();
