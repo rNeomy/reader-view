@@ -12,6 +12,50 @@ body {
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
 
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --border: rgba(255, 255, 255, 0.3);
+    --fg: #e8e8e8;
+  }
+
+  body {
+    background-color: #1c1c1c;
+    color: var(--fg);
+  }
+
+  button,
+  input[type=submit],
+  input[type=button] {
+    color: #e8e8e8;
+    background-image: linear-gradient(rgb(60, 60, 60), rgb(50, 50, 50) 38%, rgb(40, 40, 40));
+    box-shadow: rgba(255, 255, 255, 0.08) 0 1px 0, rgba(0, 0, 0, 0.75) 0 1px 2px inset;
+    text-shadow: rgb(20, 20, 20) 0 1px 0;
+  }
+
+  input[type=number],
+  input[type=text],
+  textarea,
+  select {
+    background-color: #2a2a2a;
+    color: var(--fg);
+  }
+
+  h3 {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .note {
+    background-color: #3a3a1a;
+    color: #f0e68c;
+  }
+
+  a,
+  a:visited {
+    color: #6cb4ee;
+  }
+}
+
 button,
 input[type=submit],
 input[type=button] {
