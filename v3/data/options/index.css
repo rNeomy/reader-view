@@ -1,59 +1,20 @@
 :root {
-  --border: rgba(0, 0, 0, 0.2);
-  --fg: #4d5156;
+  --bg: light-dark(whitesmoke, #333);
+  --fg: light-dark(#222, #eee);
+  --bd: light-dark(#c0c0c0, #7d7d7d);
+  --hd: light-dark(#dcdcdc, #262626);
+  --lk: light-dark(#0075fe, #98c8fe);
+
+  color-scheme: light dark;
 }
 
 body {
   font-size: 14px;
-  background-color: #fff;
+  background-color: var(--bg);
   color: var(--fg);
   width: min(100% - 2rem, 70rem);
   margin-inline: auto;
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --border: rgba(255, 255, 255, 0.3);
-    --fg: #e8e8e8;
-  }
-
-  body {
-    background-color: #1c1c1c;
-    color: var(--fg);
-  }
-
-  button,
-  input[type=submit],
-  input[type=button] {
-    color: #e8e8e8;
-    background-image: linear-gradient(rgb(60, 60, 60), rgb(50, 50, 50) 38%, rgb(40, 40, 40));
-    box-shadow: rgba(255, 255, 255, 0.08) 0 1px 0, rgba(0, 0, 0, 0.75) 0 1px 2px inset;
-    text-shadow: rgb(20, 20, 20) 0 1px 0;
-  }
-
-  input[type=number],
-  input[type=text],
-  textarea,
-  select {
-    background-color: #2a2a2a;
-    color: var(--fg);
-  }
-
-  h3 {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .note {
-    background-color: #3a3a1a;
-    color: #f0e68c;
-  }
-
-  a,
-  a:visited {
-    color: #6cb4ee;
-  }
 }
 
 button,
@@ -64,14 +25,14 @@ input[type=button] {
   background-image: linear-gradient(rgb(237, 237, 237), rgb(237, 237, 237) 38%, rgb(222, 222, 222));
   box-shadow: rgba(0, 0, 0, 0.08) 0 1px 0, rgba(255, 255, 255, 0.75) 0 1px 2px inset;
   text-shadow: rgb(240, 240, 240) 0 1px 0;
-  border: solid 1px var(--border);
+  border: solid 1px var(--bd);
   padding: 0 5px;
   font-size: inherit;
 }
 input[type=number],
 input[type=text],
 textarea {
-  border: solid 1px var(--border);
+  border: solid 1px var(--bd);
   padding: 2px 5px;
   color: var(--fg);
 }
@@ -80,7 +41,7 @@ input[type=button]:disabled {
 }
 select {
   border-radius: 0;
-  border: solid 1px var(--border);
+  border: solid 1px var(--bd);
 }
 table {
   border-collapse: collapse;
@@ -94,7 +55,7 @@ textarea {
   padding: 5px;
 }
 h3 {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--hd);
   padding: 10px;
   margin: 10px 0;
   font-size: 100%;
@@ -104,7 +65,7 @@ th {
   text-align: left;
   font-weight: 500;
   padding: 5px;
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--hd);
   white-space: nowrap;
 }
 input[type=number] {
@@ -116,7 +77,7 @@ textarea:disabled {
 }
 a,
 a:visited {
-  color: #0074cc;
+  color: var(--lk);
   text-decoration: none;
 }
 .box-1 {
