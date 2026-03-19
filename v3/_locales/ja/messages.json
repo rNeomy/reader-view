@@ -1,0 +1,68 @@
+{
+  "description": {
+    "message": "ボタンや背景などの不要な要素を取り除き、テキストサイズ・コントラスト・レイアウトを調整して読みやすくします"
+  },
+  "rd_printing": {
+    "message": "リーダービューで印刷 (command)"
+  },
+  "rd_screenshot": {
+    "message": "現在のビューのスクリーンショットを撮影 (command)"
+  },
+  "rd_email": {
+    "message": "メールで送信 (command)"
+  },
+  "rd_save": {
+    "message": "HTML形式でコピーを保存 (command)\n\nAltキー：メモを除外\nShiftキー：MarkDownに変換\nCtrl/Commandキー：クリップボードにコピー（マウスのみ）"
+  },
+  "rd_fullscreen": {
+    "message": "全画面表示に切り替え (command)"
+  },
+  "rd_design": {
+    "message": "デザインモードを切り替え (command)\n\n有効時はMS Wordのように文書の編集や要素の削除が可能です\n\nCtrl/Command + B: 太字のオン/オフ\nCtrl/Command + I: イタリックのオン/オフ\nCtrl/Command + U: 下線のオン/オフ"
+  },
+  "rd_speech": {
+    "message": "記事を読み上げ (command)\n途中から開始するには、開始位置の単語を選択してからボタンを押してください"
+  },
+  "rd_images": {
+    "message": "画像の表示/非表示 (command)"
+  },
+  "rd_note": {
+    "message": "付箋メモを追加 (command)"
+  },
+  "rd_highlight": {
+    "message": "ハイライトを切り替え (command)\n\nハイライトはブラウザを再起動するまで保持されます"
+  },
+  "rd_stm": {
+    "message": "このドキュメントのすべての記事を表示"
+  },
+  "rd_sts": {
+    "message": "このドキュメントのメイン記事のみ表示"
+  },
+  "rd_warning_1": {
+    "message": "リーダーのコンテンツが利用できなくなりました。数秒後に元のページに戻ります..."
+  },
+  "rd_copied": {
+    "message": "クリップボードにコピーしました"
+  },
+  "bg_simple_mode": {
+    "message": "シンプルモードで開く"
+  },
+  "bg_reader_view": {
+    "message": "リーダービューで開く"
+  },
+  "bg_inactive_reader_view": {
+    "message": "バックグラウンドのリーダービューで開く"
+  },
+  "bg_switch_reader": {
+    "message": "リーダービューに切り替え"
+  },
+  "bg_options": {
+    "message": "オプションを開く"
+  },
+  "bg_warning_1": {
+    "message": "申し訳ありませんが、このページは変換できません。"
+  },
+  "bg_converting": {
+    "message": "ページの読み込みが完了すると変換を開始します..."
+  }
+}
