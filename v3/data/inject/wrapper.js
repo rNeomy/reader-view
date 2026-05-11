@@ -261,17 +261,13 @@ try {
       for (const svg of document.querySelectorAll('svg')) {
         // Check if width or height attribute is missing
         if (!svg.hasAttribute('width') || !svg.hasAttribute('height')) {
-          const style = getComputedStyle(svg);
-
           // Set width if it's missing
           if (!svg.hasAttribute('width')) {
-            const width = style.width;
-            svg.setAttribute('width', width);
+            svg.setAttribute('width', svg.clientWidth);
           }
           // Set height if it's missing
           if (!svg.hasAttribute('height')) {
-            const height = style.height;
-            svg.setAttribute('height', height);
+            svg.setAttribute('height', svg.clientHeight);
           }
         }
       }
@@ -533,8 +529,6 @@ try {
 
       if (document.readyState !== 'complete') {
         config.load(() => {
-          console.log(config.prefs['max-wait-for-page-load'] * 1000);
-
           Promise.race([
             new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve)),
             new Promise(resolve => {

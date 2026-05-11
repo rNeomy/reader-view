@@ -61,7 +61,7 @@ const remote = () => {
         }
       }]
     }).then(() => '')
-  ]).then(msg => msg && console.log(msg));
+  ]).then(msg => msg && console.info(msg));
 };
 
 // add script
