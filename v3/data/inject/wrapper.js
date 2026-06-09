@@ -470,6 +470,7 @@ try {
   }`;
           document.head.replaceWith(head);
           const body = dom.querySelector('body');
+          body.querySelector('#reader-title').textContent = article.title || 'Unknown Title';
           body.querySelector('#reader-content').outerHTML = article.content;
           body.querySelector('#reader-credits').textContent = article.byline || '';
           body.querySelector('#reader-estimated-time').textContent =
