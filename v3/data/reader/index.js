@@ -942,6 +942,7 @@ const render = async () => {
   iframe.contentDocument.body.dataset.font = document.body.dataset.font;
   iframe.contentDocument.body.dataset.columns = config.prefs['column-count'];
   iframe.contentDocument.documentElement.dataset.mode = document.body.dataset.mode;
+  iframe.contentDocument.documentElement.dataset.pageUrl = args.get('url');
 
   if (document.body.dataset.loaded !== 'true') {
     highlight = new iframe.contentWindow.TextHighlight();

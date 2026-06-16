@@ -19,14 +19,7 @@
     "<all_urls>"
   ],
   "background": {
-    "service_worker": "worker.js",
-    "scripts": [
-      "defaults.js",
-      "menus.js",
-      "navigate.js",
-      "storage.js",
-      "worker.js"
-    ]
+    "service_worker": "worker.js"
   },
   "action": {},
   "homepage_url": "https://webextension.org/listing/chrome-reader-view.html",

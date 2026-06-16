@@ -124,7 +124,14 @@ html[data-mode=sepia] body {}
 /* CSS for "light" theme */
 html[data-mode=light] body {}
 /* CSS for "dark" theme */
-html[data-mode=dark] body {}`,
+html[data-mode=dark] body {}
+
+/* Csutom styling if page includes example.com in the URL */
+html[data-page-url*="example.com"] {
+  a {
+    display: none;
+  }
+}`,
   'context-open-in-reader-view': false,
   'context-open-in-reader-view-bg': false,
   'context-switch-to-reader-view': true,
