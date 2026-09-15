@@ -542,9 +542,14 @@ shortcuts.render = (spans = shortcuts.keys()) => {
   });
   document.getElementById('toolbar').appendChild(span);
 
-  chrome.runtime.onMessage.addListener(request => {
+  chrome.runtime.onMessage.addListener((request, sender, response) => {
     if (request.cmd === 'append-highlights' && request.href === args.get('url').split('#')[0]) {
       highlight.import(request.highlights);
+    }
+    else if (request.cmd === 'ping') {
+      response({
+        cmd: 'pong'
+      });
     }
     else if (request.cmd === 'close') {
       nav.back(true);

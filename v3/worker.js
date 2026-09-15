@@ -60,7 +60,21 @@ const notify = async e => {
 
 const onClicked = async (tab, embedded = false) => {
   const root = chrome.runtime.getURL('');
-  if (tab.url && tab.url.startsWith(root)) {
+  // Brave does not return "tab.url" when tab is reader view
+  let isReader = false;
+  if (!tab.url) {
+    try {
+      const r = await chrome.tabs.sendMessage(tab.id, {
+        cmd: 'ping'
+      });
+      if (r.cmd === 'pong') {
+        isReader = true;
+      }
+    }
+    catch (e) {}
+  }
+
+  if ((tab.url && tab.url.startsWith(root)) || isReader) {
     chrome.tabs.sendMessage(tab.id, {
       cmd: 'close'
     });
