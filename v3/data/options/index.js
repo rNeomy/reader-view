@@ -141,6 +141,8 @@ function save() {
   const waitTime = Math.max(0, Number.isNaN(el.valueAsNumber) ? 3 : el.valueAsNumber);
 
   chrome.storage.local.set({
+    'save-images-locally': document.getElementById('save-images-locally').checked,
+
     'auto-rules': json,
     'auto-fullscreen': document.getElementById('auto-fullscreen').checked,
     'embedded': document.getElementById('embedded').checked,
@@ -225,6 +227,7 @@ function restore() {
   document.getElementById('tts-scroll').value = config.prefs['tts-scroll'];
   document.getElementById('cache-highlights').checked = config.prefs['cache-highlights'];
   document.getElementById('highlights-count').value = config.prefs['highlights-count'];
+  document.getElementById('save-images-locally').checked = config.prefs['save-images-locally'];
   document.getElementById('context-open-in-reader-view').checked = config.prefs['context-open-in-reader-view'];
   document.getElementById('context-open-in-reader-view-bg').checked = config.prefs['context-open-in-reader-view-bg'];
   document.getElementById('context-switch-to-reader-view').checked = config.prefs['context-switch-to-reader-view'];

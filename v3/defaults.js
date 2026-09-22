@@ -82,6 +82,8 @@ Original Page: [URL]`,
   'navigate-buttons': true,
   'toggle-toolbar': true,
   'top-css': '',
+  'save-images-locally': false,
+  'save-images-locally-asked': false,
   'cache-highlights': true,
   'highlights-count': 20, // number of highlighted persistent highlighted websites
   'highlights-keys': [],

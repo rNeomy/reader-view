@@ -187,6 +187,98 @@ const download = (href, type, convert = false) => {
   link.dispatchEvent(new MouseEvent('click'));
 };
 
+/* save images inside the saved HTML (save button) */
+const img2data = src => new Promise((resolve, reject) => {
+  const image = new Image();
+  image.crossOrigin = 'anonymous';
+  image.onload = () => {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      canvas.getContext('2d').drawImage(image, 0, 0);
+      resolve(canvas.width * canvas.height > 1000000 ?
+        canvas.toDataURL('image/jpeg', 0.92) :
+        canvas.toDataURL('image/png'));
+    }
+    catch (e) {
+      reject(e);
+    }
+  };
+  image.onerror = () => reject(new Error('Cannot load image'));
+  image.src = src;
+});
+
+/* convert images of the cloned document to local data URIs */
+const saveImagesLocally = async dom => {
+  const href = a => {
+    try {
+      return new URL(a, article.url).href;
+    }
+    catch (e) {
+      return a;
+    }
+  };
+  const domImgs = [...dom.querySelectorAll('img')].filter(img => {
+    const src = img.getAttribute('src');
+    return src && src.startsWith('data:') === false;
+  });
+
+  if (domImgs.length === 0) {
+    return;
+  }
+
+  const span = document.getElementById('save-button');
+
+  let replaced = 0;
+  let processed = 0;
+
+  span.dataset.busy = 'true';
+  span.dataset.count = '0/' + domImgs.length;
+  try {
+    for (const img of domImgs) {
+      const src = img.getAttribute('src');
+      const url = href(src);
+      let data;
+      try {
+        data = await img2data(url);
+      }
+      catch (e) {
+        console.warn('cannot inline image', url, e);
+      }
+      if (data) {
+        img.src = data;
+        img.setAttribute('loading', 'eager');
+        img.removeAttribute('srcset');
+        img.removeAttribute('sizes');
+        replaced += 1;
+      }
+      else {
+        img.setAttribute('loading', 'eager');
+      }
+      span.dataset.count = (++processed) + '/' + domImgs.length;
+    }
+    window.notify(chrome.i18n.getMessage('rd_save_images') +
+      ` (${replaced}/${domImgs.length})`, domImgs.length > replaced ? 'error' : 'info');
+  }
+  finally {
+    span.removeAttribute('data-busy');
+    span.removeAttribute('data-count');
+  }
+};
+
+const decideImages = async () => {
+  if (config.prefs['save-images-locally-asked'] === false) {
+    const b = confirm(chrome.i18n.getMessage('rd_save_images_ask'));
+    chrome.storage.local.set({
+      'save-images-locally': b,
+      'save-images-locally-asked': true
+    });
+    config.prefs['save-images-locally'] = b;
+    config.prefs['save-images-locally-asked'] = true;
+  }
+};
+
 const update = {
   async: () => {
     const prefs = config.prefs;
@@ -385,7 +477,10 @@ shortcuts.render = (spans = shortcuts.keys()) => {
   span.title = chrome.i18n.getMessage('rd_save');
   span.classList.add('icon-save', 'hidden');
   span.id = 'save-button';
-  span.onclick = e => {
+  span.onclick = async e => {
+    if (span.dataset.busy === 'true') {
+      return;
+    }
     const next = (href, type, convert) => {
       // only for mouse clicks
       const k = e instanceof KeyboardEvent ||
@@ -424,6 +519,13 @@ shortcuts.render = (spans = shortcuts.keys()) => {
       });
     }
     else {
+      // one-time question about saving images locally
+      await decideImages();
+
+      if (config.prefs['save-images-locally']) {
+        await saveImagesLocally(dom);
+      }
+
       // add title
       const t = document.createElement('title');
       t.textContent = document.title;

@@ -565,6 +565,26 @@ body[data-speech=false] #speech {
   top: 10px;
   right: 10px;
 }
+#save-button {
+  position: relative;
+}
+#save-button[data-busy=true] {
+  pointer-events: none;
+  opacity: 0.6;
+}
+#save-button[data-busy=true]::after {
+  content: attr(data-count);
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 8px;
+  line-height: 1.6;
+  font-family: system-ui, sans-serif;
+  background-color: var(--fg);
+  color: var(--bg);
+  border-radius: 10px;
+  padding: 0 5px;
+}
 .notify:empty {
   display: none;
 }

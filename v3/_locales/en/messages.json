@@ -47,6 +47,12 @@
   "rd_copied": {
     "message": "Copied to the clipboard"
   },
+  "rd_save_images": {
+    "message": "Images saved locally"
+  },
+  "rd_save_images_ask": {
+    "message": "Save the page's images locally inside the saved HTML file?\n\nThis makes the saved document fully offline. Images that are not visible (yet) will be fetched from the network."
+  },
   "bg_simple_mode": {
     "message": "Open in Simple Mode"
   },
