@@ -64,6 +64,26 @@ const remote = () => {
   ]).then(msg => msg && console.info(msg));
 };
 
+const askForRemoteAccess = async () =>  {
+  if (askForRemoteAccess.shown) {
+    return;
+  }
+  askForRemoteAccess.shown = true;
+
+  const prefs = await chrome.storage.local.get({
+    'warn-on-remote-resources': true
+  });
+  if (prefs['warn-on-remote-resources']) {
+    chrome.permissions.contains({
+      origins: ['*://*/*']
+    }, granted => {
+      if (granted === false) {
+        tips.show(1, false);
+      }
+    });
+  }
+}
+
 // add script
 const add = (src, o) => new Promise((resolve, reject) => {
   if (o && typeof o !== 'undefined') {
@@ -205,7 +225,10 @@ const img2data = src => new Promise((resolve, reject) => {
       reject(e);
     }
   };
-  image.onerror = () => reject(new Error('Cannot load image'));
+  image.onerror = () => {
+    askForRemoteAccess();
+    reject(new Error('Cannot load image'));
+  };
   image.src = src;
 });
 
@@ -1056,27 +1079,11 @@ const render = async () => {
   iframe.contentDocument.head.appendChild(t);
 
   // remote image loading
-  {
-    let shown = false;
-    iframe.contentWindow.addEventListener('error', e => {
-      if (shown === false && e.target.tagName === 'IMG' && e.target.src.startsWith('http')) {
-        chrome.storage.local.get({
-          'warn-on-remote-resources': true
-        }, prefs => {
-          if (prefs['warn-on-remote-resources']) {
-            chrome.permissions.contains({
-              origins: ['*://*/*']
-            }, granted => {
-              if (granted === false) {
-                tips.show(1, false);
-              }
-            });
-          }
-          shown = true;
-        });
-      }
-    }, true);
-  }
+  iframe.contentWindow.addEventListener('error', e => {
+    if (e.target.tagName === 'IMG' && e.target.src.startsWith('http')) {
+      askForRemoteAccess();
+    }
+  }, true);
 
   // fix relative links;
   const es = [...iframe.contentDocument.querySelectorAll('[src^="//"]')];
