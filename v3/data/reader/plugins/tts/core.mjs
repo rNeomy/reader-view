@@ -34,6 +34,11 @@ const prefs = {
     same: {
       local: 100,
       remote: 0
+    },
+    from(config = {}) {
+      const n = Math.max(0, Number(config['tts-delay']) || 0);
+      this.sentences.local = n || 600;
+      return this;
     }
   }
 };
@@ -77,8 +82,10 @@ function enable() {
       // document.querySelector('#speech [data-id=msg-speech]').textContent = 'Loading Resources...';
 
       const ps = await new Promise(resolve => chrome.storage.local.get({
-        'tts-scroll': 'center'
+        'tts-scroll': 'center',
+        'tts-delay': defaults['tts-delay']
       }, resolve));
+      prefs.delay.from(ps);
 
       player = document.createElement('tts-component');
 
@@ -156,11 +163,13 @@ function enable() {
 
                 if (r === 'START_OF_FILE') {
                   player.message('Start of Document', 1000);
-                  return nav.relocate(true);
+                  nav.relocate(true);
+                  return resolve(null);
                 }
                 else if (r === 'END_OF_FILE') {
                   player.message('End of Document', 1000);
-                  return nav.relocate(true);
+                  nav.relocate(true);
+                  return resolve(null);
                 }
                 text = nav.string();
 
@@ -199,16 +208,51 @@ function enable() {
       });
       speech.cache = [];
       speech.ncache = '';
+      speech.failures = 0;
       speech.error = e => {
-        if (e.target?.nodeName === 'AUDIO' && player) {
-          player.message('Cannot use this voice. Please choice another one!');
-          player.dataset.mode = 'stop';
+        console.warn('speech error', e);
+        if (player) {
+          if (e.error === 'interrupted' || e.error === 'canceled') {
+            // regular control flow (stop/relocate/next)
+            return;
+          }
+          if (e.target?.nodeName === 'AUDIO' || e.error) {
+            speech.failures = (speech.failures || 0) + 1;
+            if (speech.failures >= 2) {
+              // the selected voice is definitely broken; revert to a local one
+              speech.failures = 0;
+              const d = speech.voices.find(v => v.default && v.localService !== false) ||
+                speech.voices.find(v => v.default) ||
+                speech.voices[0];
+              if (d) {
+                player.dataset.mode = 'stop';
+                const o = {
+                  name: d.name,
+                  lang: d.lang,
+                  voiceURI: d.voiceURI
+                };
+                localStorage.setItem('tts-v1-object', JSON.stringify(o));
+                nav.predict = false;
+                player.voices(speech.voices, o);
+                player.message('Cannot use this voice. Reverted to: ' + d.name, 3000);
+                player.voice(o, false);
+              }
+              else {
+                player.message('Cannot use this voice. Please choice another one!');
+                player.dataset.mode = 'stop';
+              }
+            }
+            else {
+              player.message('Cannot use this voice. Please choice another one!');
+              player.dataset.mode = 'stop';
+            }
+          }
         }
       };
       speech.boundary = () => {};
 
       player.version('v' + speech.version);
-      speech.ready().then(() => {
+      speech.ready().then(async () => {
         if (speech.voices.length) {
           player.active(true);
           const vv = localStorage.getItem('tts-v1-volume');
@@ -226,9 +270,28 @@ function enable() {
 
           const v = localStorage.getItem('tts-v1-object');
           if (v) {
-            const o = JSON.parse(v);
-            player.voices(speech.voices, o);
-            player.voice(o, false);
+            try {
+              const o = JSON.parse(v);
+              // only restore if the voice still exists; otherwise fall back silently
+              const exists = speech.voices.some(e => {
+                return e.name === o.name && e.lang === o.lang && e.voiceURI === o.voiceURI;
+              });
+              player.voices(speech.voices, exists ? o : undefined);
+              if (exists) {
+                player.voice(o, false);
+              }
+              else {
+                localStorage.removeItem('tts-v1-object');
+                speech.configure();
+                // stale voice; start with the default one
+                player.play(false);
+              }
+            }
+            catch (e) {
+              console.warn('cannot restore the saved voice', e);
+              player.voices(speech.voices);
+              player.play(false);
+            }
           }
           else {
             player.voices(speech.voices);
@@ -246,35 +309,83 @@ function enable() {
 
         const v = speech.voice;
 
-        if (save) {
-          nav.predict = voice.voiceURI === `audio`;
-          localStorage.setItem('tts-v1-object', JSON.stringify(voice));
-        }
+        const apply = () => {
+          player.message('');
+          if (player.dataset.mode === 'stop' || player.dataset.mode === 'paused') {
+            // keep silence; the new voice is ready for the next play
+            speech.stop();
+            return;
+          }
+          if (speech.instance?.text) {
+            // replay the current sentence (no second content() -> no skip)
+            speech.reset();
+            return;
+          }
+          if (player.dataset.mode === 'play') {
+            // nothing was consumed yet; start reading from the current position
+            player.play(false);
+          }
+        };
+        const next = () => {
+          if (save) {
+            nav.predict = voice?.voiceURI === `audio`;
+            localStorage.setItem('tts-v1-object', JSON.stringify(voice));
+          }
+          const cv = speech.voice;
+          if (cv?.referer && cv?.origin) {
+            chrome.runtime.sendMessage({
+              cmd: 'prepare-tts-network',
+              referer: cv.referer,
+              origin: cv.origin
+            }, () => {
+              void chrome.runtime.lastError;
+              apply();
+            });
+          }
+          else {
+            apply();
+          }
+        };
+        const fallback = () => {
+          // revert to the default voice but keep the previously saved one
+          nav.predict = false;
+          speech.configure();
+          apply();
+        };
 
-        if (v.permission) {
-          chrome.permissions.request({
+        if (v?.permission) {
+          chrome.permissions.contains({
             origins: [v.permission]
           }, granted => {
-            if (granted) {
-              if (v.referer && v.origin) {
-                chrome.runtime.sendMessage({
-                  cmd: 'prepare-tts-network',
-                  referer: v.referer,
-                  origin: v.origin
-                }, () => speech.reset());
-              }
-              else {
-                speech.reset();
-              }
+            if (granted === true) {
+              next();
             }
             else {
-              speech.configure();
-              speech.reset();
+              // request() needs a user gesture; skip silently when restoring on load
+              if (save === false) {
+                fallback();
+                return;
+              }
+              chrome.permissions.request({
+                origins: [v.permission]
+              }, g => {
+                if (chrome.runtime.lastError || g !== true) {
+                  player.message('Permission is denied. Reverting to the default voice', 3000);
+                  fallback();
+                }
+                else {
+                  next();
+                }
+              });
             }
           });
         }
+        else if (v) {
+          next();
+        }
         else {
-          speech.reset();
+          player.message('Voice not found. Using the default voice', 3000);
+          fallback();
         }
       };
       player.play = (resume = true) => {
@@ -300,6 +411,7 @@ function enable() {
         speech.stop();
         speech.cache.length = 0;
         speech.ncache = '';
+        speech.failures = 0;
         nav.relocate(true);
         player.message('');
       };
@@ -345,6 +457,8 @@ function enable() {
 
         if (playing) {
           player.message('');
+          // a working voice resets the failure counter
+          speech.failures = 0;
         }
         player?.state(playing);
       };
@@ -352,7 +466,12 @@ function enable() {
     document.body.dataset.speech = true;
     iframe.contentDocument.body.dataset.speech = true;
     player.message('Please wait...');
-    player.play();
+    player.dataset.mode = 'play';
+    // with a saved voice, defer the start until the voice is applied to
+    // prevent consuming the first sentence twice (see the restore path)
+    if (localStorage.getItem('tts-v1-object') === null) {
+      player.play(true);
+    }
   };
 
   shortcuts.set(span, {

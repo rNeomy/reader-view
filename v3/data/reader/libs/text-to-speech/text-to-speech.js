@@ -2,6 +2,7 @@
 
 class TTSL1 {
   #timeout;
+  #live = false;
   #config = {
     pitch: 1,
     rate: 1,
@@ -9,7 +10,7 @@ class TTSL1 {
   };
 
   constructor() {
-    this.version = '0.1.0';
+    this.version = '0.1.1';
   }
   // get the next or previous segment to play
   content() {
@@ -49,13 +50,15 @@ class TTSL1 {
     this.voice = this.voice || this.voices.filter(e => e.default).shift();
   }
   reset() {
-    const play = speechSynthesis.speaking && !speechSynthesis.paused;
+    // always re-speak the current utterance (restarts it when it was playing)
     const text = this.instance?.text;
+
+    clearTimeout(this.#timeout);
 
     if (text) {
       this.#play({
         text
-      }, play);
+      }, true);
     }
   }
   #play(segment, play = true) {
@@ -69,30 +72,62 @@ class TTSL1 {
     instance.volume = this.#config.volume;
 
     instance.onend = () => {
+      this.#live = false;
       this.state();
       this.play({
         automated: true
       }, 'forward', false, true);
     };
     instance.onerror = e => {
+      this.#live = false;
       this.error(e);
       this.state();
     };
     instance.onpause = () => this.state();
-    instance.onresume = () => this.state();
-    instance.onstart = () => this.state();
+    instance.onresume = () => {
+      this.#live = true;
+      this.state();
+    };
+    instance.onstart = e => {
+      this.#live = true;
+      this.state(true);
+    };
     instance.onboundary = e => this.boundary(e);
 
-    speechSynthesis.cancel();
     if (play) {
-      speechSynthesis.speak(instance);
+      this.#live = false;
+      // engine flags can lie after a reload mid-speech, but they only matter
+      // for deciding whether a settle delay is needed
+      const busy = speechSynthesis.speaking || speechSynthesis.pending;
+      try {
+        speechSynthesis.resume(); // un-deadlock a paused engine; no-op when idle
+        speechSynthesis.cancel(); // unconditional flush is safe
+      }
+      catch (e) {}
+      const speak = () => {
+        try {
+          speechSynthesis.speak(instance);
+        }
+        catch (e) {
+          setTimeout(() => speechSynthesis.speak(instance), 200);
+        }
+      };
+      if (busy) {
+        // Chrome swallows a speak() issued in the same tick as cancel()
+        this.#timeout = setTimeout(speak, 100);
+      }
+      else {
+        speak();
+      }
     }
   }
   // options is passed to the this.get; use it to provide options; this method only overwrites "automated" property
   play(options = {}, direction = 'forward', resume = true) {
     clearTimeout(this.#timeout);
 
-    if (resume && speechSynthesis.speaking && speechSynthesis.paused) {
+    // only resume when it is our own live utterance; engine-only flags
+    // (zombie after a reload) must not prevent starting a fresh chain
+    if (resume && this.#live && speechSynthesis.paused) {
       speechSynthesis.resume();
       return;
     }
@@ -102,13 +137,15 @@ class TTSL1 {
         this.#timeout = setTimeout(() => this.#play(segment), delay || 0);
       }
       else {
-        console.warn('empty segment');
+        // no segment to play (e.g. start/end of the document); stop the cycle
+        this.stop();
+        this.state(false);
       }
     }).catch(e => this.error(e));
   }
   pause() {
     clearTimeout(this.#timeout);
-    if (speechSynthesis.paused === false && speechSynthesis.speaking) {
+    if (this.#live && speechSynthesis.paused === false && speechSynthesis.speaking) {
       speechSynthesis.pause();
     }
   }
@@ -119,10 +156,19 @@ class TTSL1 {
     this.play(options, 'backward', false, false);
   }
   destroy() {
+    this.#live = false;
+    clearTimeout(this.#timeout);
     speechSynthesis.destroy();
   }
   stop() {
+    this.#live = false;
     clearTimeout(this.#timeout);
+    try {
+      // pulling the engine out of a paused/deadlocked state first;
+      // resume() is a no-op when idle
+      speechSynthesis.resume();
+    }
+    catch (e) {}
     speechSynthesis.cancel();
   }
   #adjust(method = 'volume', value = 1) {

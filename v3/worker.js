@@ -331,7 +331,7 @@ const onMessage = (request, sender, response) => {
         },
         'condition': {
           'urlFilter': request.origin,
-          'resourceTypes': ['xmlhttprequest'],
+          'resourceTypes': ['xmlhttprequest', 'media'],
           'tabIds': [sender.tab.id]
         }
       }]
