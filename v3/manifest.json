@@ -3,7 +3,7 @@
   "name": "Reader View",
   "description": "__MSG_description__",
   "default_locale": "en",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "permissions": [
     "storage",
     "activeTab",
@@ -55,5 +55,14 @@
   "web_accessible_resources": [{
     "resources": ["data/reader/template.html"],
     "matches": ["*://*/*"]
-  }]
+  }],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{2495d258-41e7-4cd5-bc7d-ac15981f064e}",
+      "strict_min_version": "148.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
 }
