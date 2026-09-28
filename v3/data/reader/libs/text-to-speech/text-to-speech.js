@@ -96,14 +96,15 @@ class TTSL1 {
 
     if (play) {
       this.#live = false;
+
       // engine flags can lie after a reload mid-speech, but they only matter
       // for deciding whether a settle delay is needed
-      const busy = speechSynthesis.speaking || speechSynthesis.pending;
       try {
         speechSynthesis.resume(); // un-deadlock a paused engine; no-op when idle
         speechSynthesis.cancel(); // unconditional flush is safe
       }
       catch (e) {}
+
       const speak = () => {
         try {
           speechSynthesis.speak(instance);
@@ -112,6 +113,8 @@ class TTSL1 {
           setTimeout(() => speechSynthesis.speak(instance), 200);
         }
       };
+
+      const busy = speechSynthesis.speaking || speechSynthesis.pending;
       if (busy) {
         // Chrome swallows a speak() issued in the same tick as cancel()
         this.#timeout = setTimeout(speak, 100);
@@ -158,7 +161,7 @@ class TTSL1 {
   destroy() {
     this.#live = false;
     clearTimeout(this.#timeout);
-    speechSynthesis.destroy();
+    speechSynthesis.destroy?.();
   }
   stop() {
     this.#live = false;

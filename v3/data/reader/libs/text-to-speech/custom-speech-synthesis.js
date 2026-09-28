@@ -202,7 +202,7 @@
     apply(target, self, args) {
       // only resume actual live audio (an ended track would restart)
       if (voice && audio.src && !audio.ended) {
-        audio.play();
+        return audio.play().catch(() => {});
       }
       else {
         return Reflect.apply(target, self, args);
@@ -226,6 +226,9 @@
         return function(...args) {
           return value.apply(this === receiver ? target : this, args);
         };
+      }
+      if (prop === 'custom') {
+        return true;
       }
       if (voice && prop === 'speaking') {
         return audio.error ? false : Boolean(audio.src && !audio.ended);

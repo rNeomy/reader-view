@@ -273,13 +273,28 @@ class ttsComponent extends HTMLElement {
       e.open = e.open ? false : true;
     };
   }
-  active(enabled = true) {
+  active(enabled = true, supports = {
+    paragraph: true,
+    line: true
+  }) {
     this.shadowRoot.getElementById('play').disabled = enabled === false;
     this.shadowRoot.getElementById('stop').disabled = enabled === false;
-    this.shadowRoot.getElementById('previous-paragraph').disabled = enabled === false;
-    this.shadowRoot.getElementById('previous-line').disabled = enabled === false;
-    this.shadowRoot.getElementById('next-line').disabled = enabled === false;
-    this.shadowRoot.getElementById('next-paragraph').disabled = enabled === false;
+    if (supports.paragraph) {
+      this.shadowRoot.getElementById('previous-paragraph').disabled = enabled === false;
+      this.shadowRoot.getElementById('next-paragraph').disabled = enabled === false;
+    }
+    else {
+      this.shadowRoot.getElementById('previous-paragraph').disabled = true;
+      this.shadowRoot.getElementById('next-paragraph').disabled = true;
+    }
+    if (supports.line) {
+      this.shadowRoot.getElementById('previous-line').disabled = enabled === false;
+      this.shadowRoot.getElementById('next-line').disabled = enabled === false;
+    }
+    else {
+      this.shadowRoot.getElementById('previous-line').disabled = true;
+      this.shadowRoot.getElementById('next-line').disabled = true;
+    }
   }
   state(playing) {
     this.shadowRoot.getElementById('play').classList[playing ? 'add' : 'remove']('playing');

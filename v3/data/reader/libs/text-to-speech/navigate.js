@@ -1,5 +1,9 @@
 /* global Highlight */
-class NavL1 {
+
+// original implementation - kept as reference
+// (uses selection.modify() which Firefox does not implement for
+//  sentenceboundary / paragraphboundary granularities)
+class NavL1_V1 {
   #startRange;
   constructor(win = window, root = document.body) {
     this.selection = win.getSelection();
@@ -98,8 +102,9 @@ class NavL1 {
   }
   destroy() {}
 }
+
 // select the entire math container
-class NavL2 extends NavL1 {
+class NavL2 extends NavL1_V1 {
   #fix(container) {
     if (container.nodeType === Node.TEXT_NODE) {
       const math = container.parentElement.closest('math');
@@ -264,7 +269,7 @@ class NavL5 extends NavL4 {
     this.#use = false;
     const r = super.paragraph(...args);
     this.highlight();
-    this.#text = this.selection.toString();
+    this.#text = this.string();
     this.selection.removeAllRanges();
     this.#use = true;
     return r;
@@ -273,7 +278,7 @@ class NavL5 extends NavL4 {
     this.#use = false;
     const r = super.line(...args);
     this.highlight();
-    this.#text = this.selection.toString();
+    this.#text = this.string();
     this.selection.removeAllRanges();
     this.#use = true;
     return r;
@@ -294,4 +299,5 @@ class NavL5 extends NavL4 {
     this.#style.remove();
   }
 }
+
 window.Navigate = NavL5;

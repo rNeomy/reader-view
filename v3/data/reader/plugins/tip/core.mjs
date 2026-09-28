@@ -80,7 +80,7 @@ const permission = e => {
   const {cmd} = e.target.dataset;
 
   if (cmd === 'favicon-permission') {
-    if (location.protocol.startsWith('safari') === false) {
+    if (location.protocol.startsWith('safari') === false && location.protocol.startsWith('moz-extension') === false) {
       chrome.permissions.request({
         permissions: ['favicon']
       }, granted => {
@@ -121,7 +121,11 @@ function enable() {
       tips.show(i);
     }
   };
-  if (chrome.runtime.getManifest()['manifest_version'] === 3 && location.protocol.startsWith('safari') === false) {
+  if (
+    chrome.runtime.getManifest()['manifest_version'] === 3 &&
+    location.protocol.startsWith('safari') === false &&
+    location.protocol.startsWith('moz-extension') === false
+  ) {
     chrome.permissions.contains({
       permissions: ['favicon']
     }, next);

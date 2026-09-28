@@ -371,15 +371,17 @@ chrome.tabs.onRemoved.addListener(id => {
 });
 
 // /* exit reader view if you can */
-if ('onSuspend' in chrome.runtime) {
-  chrome.runtime.onSuspend.addListener(() => chrome.tabs.query({}, tabs => {
-    console.info('SUSPEND');
-    for (const tab of tabs) {
-      chrome.tabs.sendMessage(tab.id, {
-        cmd: 'close'
-      }, () => chrome.runtime.lastError);
-    }
-  }));
+if (navigator.userAgent.includes('Firefox') === false) {
+  if ('onSuspend' in chrome.runtime) {
+    chrome.runtime.onSuspend.addListener(() => chrome.tabs.query({}, tabs => {
+      console.info('SUSPEND');
+      for (const tab of tabs) {
+        chrome.tabs.sendMessage(tab.id, {
+          cmd: 'close'
+        }, () => chrome.runtime.lastError);
+      }
+    }));
+  }
 }
 
 /*

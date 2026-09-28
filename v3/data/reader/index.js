@@ -24,6 +24,9 @@
 let article;
 let highlight;
 
+// Firefox
+CSS.px ??= value => `${value}px`;
+
 const args = new URLSearchParams(location.search);
 
 // Relax restrictions on remote access (#175)
@@ -130,6 +133,9 @@ const scrollbar = {
 // exit by passing ESC, exit after link is opened in the Reader view, exit after auto reader view
 const nav = {
   back(forced = false) {
+
+      console.log(new Error().stack);
+
     if (location.protocol.startsWith('safari')) {
       chrome.runtime.sendMessage({
         cmd: 'closed'
@@ -167,7 +173,11 @@ const favicon = article => {
   else if (article.icon && article.icon.startsWith('data:')) {
     next(article.icon);
   }
-  else if (chrome.runtime.getManifest()['manifest_version'] === 3 && location.protocol.startsWith('safari') === false) {
+  else if (
+    chrome.runtime.getManifest()['manifest_version'] === 3 &&
+    location.protocol.startsWith('safari') === false &&
+    location.protocol.startsWith('moz-extension') === false
+  ) {
     chrome.permissions.contains({
       permissions: ['favicon']
     }, granted => {

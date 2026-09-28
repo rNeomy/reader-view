@@ -18,7 +18,7 @@
     Homepage: https://webextension.org/listing/chrome-reader-view.html
 */
 
-/* global config, add Navigate TextToSpeech iframe splitText shortcuts scrollbar */
+/* global config, add Navigate TextToSpeech iframe splitText shortcuts scrollbar defaults */
 'use strict';
 
 const prefs = {
@@ -70,7 +70,12 @@ function enable() {
       }
       await add('libs/text-to-speech/custom-speech-synthesis.js');
       await add('libs/text-to-speech/text-to-speech.js');
-      await add('libs/text-to-speech/navigate.js');
+      if (navigator.userAgent.includes('Firefox')) {
+        await add('libs/text-to-speech/Sonnet/navigate.js'); // Firefox compatible navigator lib
+      }
+      else {
+        await add('libs/text-to-speech/navigate.js');
+      }
       await add('libs/text-to-speech/player.js');
       await add('libs/text-to-speech/example/helper.js');
     }
@@ -168,6 +173,7 @@ function enable() {
                 }
                 else if (r === 'END_OF_FILE') {
                   player.message('End of Document', 1000);
+                  player.dataset.mode = 'stop';
                   nav.relocate(true);
                   return resolve(null);
                 }
@@ -252,9 +258,13 @@ function enable() {
       speech.boundary = () => {};
 
       player.version('v' + speech.version);
-      speech.ready().then(async () => {
+      speech.ready().then(() => {
         if (speech.voices.length) {
-          player.active(true);
+          player.active(true, {
+            line: 'line' in nav,
+            paragraph: 'paragraph' in nav
+          });
+
           const vv = localStorage.getItem('tts-v1-volume');
           if (vv) {
             player.configure('volume', vv);
@@ -354,29 +364,20 @@ function enable() {
         };
 
         if (v?.permission) {
-          chrome.permissions.contains({
+          // request() needs a user gesture; skip silently when restoring on load
+          if (save === false) {
+            fallback();
+            return;
+          }
+          chrome.permissions.request({
             origins: [v.permission]
-          }, granted => {
-            if (granted === true) {
-              next();
+          }, g => {
+            if (chrome.runtime.lastError || g !== true) {
+              player.message('Permission is denied. Reverting to the default voice', 3000);
+              fallback();
             }
             else {
-              // request() needs a user gesture; skip silently when restoring on load
-              if (save === false) {
-                fallback();
-                return;
-              }
-              chrome.permissions.request({
-                origins: [v.permission]
-              }, g => {
-                if (chrome.runtime.lastError || g !== true) {
-                  player.message('Permission is denied. Reverting to the default voice', 3000);
-                  fallback();
-                }
-                else {
-                  next();
-                }
-              });
+              next();
             }
           });
         }
