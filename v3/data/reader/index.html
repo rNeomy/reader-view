@@ -12,6 +12,7 @@
       <div id="toolbar">
         <span class="icon-close" data-cmd="close" title="Close Reader View"></span>
         <span class="icon-font" data-cmd="open-font-utils" title="Type controls"></span>
+        <span class="icon-brightness" id="brightness-button" data-cmd="open-brightness-utils" title="Brightness"></span>
         <div id="font-utils" tabindex="-1">
           <p data-id="help">For more customization options check <a data-href="faq5" target="_blank">here</a></p>
           <table border="0" cellpadding="0" cellspacing="0">
@@ -111,6 +112,38 @@
                   <span data-cmd="color-mode-groove-dark">Groove</span>
                   <span data-cmd="color-mode-solarized-dark">Solarized</span>
                   <span data-cmd="color-mode-black-dark">Black</span>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div id="brightness-utils" tabindex="-1">
+          <table border="0" cellpadding="0" cellspacing="0">
+            <colgroup>
+              <col style="border-right: solid 1px var(--border-color)" width=50%>
+              <col>
+            </colgroup>
+            <tr>
+              <td data-id="brightness">
+                <label>Brightness</label>
+              </td>
+              <td>
+                <input type="range" id="brightness-range" min="30" max="150" step="5" value="100" list="brightness-ticks"/>
+                <datalist id="brightness-ticks">
+                  <option value="40"></option>
+                  <option value="60"></option>
+                  <option value="80"></option>
+                  <option value="100"></option>
+                  <option value="120"></option>
+                  <option value="140"></option>
+                </datalist>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <div class="strech">
+                  <span data-cmd="brightness-reset">Reset (100%)</span>
+                  <span data-id="display">100%</span>
                 </div>
               </td>
             </tr>

@@ -45,6 +45,7 @@ self.defaults = {
   }],
   'width': 600,
   'line-height': 32,
+  'brightness': 100, // brightness of the reader page in percent (30 - 150; 100 = neutral)
   'column-count': 1,
   'text-align': true,
   'fixation-point': 0, // 0: off, 1-5 (text-vide)

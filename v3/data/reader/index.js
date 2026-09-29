@@ -359,6 +359,20 @@ const update = {
       span.classList.add('icon-picture-false');
       span.classList.remove('icon-picture-true');
     }
+  },
+  brightness: () => {
+    const p = Math.max(30, Math.min(150, Number(config.prefs.brightness) || 100));
+    // page-level dimming (toolbars included); the root element keeps
+    // position:fixed elements (speech panel, guide) anchored to the viewport
+    document.documentElement.style.filter = p === 100 ? '' : `brightness(${p}%)`;
+    const input = document.getElementById('brightness-range');
+    if (input) {
+      input.value = p;
+    }
+    const display = document.querySelector('#brightness-utils [data-id=display]');
+    if (display) {
+      display.textContent = p + '%';
+    }
   }
 };
 
@@ -371,6 +385,17 @@ fontUtils.addEventListener('focus', () => {
 const imageUtils = document.querySelector('#image-utils');
 imageUtils.addEventListener('focus', () => {
   imageUtils.dataset.opening = false;
+});
+const brightnessUtils = document.querySelector('#brightness-utils');
+brightnessUtils.addEventListener('focus', () => {
+  brightnessUtils.dataset.opening = false;
+});
+brightnessUtils.addEventListener('input', e => {
+  if (e.target.id === 'brightness-range') {
+    chrome.storage.local.set({
+      brightness: Number(e.target.value)
+    });
+  }
 });
 
 const shortcuts = new Map();
@@ -862,6 +887,15 @@ document.addEventListener('click', e => {
     imageUtils.dataset.opening = true;
     imageUtils.focus();
   }
+  else if (cmd === 'open-brightness-utils') {
+    brightnessUtils.dataset.opening = true;
+    brightnessUtils.focus();
+  }
+  else if (cmd === 'brightness-reset') {
+    chrome.storage.local.set({
+      brightness: 100
+    });
+  }
   else if (cmd === 'image-increase' || cmd === 'image-decrease') {
     [...iframe.contentDocument.images].forEach(img => {
       const {width} = img.getBoundingClientRect();
@@ -1317,6 +1351,9 @@ config.onChanged.push(ps => {
   if (ps['show-images']) {
     update.images();
   }
+  if (ps['brightness']) {
+    update.brightness();
+  }
   if (ps['mode']) {
     document.body.dataset.mode = config.prefs.mode;
   }
@@ -1391,6 +1428,7 @@ Promise.all([
     }
     update.images();
     update.async();
+    update.brightness();
 
     styles.top.textContent = config.prefs['top-css'];
     document.documentElement.appendChild(styles.top);

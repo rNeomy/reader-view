@@ -501,6 +501,27 @@ try {
           document.documentElement.dataset.mode = prefs.mode;
           document.title = title;
 
+          // apply and keep in sync with the brightness pref (simple mode)
+          const brightness = p => {
+            p = Math.max(30, Math.min(150, Number(p) || 100));
+            let e = document.getElementById('rv-brightness');
+            if (!e) {
+              e = document.createElement('style');
+              e.id = 'rv-brightness';
+              document.head.appendChild(e);
+            }
+            e.textContent = p >= 100 ? '' : `html {
+  filter: brightness(${p}%);
+}
+@media print {
+  html {
+    filter: none !important;
+  }
+}`;
+          };
+          brightness(prefs.brightness);
+          config.onChanged.push(ps => ps.brightness && brightness(ps.brightness.newValue));
+
           style.clean();
           chrome.runtime.sendMessage({
             cmd: 'converted'

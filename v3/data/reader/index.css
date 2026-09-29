@@ -207,6 +207,14 @@ span[data-cmd="open-font-utils"] {
   top: 420px;
   position-anchor: --image-button;
 }
+#brightness-button {
+  anchor-name: --brightness-button;
+}
+#brightness-utils {
+  top: 100px;
+  position-anchor: --brightness-button;
+}
+#brightness-utils,
 #image-utils,
 #font-utils {
   position: absolute;
@@ -219,9 +227,46 @@ span[data-cmd="open-font-utils"] {
   background-color: #fbfbfb;
   outline: none;
 }
+#brightness-utils:not(:focus-within):not([data-opening=true]),
 #image-utils:not(:focus-within):not([data-opening=true]),
 #font-utils:not(:focus-within):not([data-opening=true]) {
   display: none;
+}
+#brightness-utils table {
+  width: 100%;
+  text-align: center;
+  border-collapse: collapse;
+}
+#brightness-utils tr:not(:last-child) {
+  border-bottom: 1px solid var(--border-color);
+}
+#brightness-utils [data-cmd] {
+  cursor: pointer;
+}
+#brightness-utils td {
+  font-size: 14px;
+  height: 60px;
+  color: #333;
+}
+#brightness-utils td[data-id="brightness"] label {
+  pointer-events: none;
+  font-size: 14px;
+}
+#brightness-utils input[type="range"] {
+  margin-inline: 10px;
+  accent-color: var(--lk);
+  cursor: pointer;
+  height: 32px;
+}
+#brightness-utils .strech > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  flex: 1;
+}
+#brightness-utils td[colspan] {
+  padding: 0;
 }
 #image-utils table,
 #font-utils table {
