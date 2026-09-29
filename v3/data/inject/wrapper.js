@@ -468,6 +468,18 @@ try {
     --fg: #e5e9f0;
     --bd: #e5e9f0;
     --bg: #2e3440;
+  }
+  html[data-mode="black-dark"] {
+    color-scheme: dark;
+    --fg: #c0c0c0;
+    --bd: #c0c0c0;
+    --bg: #000;
+  }
+  html[data-mode="white-light"] {
+    color-scheme: light;
+    --fg: #000;
+    --bd: #000;
+    --bg: #fff;
   }`;
           document.head.replaceWith(head);
           const body = dom.querySelector('body');

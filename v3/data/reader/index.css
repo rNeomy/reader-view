@@ -21,6 +21,10 @@
   --color-mode-nord-light-bg: #e5e9f0;
   --color-mode-nord-dark-color: #e5e9f0;
   --color-mode-nord-dark-bg: #2e3440;
+  --color-mode-black-dark-color: #c0c0c0;
+  --color-mode-black-dark-bg: #000;
+  --color-mode-white-light-color: #000;
+  --color-mode-white-light-bg: #fff;
   --color-font-utils-light: #a2a2a2;
   --border-color: rgba(181, 181, 181, 0.3);
   --guide-color: rgba(181, 181, 181, 0.2);
@@ -95,6 +99,16 @@ body[data-mode="nord-dark"] {
   --fg: var(--color-mode-nord-dark-color);
   --bg: var(--color-mode-nord-dark-bg);
   --fg-selected: var(--fg-selected-dark);
+}
+body[data-mode="black-dark"] {
+  --fg: var(--color-mode-black-dark-color);
+  --bg: var(--color-mode-black-dark-bg);
+  --fg-selected: var(--fg-selected-dark);
+}
+body[data-mode="white-light"] {
+  --fg: var(--color-mode-white-light-color);
+  --bg: var(--color-mode-white-light-bg);
+  --fg-selected: var(--fg-selected-light);
 }
 input {
   font-family: fontello, sans-serif;
@@ -172,6 +186,8 @@ body[data-toolbar="false"] {
   width: 100%;
   border: none;
   outline: none;
+  scrollbar-width: thin;
+  scrollbar-color: #000 #fff;
 }
 #font-selector option {
   padding: 5px;
@@ -271,6 +287,14 @@ span[data-cmd="open-font-utils"] {
   color: var(--color-mode-nord-dark-color);
   background-color: var(--color-mode-nord-dark-bg);
 }
+#font-utils span[data-cmd="color-mode-black-dark"] {
+  color: var(--color-mode-black-dark-color);
+  background-color: var(--color-mode-black-dark-bg);
+}
+#font-utils span[data-cmd="color-mode-white-light"] {
+  color: var(--color-mode-white-light-color);
+  background-color: var(--color-mode-white-light-bg);
+}
 
 body[data-mode="light"] #font-utils span[data-cmd="color-mode-light"]::after,
 body[data-mode="dark"] #font-utils span[data-cmd="color-mode-dark"]::after,
@@ -279,7 +303,9 @@ body[data-mode="groove-dark"] #font-utils span[data-cmd="color-mode-groove-dark"
 body[data-mode="solarized-light"] #font-utils span[data-cmd="color-mode-solarized-light"]::after,
 body[data-mode="solarized-dark"] #font-utils span[data-cmd="color-mode-solarized-dark"]::after,
 body[data-mode="nord-light"] #font-utils span[data-cmd="color-mode-nord-light"]::after,
-body[data-mode="nord-dark"] #font-utils span[data-cmd="color-mode-nord-dark"]::after {
+body[data-mode="nord-dark"] #font-utils span[data-cmd="color-mode-nord-dark"]::after,
+body[data-mode="black-dark"] #font-utils span[data-cmd="color-mode-black-dark"]::after,
+body[data-mode="white-light"] #font-utils span[data-cmd="color-mode-white-light"]::after {
   content: '';
   position: absolute;
   top: 5px;

@@ -127,6 +127,10 @@ html[data-mode=sepia] body {}
 html[data-mode=light] body {}
 /* CSS for "dark" theme */
 html[data-mode=dark] body {}
+/* CSS for "black-dark" theme */
+html[data-mode=black-dark] body {}
+/* CSS for "white-light" theme */
+html[data-mode=white-light] body {}
 
 /* Csutom styling if page includes example.com in the URL */
 html[data-page-url*="example.com"] {

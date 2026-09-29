@@ -977,6 +977,18 @@ const render = async () => {
     --fg: ${gcs.getPropertyValue('--color-mode-nord-dark-color')};
     --bd: ${gcs.getPropertyValue('--color-mode-nord-dark-color')};
     --bg: ${gcs.getPropertyValue('--color-mode-nord-dark-bg')};
+  }
+  html[data-mode="black-dark"] {
+    color-scheme: dark;
+    --fg: ${gcs.getPropertyValue('--color-mode-black-dark-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-black-dark-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-black-dark-bg')};
+  }
+  html[data-mode="white-light"] {
+    color-scheme: light;
+    --fg: ${gcs.getPropertyValue('--color-mode-white-light-color')};
+    --bd: ${gcs.getPropertyValue('--color-mode-white-light-color')};
+    --bg: ${gcs.getPropertyValue('--color-mode-white-light-bg')};
   }`;
   iframe.contentDocument.documentElement.dataset.mode = document.body.dataset.mode;
 
