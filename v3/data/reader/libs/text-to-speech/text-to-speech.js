@@ -61,7 +61,21 @@ class TTSL1 {
       }, true);
     }
   }
+  #detach(instance) {
+    if (!instance) {
+      return;
+    }
+    instance.onend = null;
+    instance.onerror = null;
+    instance.onstart = null;
+    instance.onpause = null;
+    instance.onresume = null;
+    instance.onboundary = null;
+  }
   #play(segment, play = true) {
+    // detach chain handlers from the superseded instance before cancel()
+    // (Firefox fires `end` on canceled utterances)
+    this.#detach(this.instance);
     const instance = this.instance = new SpeechSynthesisUtterance();
     instance.name(args.get('id') || 'tts-storage');
     instance.text = segment.text;
@@ -72,8 +86,15 @@ class TTSL1 {
     instance.volume = this.#config.volume;
 
     instance.onend = () => {
+      // Firefox fires `end` on a canceled utterance (often asynchronously);
+      // ignore events from a superseded instance, otherwise the old onend
+      // triggers another automated play and skips a line
+      if (this.instance !== instance) {
+        return;
+      }
       this.#live = false;
       this.state();
+
       this.play({
         automated: true
       }, 'forward', false, true);
@@ -166,6 +187,9 @@ class TTSL1 {
   stop() {
     this.#live = false;
     clearTimeout(this.#timeout);
+    // cancel() fires `end` for the live utterance (at least on Firefox);
+    // detach the chain handlers so the automated advance is not triggered
+    this.#detach(this.instance);
     try {
       // pulling the engine out of a paused/deadlocked state first;
       // resume() is a no-op when idle
