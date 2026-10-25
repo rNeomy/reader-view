@@ -35,6 +35,10 @@ onmessage = e => {
   if (method === 'spellcheck') {
     document.documentElement.dataset.spellcheck = value;
   }
+  else if (method === 'undo-state') {
+    document.documentElement.dataset.undo = value.undo;
+    document.documentElement.dataset.redo = value.redo;
+  }
 };
 
 //

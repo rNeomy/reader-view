@@ -58,6 +58,12 @@ html[data-spellcheck="true"] [data-command="spellcheck"] {
   fill: blue;
 }
 
+html[data-undo="false"] [data-command="undo"],
+html[data-redo="false"] [data-command="redo"] {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
 svg[data-command="underline"] {
   stroke: currentcolor;
   stroke-width: 2;

@@ -13,6 +13,7 @@
       method: 'spellcheck',
       value: doc.body.spellcheck
     }, '*');
+    sync();
   };
 
   // do not allow link opening
@@ -23,6 +24,23 @@
     }
   };
   doc.addEventListener('click', noredirect, true);
+
+  // keep the toolbar's undo/redo availability in sync
+  const sync = () => {
+    toolbar.contentWindow?.postMessage({
+      method: 'undo-state',
+      value: {
+        undo: doc.queryCommandEnabled('undo'),
+        redo: doc.queryCommandEnabled('redo')
+      }
+    }, '*');
+  };
+  doc.addEventListener('input', sync);
+  doc.addEventListener('selectionchange', sync);
+  const exec = (...args) => {
+    doc.execCommand(...args);
+    sync();
+  };
 
   // resize images
   const resize = doc.createElement('span');
@@ -78,6 +96,8 @@
   const unload = (report = true) => {
     doc.removeEventListener('click', noredirect, true);
     doc.removeEventListener('mouseover', onmouseover);
+    doc.removeEventListener('input', sync);
+    doc.removeEventListener('selectionchange', sync);
     resize.remove();
     toolbar.remove();
     chrome.runtime.onMessage.removeListener(onmessage);
@@ -98,18 +118,19 @@
 
     if (
       command === 'bold' || command === 'italic' || command === 'insertorderedlist' || command === 'removeformat' ||
-      command === 'insertunorderedlist' || command === 'indent' || command === 'outdent' || command === 'underline'
+      command === 'insertunorderedlist' || command === 'indent' || command === 'outdent' || command === 'underline' ||
+      command === 'undo' || command === 'redo'
     ) {
-      doc.execCommand(command);
+      exec(command);
       stop();
     }
     else if (command === 'link') {
       const href = prompt('Enter a URL (keep blank to remove link):', '');
       if (href) {
-        doc.execCommand('createlink', false, href);
+        exec('createlink', false, href);
       }
       else {
-        doc.execCommand('unlink');
+        exec('unlink');
       }
       stop();
     }
@@ -121,7 +142,7 @@
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = () => {
-          doc.execCommand('insertimage', false, reader.result);
+          exec('insertimage', false, reader.result);
         };
         if (file) {
           reader.readAsDataURL(file);
@@ -132,19 +153,19 @@
       stop();
     }
     else if (command === 'heading-0') {
-      doc.execCommand('formatBlock', false, 'p');
+      exec('formatBlock', false, 'p');
       stop();
     }
     else if (command === 'heading-1') {
-      doc.execCommand('formatBlock', false, 'h1');
+      exec('formatBlock', false, 'h1');
       stop();
     }
     else if (command === 'heading-2') {
-      doc.execCommand('formatBlock', false, 'h2');
+      exec('formatBlock', false, 'h2');
       stop();
     }
     else if (command === 'heading-3') {
-      doc.execCommand('formatBlock', false, 'h3');
+      exec('formatBlock', false, 'h3');
       stop();
     }
     else if (command === 'blockquote') {
@@ -166,11 +187,11 @@
 
       const node = find();
       if (node && node.tagName === 'BLOCKQUOTE') {
-        doc.execCommand('formatBlock', false, node.dataset.tag || 'p');
+        exec('formatBlock', false, node.dataset.tag || 'p');
       }
       else {
         const tag = node.tagName; // store for reversing
-        doc.execCommand('formatBlock', false, 'blockquote');
+        exec('formatBlock', false, 'blockquote');
         if (['P', 'DIV', 'PRE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(tag)) {
           // find the new blockquote element
           const n = find();
@@ -206,7 +227,7 @@
     position: fixed;
     top: 10px;
     right: 10px;
-    width: 476px;
+    width: 528px;
     height: 60px;
     border: solid 1px #c4c4c4;
   `;
