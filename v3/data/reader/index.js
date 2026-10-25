@@ -322,7 +322,7 @@ const update = {
 
     styles.internals.textContent = `body {
       font-size:  ${prefs['font-size']}px;
-      font-family: ${prefs.font};
+      font-family: ${prefs.font}${prefs.font.toLowerCase().includes('serif') ? ", 'Noto Fallback Serif'" : ", 'Noto Fallback Sans'"};
       width: ${prefs.width ? `min(100% - 2rem, ${prefs.width + 'px'})` : 'calc(100vw - 50px)'};
     }
     p {
