@@ -19,14 +19,7 @@
     "<all_urls>"
   ],
   "background": {
-    "service_worker": "worker.js",
-    "scripts": [
-      "defaults.js",
-      "menus.js",
-      "navigate.js",
-      "storage.js",
-      "worker.js"
-    ]
+    "service_worker": "worker.js"
   },
   "action": {},
   "homepage_url": "https://webextension.org/listing/chrome-reader-view.html",
@@ -55,14 +48,5 @@
   "web_accessible_resources": [{
     "resources": ["data/reader/template.html"],
     "matches": ["*://*/*"]
-  }],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "{2495d258-41e7-4cd5-bc7d-ac15981f064e}",
-      "strict_min_version": "148.0",
-      "data_collection_permissions": {
-        "required": ["none"]
-      }
-    }
-  }
+  }]
 }
