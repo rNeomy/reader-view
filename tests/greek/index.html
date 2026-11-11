@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Greek rendering reproduction — Reader View issue</title>
+<style>
+  /* Exactly the @font-face rules from data/reader/template.html:9-31 */
+  /* latin */
+  @font-face {
+    font-family: 'Comic Neue';
+    font-style: normal;
+    font-weight: 400;
+    src: url(data/reader/fonts/4UaHrEJDsxBrF37olUeD96rp57F2IwM.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+  /* latin */
+  @font-face {
+    font-family: 'Lexend Deca';
+    font-style: normal;
+    font-weight: 400;
+    src: url(data/reader/fonts/K2FifZFYk-dHSE0UPPuwQ7CrD94i-NCKm-U48M1wqxnDirZPl3v-.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+  /* latin */
+  @font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    src: url(data/reader/fonts/pxiEyp8kv8JHgFVrJJfecnFHGPc.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+
+  body {
+    font-size: 16px;
+    line-height: 1.7;
+    max-width: 700px;
+    margin: 40px auto;
+    color: #000;
+    background: #fff;
+  }
+  h1 { font-size: 1.4em; }
+  h2 { font-size: 1.1em; margin-bottom: 4px; }
+  section { margin-bottom: 30px; }
+  .label { display: block; font-size: 11px; color: #999; margin-bottom: 6px; }
+
+  /* Font stacks exactly as defined in defaults.js 'supported-fonts' */
+  .f-comic  { font-family: 'Comic Neue', Arial, sans-serif; }
+  .f-lexend { font-family: 'Lexend Deca', Arial, sans-serif; }
+  .f-poppins{ font-family: Poppins, sans-serif; }
+  .f-serif  { font-family: Georgia, 'Times New Roman', serif; }
+</style>
+</head>
+<body>
+
+<h1>Ancient/polytonic Greek rendering issue — reproduction</h1>
+<p>
+  Every paragraph below contains identical text. Look at how the Greek part
+  changes typeface compared to the Latin part of the same sentence (glyph
+  fallback to Arial/system font), and how the polytonic diacritics are drawn.
+</p>
+
+<p><strong>Sentence:</strong> ὁ δ᾽ ἀνήρ, τῇ Ἑλλάδι γὰρ ὦξε πᾶσαν κακότητα</p>
+
+<section>
+  <span class="label">font: Comic Neue ('Comic Neue', Arial, sans-serif)</span>
+  <p class="f-comic">ὁ δ᾽ ἀνήρ, τῇ Ἑλλάδι γὰρ ὦξε πᾶσαν κακότητα — the man destroyed all evil.</p>
+</section>
+
+<section>
+  <span class="label">font: Lexend Deca ('Lexend Deca', Arial, sans-serif)</span>
+  <p class="f-lexend">ὁ δ᾽ ἀνήρ, τῇ Ἑλλάδι γὰρ ὦξε πᾶσαν κακότητα — the man destroyed all evil.</p>
+</section>
+
+<section>
+  <span class="label">font: Poppins (Poppins, sans-serif)</span>
+  <p class="f-poppins">ὁ δ᾽ ἀνήρ, τῇ Ἑλλάδι γὰρ ὦξε πᾶσαν κακότητα — the man destroyed all evil.</p>
+</section>
+
+<section>
+  <span class="label">font: Serif (Georgia, 'Times New Roman', serif) — depends on OS fallback</span>
+  <p class="f-serif">ὁ δ᾽ ἀνήρ, τῇ Ἑλλάδι γὰρ ὦξε πᾶσαν κακότητα — the man destroyed all evil.</p>
+</section>
+
+<h2>Bonus: decomposed (NFD) vs precomposed text</h2>
+<p style="font-family: Poppins, sans-serif">
+  Precomposed: Ἑλλάδι — Decomposed (NFD): ἘΛΛΑΔΙ or ἐν ἀστεί
+  <br/>
+  <span class="label">NFD text is what many sources (e.g. Perseus dumps) emit; look at shifted/floating diacritics on the decomposed form.</span>
+</p>
+
+</body>
+</html>
