@@ -29,15 +29,35 @@
       });
     });
   };
+  let prepared = '';
+  /* download the audio of an upcoming text into the cache (prefetch) */
+  const prepare = (text, name) => {
+    if (!voice || !text || text.trim() === '' || prepared === text) {
+      return;
+    }
+    prepared = text;
+    caches.open(name || 'tts-storage').then(cache => {
+      voice.build(text).then(src => {
+        cache.match(src).then(r => {
+          if (!r) {
+            cache.add(src).catch(e => console.info('failed to cache', e));
+          }
+        });
+      }).catch(() => {});
+    }).catch(() => {});
+  };
 
   /* custom SpeechSynthesisUtterance */
   class CustomSpeechSynthesisUtterance extends SpeechSynthesisUtterance {
+    #next;
     constructor(...args) {
       super(...args);
     }
     set voice(v) {
       if (v?.voiceURI === 'audio') {
         voice = v;
+        // the next-text may have been assigned before the voice was
+        prepare(this.#next, this.cache);
       }
       else {
         voice = undefined;
@@ -58,6 +78,14 @@
     get rate() {
       return super.rate;
     }
+    set 'next-text'(v) {
+      this.#next = v;
+      // start downloading the upcoming audio as early as possible
+      prepare(v, this.cache);
+    }
+    get 'next-text'() {
+      return this.#next;
+    }
     name(name) {
       this.cache = name;
     }
@@ -73,17 +101,8 @@
         const g = ++generation;
         cacheName = instance.cache || cacheName || 'tts-storage';
         return caches.open(cacheName).then(async cache => {
-          // cache next text
-          const nt = instance['next-text'];
-          if (nt && nt.trim()) {
-            voice.build(nt).then(src => {
-              cache.match(src).then(r => {
-                if (!r) {
-                  cache.add(src).catch(e => console.info('failed to cache', e));
-                }
-              });
-            }).catch(() => {});
-          }
+          // cache next text (skipped when the early prefetch already did it)
+          prepare(instance['next-text'], cacheName);
 
           let src;
           try {

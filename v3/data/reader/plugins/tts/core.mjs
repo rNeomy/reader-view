@@ -36,8 +36,9 @@ const prefs = {
       remote: 0
     },
     from(config = {}) {
-      const n = Math.max(0, Number(config['tts-delay']) || 0);
-      this.sentences.local = n || 600;
+      const n = Number(config['tts-delay']);
+      // unset or invalid -> engine default; 0 is a valid user choice
+      this.sentences.local = Number.isFinite(n) && n >= 0 ? n : 600;
       return this;
     }
   }
@@ -154,7 +155,9 @@ function enable() {
             const text = speech.cache.shift();
 
             if (text) {
-              player.message('Preparing...');
+              if (speech.voice?.localService === false) {
+                player.message('Preparing...');
+              }
               resolve({
                 text,
                 'delay': delay.same,
@@ -197,7 +200,9 @@ function enable() {
               }
               // console.log(text, ' -> ', speech.ncache);
 
-              player.message('Preparing...');
+              if (speech.voice?.localService === false) {
+                player.message('Preparing...');
+              }
               resolve({
                 text,
                 'delay': options.automated ? delay.sentences : 0,

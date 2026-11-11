@@ -3,6 +3,9 @@
 class TTSL1 {
   #timeout;
   #live = false;
+  // true when our own utterance ended naturally (queue is empty);
+  // the next speak then needs no recovery flush
+  #clean = false;
   #config = {
     pitch: 1,
     rate: 1,
@@ -10,7 +13,7 @@ class TTSL1 {
   };
 
   constructor() {
-    this.version = '0.1.1';
+    this.version = '0.1.2';
   }
   // get the next or previous segment to play
   content() {
@@ -76,6 +79,8 @@ class TTSL1 {
     // detach chain handlers from the superseded instance before cancel()
     // (Firefox fires `end` on canceled utterances)
     this.#detach(this.instance);
+    // a fresh play supersedes whatever the previous instance was doing
+    this.#clean = false;
     const instance = this.instance = new SpeechSynthesisUtterance();
     instance.name(args.get('id') || 'tts-storage');
     instance.text = segment.text;
@@ -93,6 +98,7 @@ class TTSL1 {
         return;
       }
       this.#live = false;
+      this.#clean = true;
       this.state();
 
       this.play({
@@ -101,6 +107,7 @@ class TTSL1 {
     };
     instance.onerror = e => {
       this.#live = false;
+      this.#clean = false;
       this.error(e);
       this.state();
     };
@@ -118,30 +125,40 @@ class TTSL1 {
     if (play) {
       this.#live = false;
 
+      // when our own utterance just ended naturally, the queue is empty and
+      // the engine is idle: skip the recovery flush entirely, otherwise every
+      // chunk boundary produces an audible pause (resume + cancel + settle)
+      const clean = this.#clean === true;
+      this.#clean = false;
       // engine flags can lie after a reload mid-speech, but they only matter
-      // for deciding whether a settle delay is needed
-      try {
-        speechSynthesis.resume(); // un-deadlock a paused engine; no-op when idle
-        speechSynthesis.cancel(); // unconditional flush is safe
-      }
-      catch (e) {}
+      // when recovering from a busy or wedged engine
+      const busy = !clean && (speechSynthesis.speaking || speechSynthesis.pending || speechSynthesis.paused);
+      if (busy) {
+        try {
+          speechSynthesis.resume(); // un-deadlock a paused engine; no-op when idle
+          speechSynthesis.cancel(); // unconditional flush is safe
+        }
+        catch (e) {}
 
-      const speak = () => {
+        const speak = () => {
+          try {
+            speechSynthesis.speak(instance);
+          }
+          catch (e) {
+            setTimeout(() => speechSynthesis.speak(instance), 200);
+          }
+        };
+
+        // Chrome swallows a speak() issued in the same tick as cancel()
+        this.#timeout = setTimeout(speak, 100);
+      }
+      else {
         try {
           speechSynthesis.speak(instance);
         }
         catch (e) {
           setTimeout(() => speechSynthesis.speak(instance), 200);
         }
-      };
-
-      const busy = speechSynthesis.speaking || speechSynthesis.pending;
-      if (busy) {
-        // Chrome swallows a speak() issued in the same tick as cancel()
-        this.#timeout = setTimeout(speak, 100);
-      }
-      else {
-        speak();
       }
     }
   }
@@ -181,11 +198,13 @@ class TTSL1 {
   }
   destroy() {
     this.#live = false;
+    this.#clean = false;
     clearTimeout(this.#timeout);
     speechSynthesis.destroy?.();
   }
   stop() {
     this.#live = false;
+    this.#clean = false;
     clearTimeout(this.#timeout);
     // cancel() fires `end` for the live utterance (at least on Firefox);
     // detach the chain handlers so the automated advance is not triggered
