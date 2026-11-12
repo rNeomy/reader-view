@@ -13,7 +13,7 @@ class TTSL1 {
   };
 
   constructor() {
-    this.version = '0.1.2';
+    this.version = '0.1.3';
   }
   // get the next or previous segment to play
   content() {
@@ -79,7 +79,9 @@ class TTSL1 {
     // detach chain handlers from the superseded instance before cancel()
     // (Firefox fires `end` on canceled utterances)
     this.#detach(this.instance);
-    // a fresh play supersedes whatever the previous instance was doing
+    // read the flag before clearing it; a natural `end` means the engine
+    // queue is empty and the next speak does not need a recovery flush
+    const clean = this.#clean === true;
     this.#clean = false;
     const instance = this.instance = new SpeechSynthesisUtterance();
     instance.name(args.get('id') || 'tts-storage');
@@ -125,11 +127,6 @@ class TTSL1 {
     if (play) {
       this.#live = false;
 
-      // when our own utterance just ended naturally, the queue is empty and
-      // the engine is idle: skip the recovery flush entirely, otherwise every
-      // chunk boundary produces an audible pause (resume + cancel + settle)
-      const clean = this.#clean === true;
-      this.#clean = false;
       // engine flags can lie after a reload mid-speech, but they only matter
       // when recovering from a busy or wedged engine
       const busy = !clean && (speechSynthesis.speaking || speechSynthesis.pending || speechSynthesis.paused);

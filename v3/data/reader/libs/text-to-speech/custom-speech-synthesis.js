@@ -29,22 +29,26 @@
       });
     });
   };
-  let prepared = '';
+  const prefetches = new Map();
   /* download the audio of an upcoming text into the cache (prefetch) */
   const prepare = (text, name) => {
-    if (!voice || !text || text.trim() === '' || prepared === text) {
+    if (!voice || !text || text.trim() === '') {
       return;
     }
-    prepared = text;
-    caches.open(name || 'tts-storage').then(cache => {
-      voice.build(text).then(src => {
-        cache.match(src).then(r => {
+    const key = (name || 'tts-storage') + '\n' + text;
+    if (prefetches.has(key)) {
+      return;
+    }
+    const p = caches.open(name || 'tts-storage').then(cache => {
+      return voice.build(text).then(src => {
+        return cache.match(src).then(r => {
           if (!r) {
-            cache.add(src).catch(e => console.info('failed to cache', e));
+            return cache.add(src).catch(e => console.info('failed to cache', e));
           }
-        });
-      }).catch(() => {});
-    }).catch(() => {});
+        }).then(() => src);
+      });
+    }).catch(() => {}).finally(() => prefetches.delete(key));
+    prefetches.set(key, p);
   };
 
   /* custom SpeechSynthesisUtterance */
@@ -104,28 +108,41 @@
           // cache next text (skipped when the early prefetch already did it)
           prepare(instance['next-text'], cacheName);
 
+          // reuse the early prefetch of this text when it is still running,
+          // so the cache entry is guaranteed to exist before cache.match();
+          // cap the wait so a stalled download cannot block the playback
+          const key = cacheName + '\n' + instance.text;
           let src;
-          try {
-            src = await buildWithTimeout(instance.text);
+          if (prefetches.has(key)) {
+            src = await Promise.race([
+              prefetches.get(key),
+              new Promise(resolve => setTimeout(() => resolve(), 3000))
+            ]);
           }
-          catch (e) {
-            if (g !== generation) {
-              return;
-            }
+
+          if (!src) {
             try {
-              // single retry; several endpoints are rate-limited
               src = await buildWithTimeout(instance.text);
             }
-            catch (ee) {
-              console.warn('build failed', ee);
+            catch (e) {
               if (g !== generation) {
                 return;
               }
-              release();
-              return instance.onerror({
-                target: audio,
-                error: 'audio'
-              });
+              try {
+                // single retry; several endpoints are rate-limited
+                src = await buildWithTimeout(instance.text);
+              }
+              catch (ee) {
+                console.warn('build failed', ee);
+                if (g !== generation) {
+                  return;
+                }
+                release();
+                return instance.onerror({
+                  target: audio,
+                  error: 'audio'
+                });
+              }
             }
           }
           if (g !== generation) {
@@ -253,7 +270,9 @@
         return audio.error ? false : Boolean(audio.src && !audio.ended);
       }
       if (voice && prop === 'paused') {
-        return audio.paused;
+        // `audio.paused` is also true when idle or after a track ends;
+        // only report a real pause of an actual track
+        return Boolean(audio.src) && audio.paused && !audio.ended;
       }
       return value;
     }
