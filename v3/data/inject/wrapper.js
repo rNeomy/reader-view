@@ -165,6 +165,119 @@ function getSelectionHTML(doc) {
   }
 }
 
+/**
+ * Parse a document into a reader article with a tuned configuration.
+ *
+ * The library defaults (nbTopCandidates: 5, charThreshold: 500) occasionally
+ * stop on the first matching container, which renders just a few lines of
+ * text when the actual content is spread over multiple sibling containers
+ * (e.g. multi-page answers on perplexity.ai). To work around this, the first
+ * pass uses a deeper candidate pool and a higher character threshold; if it
+ * fails, we retry with the library defaults.
+ *
+ * @param {Function} createDoc - returns a fresh document for each parse attempt
+ *  (Readability mutates the document it parses)
+ * @returns {object|null} - Readability article object, or null if both attempts failed
+ */
+function parseArticle(createDoc) {
+  let article = null;
+  try {
+    article = new Readability(createDoc(), {
+      debug: false,
+      // look deeper into the candidate pool
+      nbTopCandidates: 10,
+      // prefer a longer article over the first short fragment
+      charThreshold: 800
+    }).parse();
+  }
+  catch (e) {
+    console.warn('tuned parse failed', e);
+  }
+
+  if (article) {
+    return article;
+  }
+
+  // the previous parse may have modified the document; use a fresh copy
+  return new Readability(createDoc(), {
+    debug: false
+  }).parse();
+}
+
+/**
+ * Parse a document into a reader article.
+ *
+ * Perplexity-style pages render every answer turn in its own
+ * [data-renderer="lm"] block. A single whole-page parse returns only one
+ * of those blocks (usually the longest, or its last section), so when
+ * several substantive answer blocks are present we parse each block and
+ * join them in document order, excluding the surrounding thread chrome.
+ *
+ * @param {Function} createDoc - returns a fresh document for each parse attempt
+ *  (Readability mutates the document it parses)
+ * @returns {object|null} - Readability article object, or null if parsing failed
+ */
+function extractArticle(createDoc) {
+  const article = parseArticle(createDoc);
+
+  try {
+    const probe = createDoc();
+    const blocks = [...probe.querySelectorAll('[data-renderer="lm"]')]
+      .filter(el => el.textContent.trim().length > 500);
+
+    if (!blocks.length) {
+      return article;
+    }
+
+    const parts = [];
+    const seen = [];
+    for (const el of blocks) {
+      const block = el.cloneNode(true);
+      const a = parseArticle(() => {
+        const d = createHTMLDocument();
+        d.body.appendChild(block.cloneNode(true));
+
+        return d;
+      });
+      if (!a) {
+        continue;
+      }
+      const text = a.textContent.replace(/\s+/g, ' ').trim();
+      // skip duplicated or nested blocks (e.g. a wrapper containing the answer)
+      if (seen.some(s => s.includes(text) || text.includes(s))) {
+        continue;
+      }
+      seen.push(text);
+      parts.push(a);
+    }
+
+    if (parts.length > 1) {
+      const textContent = parts.map(p => p.textContent).join('\n');
+      if (!article || textContent.length > article.textContent.length) {
+        const content = parts.map((p, n) =>
+          `<h2 class="page-separator">Page ${n + 1}</h2>` +
+          p.content.replace('id="readability-page-1"', `id="readability-page-${n + 1}"`)
+        ).join('');
+
+        return {
+          ...parts[0],
+          content,
+          textContent,
+          length: textContent.length
+        };
+      }
+    }
+    else if (parts.length === 1 && (!article || parts[0].textContent.length > article.textContent.length)) {
+      return parts[0];
+    }
+  }
+  catch (e) {
+    console.warn('answer-block parse failed', e);
+  }
+
+  return article;
+}
+
 try {
   let timeout;
 
@@ -292,11 +405,9 @@ try {
       let doc;
       // Select the first lengthy document that returns reader content
       for (const d of docs) {
-        doc = getSelectionHTML(d) || d.cloneNode(true);
-        const reader = new Readability(doc, {
-          debug: false
-        });
-        article = reader.parse();
+        const createDoc = () => getSelectionHTML(d) || d.cloneNode(true);
+        doc = createDoc();
+        article = extractArticle(createDoc);
         if (article) {
           break;
         }
@@ -305,19 +416,23 @@ try {
       // multiple articles
       const articles = [...doc.querySelectorAll('article')].map(e => e.cloneNode(true));
       for (let n = 0; n < articles.length; n += 1) {
-        const doc = createHTMLDocument();
-        doc.body.appendChild(articles[n]);
+        const a = extractArticle(() => {
+          const d = createHTMLDocument();
+          d.body.appendChild(articles[n].cloneNode(true));
 
-        const reader = new Readability(doc, {
-          debug: false
+          return d;
         });
-        const a = reader.parse();
         if (a) {
-          article.contents = article.contents || [];
-          article.contents.push(
-            `<h2 class="page-separator">Page ${n + 1}</h2>`,
-            a.content.replace('id="readability-page-1"', `id="readability-page-${n + 1}"`)
-          );
+          if (!article) {
+            article = a;
+          }
+          else {
+            article.contents = article.contents || [];
+            article.contents.push(
+              `<h2 class="page-separator">Page ${n + 1}</h2>`,
+              a.content.replace('id="readability-page-1"', `id="readability-page-${n + 1}"`)
+            );
+          }
         }
       }
 
